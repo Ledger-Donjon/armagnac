@@ -246,6 +246,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::lsl::LslReg>();
         dec.insert::<instructions::lsr::LsrImm>();
         dec.insert::<instructions::lsr::LsrReg>();
+        dec.insert::<instructions::mla::Mla>();
         dec.insert::<instructions::mov::MovImm>();
         dec.insert::<instructions::mov::MovReg>();
         dec.insert::<instructions::mrs::Mrs>();
