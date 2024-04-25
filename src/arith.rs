@@ -58,7 +58,6 @@ pub fn lsr_c(value: u32, shift: u32) -> (u32, bool) {
 /// # Arguments
 ///
 /// * `value` - Value to be rotated
-/// * `n` - Value width in bits
 /// * `shift` - Shift count. Must be > 0.
 pub fn ror_c(value: u32, shift: u32) -> (u32, bool) {
     const N: u32 = 32;
@@ -66,6 +65,20 @@ pub fn ror_c(value: u32, shift: u32) -> (u32, bool) {
     let m = shift % N;
     let result = lsr_c(value, m).0 | lsl_c(value, N - m).0;
     (result, result & (1 << N - 1) != 0)
+}
+
+/// Returns right rotated value and discard the carry.
+///
+/// # Arguments
+///
+/// * `value` - Value to be rotated
+/// * `shift` - Shift count. 0 is allowed.
+pub fn ror(value: u32, shift: u32) -> u32 {
+    if shift != 0 {
+        ror_c(value, shift).0
+    } else {
+        value
+    }
 }
 
 /// Sign-extends a word.
@@ -256,7 +269,7 @@ pub fn thumb_expand_imm_c(imm12: u32, carry_in: bool) -> Result<(u32, bool), Ari
 
 #[cfg(test)]
 mod tests {
-    use crate::arith::{add_with_carry, lsl_c, lsr_c, ror_c, sign_extend, Shift};
+    use crate::arith::{add_with_carry, lsl_c, lsr_c, ror, ror_c, sign_extend, Shift};
 
     use super::{shift_c, ShiftType};
 
@@ -305,6 +318,13 @@ mod tests {
         assert_eq!(ror_c(0x00a50000, 8), (0x0000a500, false));
         assert_eq!(ror_c(0x00a50000, 16), (0x000000a5, false));
         assert_eq!(ror_c(0x00a50000, 24), (0xa5000000, true));
+    }
+
+    #[test]
+    fn test_ror() {
+        // Only test with 0 shift, allowed for ror (but not for ror_c).
+        // For the rest we can count on test_ror_c.
+        assert_eq!(ror(0x12345678, 0), 0x12345678);
     }
 
     #[test]
