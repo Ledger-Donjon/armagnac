@@ -43,6 +43,7 @@ pub mod strh;
 pub mod sub;
 pub mod ubfx;
 pub mod udiv;
+pub mod uxt;
 pub mod tst;
 
 /// All instructions must implement this trait in order to be integrated into the emulator.
