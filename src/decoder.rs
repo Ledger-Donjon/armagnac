@@ -250,6 +250,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::mov::MovReg>();
         dec.insert::<instructions::mrs::Mrs>();
         dec.insert::<instructions::msr::Msr>();
+        dec.insert::<instructions::mvn::MvnImm>();
         dec.insert::<instructions::nop::Nop>();
         dec.insert::<instructions::orr::OrrImm>();
         dec.insert::<instructions::orr::OrrReg>();

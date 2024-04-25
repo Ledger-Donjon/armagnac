@@ -28,6 +28,7 @@ pub mod lsr;
 pub mod mov;
 pub mod mrs;
 pub mod msr;
+pub mod mvn;
 pub mod nop;
 pub mod orr;
 pub mod pop;
