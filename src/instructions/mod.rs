@@ -29,6 +29,7 @@ pub mod mla;
 pub mod mov;
 pub mod mrs;
 pub mod msr;
+pub mod mul;
 pub mod mvn;
 pub mod nop;
 pub mod orr;
