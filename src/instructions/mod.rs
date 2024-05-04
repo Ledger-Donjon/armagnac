@@ -36,6 +36,7 @@ pub mod nop;
 pub mod orr;
 pub mod pop;
 pub mod push;
+pub mod rbit;
 pub mod rsb;
 pub mod sev;
 pub mod stmdb;
@@ -43,10 +44,10 @@ pub mod str;
 pub mod strb;
 pub mod strh;
 pub mod sub;
+pub mod tst;
 pub mod ubfx;
 pub mod udiv;
 pub mod uxt;
-pub mod tst;
 
 /// All instructions must implement this trait in order to be integrated into the emulator.
 pub trait Instruction {
