@@ -1,7 +1,7 @@
-//! Implements AND (immediate) instruction.
+//! Implements AND (immediate) and AND (register) instructions.
 
 use crate::{
-    arith::thumb_expand_imm_optc,
+    arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
@@ -10,7 +10,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{other, reg, unpredictable, Instruction};
+use super::{other, reg, unpredictable, DecodeHelper, Instruction};
 
 /// AND immediate instruction.
 pub struct AndImm {
@@ -68,5 +68,79 @@ impl Instruction for AndImm {
 
     fn args(&self, _pc: u32) -> String {
         format!("{}, #{}", rdn_args_string(self.rd, self.rn), self.imm32)
+    }
+}
+
+pub struct AndReg {
+    /// Destination register.
+    rd: RegisterIndex,
+    /// First operand register.
+    rn: RegisterIndex,
+    /// Second operand register.
+    rm: RegisterIndex,
+    /// Shift to be applied to Rm.
+    shift: Shift,
+    /// True if condition flags are updated.
+    set_flags: bool,
+}
+
+impl Instruction for AndReg {
+    fn patterns() -> &'static [&'static str] {
+        &["0100000000xxxxxx", "11101010000xxxxx(0)xxxxxxxxxxxxxxx"]
+    }
+
+    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match tn {
+            1 => {
+                let rdn = ins.reg3(0);
+                Self {
+                    rd: rdn,
+                    rn: rdn,
+                    rm: ins.reg3(3),
+                    shift: Shift::lsl(0),
+                    set_flags: !state.in_it_block(),
+                }
+            }
+            2 => {
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
+                let set_flags = ins.bit(20);
+                other(rd.is_pc() && set_flags)?; // TST (register)
+                unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc() || rm.is_sp_or_pc())?;
+                Self {
+                    rd,
+                    rn,
+                    rm,
+                    shift: Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6)),
+                    set_flags,
+                }
+            }
+            _ => panic!(),
+        })
+    }
+
+    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+        let carry_in = proc.registers.apsr.c();
+        let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let result = proc.registers[self.rn] & shifted;
+        proc.registers[self.rd] = result;
+        if self.set_flags {
+            proc.registers.apsr.set_nz(result).set_c(carry);
+        }
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        if self.set_flags { "ands" } else { "and" }.into()
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!(
+            "{}, {}{}",
+            rdn_args_string(self.rd, self.rn),
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }
