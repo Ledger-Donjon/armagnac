@@ -37,7 +37,7 @@ impl Instruction for Msr {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let val = proc.registers[self.rn].val();
+        let val = proc.registers[self.rn];
         match self.sysm {
             RegisterIndex::Apsr => todo!(),
             RegisterIndex::Iapsr => todo!(),
@@ -47,12 +47,12 @@ impl Instruction for Msr {
             RegisterIndex::Iepsr => todo!(),
             RegisterIndex::Msp => {
                 if proc.is_privileged() {
-                    proc.registers.msp.set_val(val)
+                    proc.registers.msp = val
                 }
             }
             RegisterIndex::Psp => {
                 if proc.is_privileged() {
-                    proc.registers.psp.set_val(val)
+                    proc.registers.psp = val
                 }
             }
             RegisterIndex::Primask => todo!(),

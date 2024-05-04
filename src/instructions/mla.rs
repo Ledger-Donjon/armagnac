@@ -39,11 +39,11 @@ impl Instruction for Mla {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let op1 = proc[self.rn].val() as i32;
-        let op2 = proc[self.rm].val() as i32;
-        let addend = proc[self.ra].val() as i32;
+        let op1 = proc[self.rn] as i32;
+        let op2 = proc[self.rm] as i32;
+        let addend = proc[self.ra] as i32;
         let result = op1.wrapping_mul(op2).wrapping_add(addend);
-        proc[self.rd].set_val(result as u32);
+        proc[self.rd] = result as u32;
         Ok(false)
     }
 

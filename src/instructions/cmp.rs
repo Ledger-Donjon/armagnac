@@ -38,7 +38,7 @@ impl Instruction for CmpImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         proc.add_with_carry(rn, !self.imm32, true);
         Ok(false)
     }
@@ -106,8 +106,8 @@ impl Instruction for CmpReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
-        proc.add_with_carry(rn, !(proc.registers[self.rm].val()), true);
+        let rn = proc.registers[self.rn];
+        proc.add_with_carry(rn, !(proc.registers[self.rm]), true);
         Ok(false)
     }
 

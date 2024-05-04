@@ -72,7 +72,7 @@ impl Instruction for MovImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        proc.registers[self.rd].set_val(self.imm32);
+        proc.registers[self.rd] = self.imm32;
         if self.set_flags {
             proc.registers.apsr.set_nz(self.imm32).set_c_opt(self.carry);
         }
@@ -141,12 +141,12 @@ impl Instruction for MovReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let result = proc.registers[self.rm].val();
+        let result = proc.registers[self.rm];
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
             Ok(true)
         } else {
-            proc.registers[self.rd].set_val(result);
+            proc.registers[self.rd] = result;
             if self.set_flags {
                 proc.registers.apsr.set_nz(result);
             }

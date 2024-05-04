@@ -85,9 +85,9 @@ impl Instruction for SubImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         let (result, carry, overflow) = add_with_carry(rn, !self.imm32, true);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers
                 .apsr
@@ -156,11 +156,11 @@ impl Instruction for SubReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         let carry_in = proc.registers.apsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
+        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(rn, !shifted, true);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers
                 .apsr
@@ -240,7 +240,7 @@ impl Instruction for SubSpMinusImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), !self.imm32, true);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers
                 .apsr

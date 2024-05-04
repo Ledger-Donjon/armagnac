@@ -30,8 +30,8 @@ impl Instruction for Blx {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let target = proc.registers[self.rm].val();
-        proc.registers.lr.set_val(proc.pc() - 2 | 1);
+        let target = proc.registers[self.rm];
+        proc.registers.lr = proc.pc() - 2 | 1;
         proc.blx_write_pc(target);
         Ok(true)
     }

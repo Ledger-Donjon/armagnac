@@ -1,6 +1,9 @@
-use crate::memory::{
-    Env, MemoryAccessError, MemoryInterface, MemoryInterface16, MemoryInterface32,
-    MemoryInterface8, MemoryReadResult, MemoryWriteResult, RegistersMemoryInterface32,
+use crate::{
+    helpers::BitAccess,
+    memory::{
+        Env, MemoryAccessError, MemoryInterface, MemoryOpAction, MemoryReadResult,
+        MemoryWriteResult, RegistersMemoryInterface,
+    },
 };
 
 pub enum SystemControlRegister {

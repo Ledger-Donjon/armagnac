@@ -1,7 +1,14 @@
 //! Implements LDRH (immediate), LDRH (literal), LDRH (register) and LDRHT instructions.
 
 use crate::{
-    align::Align, arith::{shift_c, Shift}, arm::{Arm7Processor, RunError}, decoder::DecodeError, helpers::TestBit, instructions::{unpredictable, DecodeHelper}, it_state::ItState, registers::RegisterIndex
+    align::Align,
+    arith::{shift_c, Shift},
+    arm::{Arm7Processor, RunError},
+    decoder::DecodeError,
+    helpers::BitAccess,
+    instructions::{unpredictable, DecodeHelper},
+    it_state::ItState,
+    registers::RegisterIndex,
 };
 
 use super::{ldr::LdrImm, other, undefined, AddOrSub, Instruction};
@@ -72,12 +79,12 @@ impl Instruction for LdrhImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.0.rn].val();
+        let rn = proc.registers[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
         let data = proc.u16le_at(addr)?;
         if self.0.wback {
-            proc.registers[self.0.rn].set_val(offset_addr);
+            proc.registers[self.0.rn] = offset_addr;
         }
         if self.0.rt.is_pc() {
             if addr & 3 == 0 {
@@ -86,7 +93,7 @@ impl Instruction for LdrhImm {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.0.rt].set_val(data as u32)
+            proc.registers[self.0.rt] = data as u32
         }
         Ok(false)
     }
@@ -140,7 +147,7 @@ impl Instruction for LdrhLit {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.rt].set_val(data as u32)
+            proc.registers[self.rt] = data as u32
         }
         Ok(false)
     }
@@ -194,16 +201,16 @@ impl Instruction for LdrhReg {
                     shift: Shift::lsl(ins.imm2(4)),
                 }
             }
-            _ => panic!()
+            _ => panic!(),
         })
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (offset, _) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
-        let address = proc.registers[self.rn].val().wrapping_add(offset);
+        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let address = proc.registers[self.rn].wrapping_add(offset);
         let data = proc.u16le_at(address)?;
-        proc.registers[self.rt].set_val(data as u32);
+        proc.registers[self.rt] = data as u32;
         Ok(false)
     }
 
@@ -212,7 +219,13 @@ impl Instruction for LdrhReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, [{}, {}{}]", self.rt, self.rn, self.rm, self.shift.arg_string())
+        format!(
+            "{}, [{}, {}{}]",
+            self.rt,
+            self.rn,
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }
 

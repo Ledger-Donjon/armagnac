@@ -36,7 +36,7 @@ impl Instruction for TstImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let result = proc.registers[self.rn].val() & self.imm32;
+        let result = proc.registers[self.rn] & self.imm32;
         proc.registers.apsr.set_nz(result).set_c_opt(self.carry);
         Ok(false)
     }
@@ -88,8 +88,8 @@ impl Instruction for TstReg {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (shifted, carry) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
-        let result = proc.registers[self.rn].val() & shifted;
+        let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let result = proc.registers[self.rn] & shifted;
         proc.registers.apsr.set_nz(result).set_c(carry);
         Ok(false)
     }

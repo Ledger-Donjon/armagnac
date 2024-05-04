@@ -33,12 +33,12 @@ impl Instruction for Udiv {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let divisor = proc.registers[self.rm].val();
+        let divisor = proc.registers[self.rm];
         if divisor == 0 {
             unimplemented!("Division by zero handling")
         }
-        let result = proc.registers[self.rn].val() / divisor;
-        proc.registers[self.rd].set_val(result);
+        let result = proc.registers[self.rn] / divisor;
+        proc.registers[self.rd] = result;
         Ok(false)
     }
 

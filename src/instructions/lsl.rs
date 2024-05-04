@@ -60,8 +60,8 @@ impl Instruction for LslImm {
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
         let shift = Shift::lsl(self.shift as u32);
-        let (result, c) = shift_c(proc.registers[self.rm].val(), shift, carry_in);
-        proc.registers[self.rd].set_val(result);
+        let (result, c) = shift_c(proc.registers[self.rm], shift, carry_in);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers.apsr.set_nz(result).set_c(c);
         }
@@ -122,11 +122,11 @@ impl Instruction for LslReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let shift_n = proc.registers[self.rm].val() & 0xff;
+        let shift_n = proc.registers[self.rm] & 0xff;
         let carry_in = proc.registers.apsr.c();
         let shift = Shift::lsl(shift_n);
-        let (result, c) = shift_c(proc.registers[self.rn].val(), shift, carry_in);
-        proc.registers[self.rd].set_val(result);
+        let (result, c) = shift_c(proc.registers[self.rn], shift, carry_in);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers.apsr.set_nz(result).set_c(c);
         }

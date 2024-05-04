@@ -62,10 +62,10 @@ impl Instruction for Pop {
                     todo!("pop into PC in arm mode");
                 }
             }
-            proc.registers[reg].set_val(val);
+            proc.registers[reg] = val;
             addr = addr.wrapping_add(4);
         }
-        proc.registers.sp_mut().set_val(addr);
+        *proc.registers.sp_mut() = addr;
         Ok(has_pc)
     }
 

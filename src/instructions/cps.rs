@@ -3,7 +3,8 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::unpredictable, it_state::ItState,
+    instructions::unpredictable,
+    it_state::ItState,
 };
 
 use super::Instruction;

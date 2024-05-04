@@ -46,14 +46,14 @@ impl Instruction for Mrs {
             RegisterIndex::Iepsr => todo!(),
             RegisterIndex::Msp => {
                 if proc.is_privileged() {
-                    Some(proc.registers.msp.val())
+                    Some(proc.registers.msp)
                 } else {
                     None
                 }
             }
             RegisterIndex::Psp => {
                 if proc.is_privileged() {
-                    Some(proc.registers.psp.val())
+                    Some(proc.registers.psp)
                 } else {
                     None
                 }
@@ -62,7 +62,7 @@ impl Instruction for Mrs {
             _ => panic!(),
         };
         if let Some(val) = val {
-            proc.registers[self.rd].set_val(val);
+            proc.registers[self.rd] = val;
         }
         Ok(false)
     }

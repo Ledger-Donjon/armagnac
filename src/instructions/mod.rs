@@ -123,7 +123,7 @@ impl DecodeHelper for u32 {
     fn reg4(&self, lsb_index: u8) -> RegisterIndex {
         reg(self >> lsb_index & 0xf)
     }
-    
+
     fn imm1(&self, lsb_index: u8) -> u32 {
         self >> lsb_index & 1
     }
@@ -182,13 +182,7 @@ pub fn rdn_args_string(rd: RegisterIndex, rn: RegisterIndex) -> String {
     }
 }
 
-pub fn indexing_args(
-    rn: RegisterIndex,
-    imm: u32,
-    index: bool,
-    add: bool,
-    wback: bool,
-) -> String {
+pub fn indexing_args(rn: RegisterIndex, imm: u32, index: bool, add: bool, wback: bool) -> String {
     let neg = if add { "" } else { "-" };
     match (index, wback) {
         (true, false) => {

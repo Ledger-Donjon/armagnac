@@ -11,7 +11,7 @@ use crate::{
     instructions::{thumb_ins_size, Instruction, InstructionSize},
     it_state::ItState,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
-    registers::{CoreRegisters, Register, RegisterIndex},
+    registers::{CoreRegisters, RegisterIndex},
     system_control::SystemControl,
 };
 
@@ -321,7 +321,7 @@ impl Arm7Processor {
 
     /// Returns current value of the Stack Pointer (r13)
     pub fn sp(&self) -> u32 {
-        self.registers[13].0
+        self.registers[13]
     }
 
     /// Sets value of the Stack Pointer (r13)
@@ -330,12 +330,12 @@ impl Arm7Processor {
     ///
     /// * `value` - New Stack Pointer value
     pub fn set_sp(&mut self, value: u32) {
-        self.registers[13].0 = value
+        self.registers[13] = value
     }
 
     /// Returns current value of the Link Register (r14)
     pub fn lr(&self) -> u32 {
-        self.registers[14].0
+        self.registers[14]
     }
 
     /// Sets Link Register (r14) value
@@ -344,12 +344,12 @@ impl Arm7Processor {
     ///
     /// * `value` - New Link Register value
     pub fn set_lr(&mut self, value: u32) {
-        self.registers[14].0 = value
+        self.registers[14] = value
     }
 
     /// Returns current value of the Program Counter (r15)
     pub fn pc(&self) -> u32 {
-        self.registers[15].0
+        self.registers[15]
     }
 
     /// Sets Program Counter (r15) value
@@ -358,7 +358,7 @@ impl Arm7Processor {
     ///
     /// * `value` - New Program Counter value
     pub fn set_pc(&mut self, value: u32) {
-        self.registers[15].0 = value;
+        self.registers[15] = value;
     }
 
     fn decode_instruction(
@@ -521,7 +521,7 @@ impl Arm7Processor {
 
 /// Indexing implemented for easier access to the registers.
 impl Index<RegisterIndex> for Arm7Processor {
-    type Output = Register;
+    type Output = u32;
 
     fn index(&self, index: RegisterIndex) -> &Self::Output {
         &self.registers[index]

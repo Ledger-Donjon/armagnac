@@ -4,14 +4,15 @@ use crate::{
     arm::{Arm7Processor, RunError},
     condition::Condition,
     decoder::DecodeError,
-    instructions::{other, unpredictable}, it_state::{ItState, ItThenElse},
+    instructions::{other, unpredictable},
+    it_state::{ItState, ItThenElse},
 };
 
 use super::Instruction;
 
 pub struct It {
     /// IT state to be set.
-    state: ItState
+    state: ItState,
 }
 
 impl Instruction for It {
@@ -26,7 +27,9 @@ impl Instruction for It {
         let new_state = ItState::try_new((ins & 0xff) as u8);
         unpredictable(new_state.is_err())?;
         unpredictable(state.in_it_block())?;
-        Ok(Self { state: new_state.unwrap() })
+        Ok(Self {
+            state: new_state.unwrap(),
+        })
     }
 
     fn condition(&self) -> Option<Condition> {
@@ -43,7 +46,7 @@ impl Instruction for It {
         for x in &self.state.to_then_else() {
             name.push(match x {
                 ItThenElse::Then => 't',
-                ItThenElse::Else => 'e'
+                ItThenElse::Else => 'e',
             });
         }
         name

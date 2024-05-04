@@ -4,7 +4,7 @@ use crate::{
     arith::thumb_expand_imm_optc,
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    helpers::TestBit,
+    helpers::BitAccess,
     instructions::DecodeHelper,
     it_state::ItState,
     registers::RegisterIndex,
@@ -43,7 +43,7 @@ impl Instruction for MvnImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let result = !self.imm32;
-        proc[self.rd].set_val(result);
+        proc[self.rd] = result;
         if self.set_flags {
             proc.registers.apsr.set_nz(result).set_c_opt(self.carry);
         }

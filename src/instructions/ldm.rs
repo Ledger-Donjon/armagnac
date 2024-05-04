@@ -57,7 +57,7 @@ impl Instruction for Ldm {
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
-        let mut address = proc.registers[self.rn].val();
+        let mut address = proc.registers[self.rn];
         let mut jump = false;
         for reg in self.registers.iter() {
             let value = proc.u32le_at(address)?;
@@ -65,12 +65,12 @@ impl Instruction for Ldm {
                 proc.bx_write_pc(value);
                 jump = true;
             } else {
-                proc.registers[reg].set_val(value);
+                proc.registers[reg] = value;
             }
             address = address.wrapping_add(4);
         }
         if self.wback {
-            proc.registers[self.rn].set_val(address);
+            proc.registers[self.rn] = address;
         }
         Ok(jump)
     }

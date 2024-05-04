@@ -44,8 +44,8 @@ impl Instruction for Ubfx {
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let msb = self.lsb + self.width_minus_1;
         debug_assert!(msb <= 31);
-        let result = proc.registers[self.rn].val() << (31 - msb) >> (31 - msb + self.lsb);
-        proc.registers[self.rd].set_val(result);
+        let result = proc.registers[self.rn] << (31 - msb) >> (31 - msb + self.lsb);
+        proc.registers[self.rd] = result;
         Ok(false)
     }
 

@@ -55,10 +55,10 @@ impl Instruction for Mul {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let op1 = proc[self.rn].val() as i32;
-        let op2 = proc[self.rm].val() as i32;
+        let op1 = proc[self.rn] as i32;
+        let op2 = proc[self.rm] as i32;
         let result = op1.wrapping_mul(op2) as u32;
-        proc[self.rd].set_val(result);
+        proc[self.rd] = result;
         if self.set_flags {
             proc.registers.apsr.set_nz(result);
         }

@@ -81,12 +81,12 @@ impl Instruction for StrhImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u16le_at(address, proc.registers[self.rt].val() as u16)?;
+        proc.set_u16le_at(address, proc.registers[self.rt] as u16)?;
         if self.wback {
-            proc.registers[self.rn].set_val(offset_addr)
+            proc.registers[self.rn] = offset_addr
         }
         Ok(false)
     }

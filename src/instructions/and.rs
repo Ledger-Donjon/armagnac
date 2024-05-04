@@ -4,6 +4,7 @@ use crate::{
     arith::thumb_expand_imm_optc,
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
@@ -53,8 +54,8 @@ impl Instruction for AndImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let result = proc.registers[self.rn].val() & self.imm32;
-        proc.registers[self.rd].set_val(result);
+        let result = proc.registers[self.rn] & self.imm32;
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers.apsr.set_nz(result).set_c_opt(self.carry);
         }

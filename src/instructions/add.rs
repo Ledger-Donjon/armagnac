@@ -7,7 +7,7 @@ use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    helpers::TestBit,
+    helpers::BitAccess,
     instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
@@ -91,8 +91,8 @@ impl Instruction for AddImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let (r, c, v) = add_with_carry(proc.registers[self.rn].val(), self.imm32, false);
-        proc.registers[self.rd].set_val(r);
+        let (r, c, v) = add_with_carry(proc.registers[self.rn], self.imm32, false);
+        proc.registers[self.rd] = r;
         if self.set_flags {
             proc.registers.apsr.set_nz(r).set_c(c).set_v(v);
         }
@@ -190,13 +190,13 @@ impl Instruction for AddReg {
 
     fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
-        let (r, c, v) = add_with_carry(proc.registers[self.rn].val(), shifted, false);
+        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let (r, c, v) = add_with_carry(proc.registers[self.rn], shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(r);
             Ok(true)
         } else {
-            proc.registers[self.rd].set_val(r);
+            proc.registers[self.rd] = r;
             if self.set_flags {
                 proc.registers.apsr.set_nz(r).set_c(c).set_v(v);
             }
@@ -280,7 +280,7 @@ impl Instruction for AddSpPlusImm {
 
     fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
         let result = proc.add_with_carry(proc.sp(), self.imm32, self.set_flags);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         Ok(false)
     }
 
@@ -359,13 +359,13 @@ impl Instruction for AddSpPlusReg {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
+        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
             Ok(true)
         } else {
-            proc.registers[self.rd].set_val(result);
+            proc.registers[self.rd] = result;
             if self.set_flags {
                 proc.registers
                     .apsr

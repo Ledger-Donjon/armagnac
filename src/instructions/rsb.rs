@@ -4,7 +4,7 @@ use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    helpers::TestBit,
+    helpers::BitAccess,
     instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
@@ -54,9 +54,9 @@ impl Instruction for RsbImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         let (result, carry, overflow) = add_with_carry(!rn, self.imm32, true);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers
                 .apsr
@@ -111,10 +111,10 @@ impl Instruction for RsbReg {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm].val(), self.shift, carry_in);
-        let rn = proc.registers[self.rn].val();
+        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let rn = proc.registers[self.rn];
         let (result, carry, overflow) = add_with_carry(!rn, shifted, true);
-        proc.registers[self.rd].set_val(result);
+        proc.registers[self.rd] = result;
         if self.set_flags {
             proc.registers
                 .apsr

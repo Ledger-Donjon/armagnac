@@ -4,7 +4,7 @@ use crate::{
     arith::{shift_c, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    helpers::TestBit,
+    helpers::BitAccess,
     instructions::{DecodeHelper, ItState},
     registers::RegisterIndex,
 };
@@ -93,12 +93,12 @@ impl Instruction for StrImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn].val();
+        let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u32le_at(address, proc.registers[self.rt].val())?;
+        proc.set_u32le_at(address, proc.registers[self.rt])?;
         if self.wback {
-            proc.registers[self.rn].set_val(offset_addr)
+            proc.registers[self.rn] = offset_addr
         }
         Ok(false)
     }
@@ -160,9 +160,9 @@ impl Instruction for StrReg {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let carry_in = proc.registers.apsr.c();
-        let (offset, _) = shift_c(proc[self.rm].val(), self.shift, carry_in);
-        let address = proc[self.rn].val().wrapping_add(offset);
-        let data = proc[self.rt].val();
+        let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
+        let address = proc[self.rn].wrapping_add(offset);
+        let data = proc[self.rt];
         proc.set_u32le_at(address, data);
         Ok(false)
     }
@@ -227,15 +227,15 @@ impl Instruction for StrdImm {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc[self.rn].val();
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        let rt = proc[self.rt].val();
-        let rt2 = proc[self.rt2].val();
+        let rt = proc[self.rt];
+        let rt2 = proc[self.rt2];
         proc.set_u32le_at(address, rt)?;
         proc.set_u32le_at(address.wrapping_add(4), rt2)?;
         if self.wback {
-            proc[self.rn].set_val(offset_addr);
+            proc[self.rn] = offset_addr;
         }
         Ok(false)
     }

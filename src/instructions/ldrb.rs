@@ -60,21 +60,21 @@ impl Instruction for LdrbImm {
                     imm32: ins.imm8(0),
                     index: p,
                     add: u,
-                    wback: w
+                    wback: w,
                 })
-            },
+            }
             _ => panic!(),
         })
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.0.rn].val();
+        let rn = proc.registers[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
         let data = proc.u8_at(addr)?;
-        proc.registers[self.0.rt].set_val(data as u32);
+        proc.registers[self.0.rt] = data as u32;
         if self.0.wback {
-            proc.registers[self.0.rn].set_val(offset_addr);
+            proc.registers[self.0.rn] = offset_addr;
         }
         Ok(false)
     }

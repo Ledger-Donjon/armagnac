@@ -4,34 +4,7 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use crate::{condition::Condition, helpers::TestBit};
-
-#[derive(Copy, Clone, Default)]
-pub struct Register(pub u32);
-
-impl Register {
-    pub fn bit(&self, n: usize) -> bool {
-        self.0.bit(n)
-    }
-
-    pub fn set_bit(&mut self, n: u8, value: bool) {
-        self.0 = (self.0 & !(1 << n)) | (value as u32) << n
-    }
-
-    pub fn val(&self) -> u32 {
-        self.0
-    }
-
-    pub fn set_val(&mut self, value: u32) {
-        self.0 = value
-    }
-}
-
-impl Debug for Register {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "0x{:08x}", self.0)
-    }
-}
+use crate::{condition::Condition, helpers::BitAccess};
 
 /// Enumeration to identify a CPU core register
 ///
@@ -321,11 +294,11 @@ impl DoubleEndedIterator for MainRegisterListIterator {
 
 /// Application Program Status Register
 #[derive(Debug)]
-pub struct ApplicationProgramStatusRegister(Register);
+pub struct ApplicationProgramStatusRegister(u32);
 
 impl ApplicationProgramStatusRegister {
     pub fn new() -> Self {
-        ApplicationProgramStatusRegister(Register(0))
+        ApplicationProgramStatusRegister(0)
     }
 
     pub fn n(&self) -> bool {
@@ -416,11 +389,11 @@ impl ApplicationProgramStatusRegister {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct ExecutionProgramStatusRegister(Register);
+pub struct ExecutionProgramStatusRegister(u32);
 
 impl ExecutionProgramStatusRegister {
     pub fn new() -> Self {
-        Self(Register(0))
+        Self(0)
     }
 
     pub fn t(&self) -> bool {
@@ -434,11 +407,11 @@ impl ExecutionProgramStatusRegister {
 
 /// Base struct for PRIMASK and FAULTMASK registers
 #[derive(Debug)]
-pub struct MaskRegister(Register);
+pub struct MaskRegister(u32);
 
 impl MaskRegister {
     pub fn new() -> Self {
-        Self(Register(0))
+        Self(0)
     }
 
     /// Returns priority mask bit
@@ -458,12 +431,12 @@ impl MaskRegister {
 
 /// Special purpose control register
 #[derive(Debug)]
-pub struct ControlRegister(Register);
+pub struct ControlRegister(u32);
 
 impl ControlRegister {
     /// Returns register state at reset.
     pub fn new() -> Self {
-        Self(Register(0))
+        Self(0)
     }
 
     /// Returns false if thread has privileged mode, true if not.
@@ -495,23 +468,23 @@ impl ControlRegister {
 
 #[derive(Debug)]
 pub struct CoreRegisters {
-    pub r0: Register,
-    pub r1: Register,
-    pub r2: Register,
-    pub r3: Register,
-    pub r4: Register,
-    pub r5: Register,
-    pub r6: Register,
-    pub r7: Register,
-    pub r8: Register,
-    pub r9: Register,
-    pub r10: Register,
-    pub r11: Register,
-    pub r12: Register,
-    pub lr: Register,
-    pub pc: Register,
-    pub msp: Register,
-    pub psp: Register,
+    pub r0: u32,
+    pub r1: u32,
+    pub r2: u32,
+    pub r3: u32,
+    pub r4: u32,
+    pub r5: u32,
+    pub r6: u32,
+    pub r7: u32,
+    pub r8: u32,
+    pub r9: u32,
+    pub r10: u32,
+    pub r11: u32,
+    pub r12: u32,
+    pub lr: u32,
+    pub pc: u32,
+    pub msp: u32,
+    pub psp: u32,
     pub apsr: ApplicationProgramStatusRegister,
     pub epsr: ExecutionProgramStatusRegister,
     pub primask: MaskRegister,
@@ -525,23 +498,23 @@ pub struct CoreRegisters {
 impl CoreRegisters {
     pub fn new() -> Self {
         Self {
-            r0: Register(0),
-            r1: Register(0),
-            r2: Register(0),
-            r3: Register(0),
-            r4: Register(0),
-            r5: Register(0),
-            r6: Register(0),
-            r7: Register(0),
-            r8: Register(0),
-            r9: Register(0),
-            r10: Register(0),
-            r11: Register(0),
-            r12: Register(0),
-            lr: Register(0),
-            pc: Register(0),
-            msp: Register(0),
-            psp: Register(0),
+            r0: 0,
+            r1: 0,
+            r2: 0,
+            r3: 0,
+            r4: 0,
+            r5: 0,
+            r6: 0,
+            r7: 0,
+            r8: 0,
+            r9: 0,
+            r10: 0,
+            r11: 0,
+            r12: 0,
+            lr: 0,
+            pc: 0,
+            msp: 0,
+            psp: 0,
             apsr: ApplicationProgramStatusRegister::new(),
             epsr: ExecutionProgramStatusRegister::new(),
             primask: MaskRegister::new(),
@@ -565,18 +538,18 @@ impl CoreRegisters {
         }
     }
 
-    pub fn sp(&self) -> &Register {
-        &self[self.translate_sp()]
+    pub fn sp(&self) -> u32 {
+        self[self.translate_sp()]
     }
 
-    pub fn sp_mut(&mut self) -> &mut Register {
+    pub fn sp_mut(&mut self) -> &mut u32 {
         let sp = self.translate_sp();
         &mut self[sp]
     }
 }
 
 impl Index<u32> for CoreRegisters {
-    type Output = Register;
+    type Output = u32;
 
     fn index(&self, index: u32) -> &Self::Output {
         &self[RegisterIndex::new_main(index)]
@@ -590,7 +563,7 @@ impl IndexMut<u32> for CoreRegisters {
 }
 
 impl Index<RegisterIndex> for CoreRegisters {
-    type Output = Register;
+    type Output = u32;
 
     fn index(&self, index: RegisterIndex) -> &Self::Output {
         match index {

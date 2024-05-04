@@ -30,7 +30,7 @@ impl Instruction for Bx {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let target = proc.registers[self.rm].val();
+        let target = proc.registers[self.rm];
         proc.bx_write_pc(target);
         Ok(true)
     }
