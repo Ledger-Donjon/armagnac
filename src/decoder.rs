@@ -227,6 +227,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::blx::Blx>();
         dec.insert::<instructions::bx::Bx>();
         dec.insert::<instructions::cbnz::Cbnz>();
+        dec.insert::<instructions::clz::Clz>();
         dec.insert::<instructions::cmp::CmpImm>();
         dec.insert::<instructions::cmp::CmpReg>();
         dec.insert::<instructions::cps::Cps>();
