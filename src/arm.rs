@@ -170,6 +170,20 @@ impl Arm7Processor {
         Ok(())
     }
 
+    /// Creates a new RAM memory and map it in the address space.
+    ///
+    /// RAM is initialized at 0.
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - RAM memory start address.
+    /// * `size` - RAM memory size.
+    pub fn map_ram(&mut self, address: u32, size: u32) -> Result<Rc<RefCell<RamMemory>>, ()> {
+        let ram = Rc::new(RefCell::new(RamMemory::new_zero(size)));
+        self.map_iface(address, ram.clone())?;
+        Ok(ram)
+    }
+
     pub fn hook_code(&mut self, range: Range<usize>) {
         self.code_hooks.push(CodeHook { range: range })
     }
