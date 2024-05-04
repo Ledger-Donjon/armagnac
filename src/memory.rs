@@ -9,7 +9,7 @@ pub enum MemoryOpAction {
 pub type MemoryReadResult<T> = Result<T, MemoryAccessError>;
 pub type MemoryWriteResult = Result<(), MemoryAccessError>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MemoryAccessError {
     InvalidAddress,
     InvalidSize,
@@ -34,45 +34,39 @@ impl Env {
     pub fn new(cycles: u64) -> Self {
         Self {
             cycles,
-            actions: Vec::new()
+            actions: Vec::new(),
         }
     }
 }
 
-pub trait MemoryInterface8 {
-    fn read_u8(&mut self, _address: u32, env: &mut Env) -> MemoryReadResult<u8> {
+pub trait MemoryInterface {
+    fn read_u8(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u8> {
         Err(MemoryAccessError::InvalidSize)
     }
 
-    fn write_u8(&mut self, _address: u32, _value: u8, env: &mut Env) -> MemoryWriteResult {
-        Err(MemoryAccessError::InvalidSize)
-    }
-}
-
-pub trait MemoryInterface16 {
-    fn read_u16le(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u16> {
+    fn write_u8(&mut self, _address: u32, _value: u8, _env: &mut Env) -> MemoryWriteResult {
         Err(MemoryAccessError::InvalidSize)
     }
 
-    fn write_u16le(&mut self, _address: u32, _value: u16, env: &mut Env) -> MemoryWriteResult {
-        Err(MemoryAccessError::InvalidSize)
-    }
-}
-
-pub trait MemoryInterface32 {
-    fn read_u32le(&mut self, _address: u32, env: &mut Env) -> MemoryReadResult<u32> {
+    fn read_u16le(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u16> {
         Err(MemoryAccessError::InvalidSize)
     }
 
-    fn write_u32le(&mut self, _address: u32, _value: u32, env: &mut Env) -> MemoryWriteResult {
+    fn write_u16le(&mut self, _address: u32, _value: u16, _env: &mut Env) -> MemoryWriteResult {
         Err(MemoryAccessError::InvalidSize)
     }
-}
 
-pub trait MemoryInterface: MemoryInterface32 + MemoryInterface16 + MemoryInterface8 {
+    fn read_u32le(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u32> {
+        Err(MemoryAccessError::InvalidSize)
+    }
+
+    fn write_u32le(&mut self, _address: u32, _value: u32, _env: &mut Env) -> MemoryWriteResult {
+        Err(MemoryAccessError::InvalidSize)
+    }
+
     fn size(&self) -> u32;
 
-    fn update(&mut self, env: &mut Env) {}
+    fn update(&mut self, _env: &mut Env) {}
 }
 
 /// Similair to [MemoryInterface] for peripherals that use an enumeration to identify registers.
@@ -80,13 +74,15 @@ pub trait MemoryInterface: MemoryInterface32 + MemoryInterface16 + MemoryInterfa
 /// A blanket implementation for MemoryInterface exists and manages the conversion from the [u32]
 /// address to read/write into the register enumeration value. When the address is invalid this
 /// blanket implementation returns an [MemoryAccessError::InvalidAddress] error.
-pub trait RegistersMemoryInterface32 {
+pub trait RegistersMemoryInterface {
     type Register: TryFrom<u32>;
     fn read32(&mut self, reg: Self::Register, env: &mut Env) -> MemoryReadResult<u32>;
     fn write32(&mut self, reg: Self::Register, value: u32, env: &mut Env) -> MemoryWriteResult;
+    fn size(&self) -> u32;
+    fn update(&mut self, env: &mut Env) {}
 }
 
-impl<T: RegistersMemoryInterface32> MemoryInterface32 for T {
+impl<T: RegistersMemoryInterface> MemoryInterface for T {
     fn read_u32le(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u32> {
         if let Ok(reg) = address.try_into() {
             self.read32(reg, env)
@@ -101,6 +97,39 @@ impl<T: RegistersMemoryInterface32> MemoryInterface32 for T {
         } else {
             Err(MemoryAccessError::InvalidAddress)
         }
+    }
+
+    fn read_u8(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u8> {
+        let value = self.read_u32le(address & 0xfffffffc, env)?;
+        Ok(match address % 4 {
+            0 => (value >> 24) as u8,
+            1 => (value >> 16 & 0xff) as u8,
+            2 => (value >> 8 & 0xff) as u8,
+            3 => value as u8,
+            _ => panic!(),
+        })
+    }
+
+    fn write_u8(&mut self, address: u32, value: u8, env: &mut Env) -> MemoryWriteResult {
+        let address_aligned = address & 0xfffffffc;
+        let read = self.read_u32le(address_aligned, env)?;
+        let value = match address % 4 {
+            0 => read & 0x00ffffff | (value as u32) << 24,
+            1 => read & 0xff00ffff | (value as u32) << 16,
+            2 => read & 0xffff00ff | (value as u32) << 8,
+            3 => read & 0xffffff00 | value as u32,
+            _ => panic!(),
+        };
+        let mut write = self.write_u32le(address_aligned, value, env)?;
+        Ok(())
+    }
+
+    fn size(&self) -> u32 {
+        RegistersMemoryInterface::size(self)
+    }
+
+    fn update(&mut self, env: &mut Env) {
+        RegistersMemoryInterface::update(self, env)
     }
 }
 
@@ -133,9 +162,7 @@ impl MemoryInterface for RamMemory {
     fn size(&self) -> u32 {
         self.data.len() as u32
     }
-}
 
-impl MemoryInterface8 for RamMemory {
     fn read_u8(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u8> {
         if let Some(val) = self.data.get(address as usize) {
             Ok(*val)
@@ -156,9 +183,7 @@ impl MemoryInterface8 for RamMemory {
             Err(MemoryAccessError::ReadOnly)
         }
     }
-}
 
-impl MemoryInterface16 for RamMemory {
     fn read_u16le(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u16> {
         let b0 = self.read_u8(address, env)? as u16;
         let b1 = self.read_u8(address + 1, env)? as u16;
@@ -170,9 +195,7 @@ impl MemoryInterface16 for RamMemory {
         self.write_u8(address, (value & 0xff) as u8, env)?;
         Ok(())
     }
-}
 
-impl MemoryInterface32 for RamMemory {
     fn read_u32le(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u32> {
         let b0 = self.read_u8(address, env)? as u32;
         let b1 = self.read_u8(address + 1, env)? as u32;

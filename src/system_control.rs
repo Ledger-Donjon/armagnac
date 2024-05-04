@@ -128,7 +128,7 @@ impl Default for SystemControl {
     }
 }
 
-impl RegistersMemoryInterface32 for SystemControl {
+impl RegistersMemoryInterface for SystemControl {
     type Register = SystemControlRegister;
 
     fn read32(&mut self, reg: SystemControlRegister, _env: &mut Env) -> MemoryReadResult<u32> {
@@ -200,38 +200,7 @@ impl RegistersMemoryInterface32 for SystemControl {
         }
         Ok(())
     }
-}
 
-impl MemoryInterface16 for SystemControl {}
-
-impl MemoryInterface8 for SystemControl {
-    fn read_u8(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u8> {
-        let value = self.read_u32le(address & 0xfffffffc, env)?;
-        Ok(match address % 4 {
-            0 => (value >> 24) as u8,
-            1 => (value >> 16 & 0xff) as u8,
-            2 => (value >> 8 & 0xff) as u8,
-            3 => value as u8,
-            _ => panic!(),
-        })
-    }
-
-    fn write_u8(&mut self, address: u32, value: u8, env: &mut Env) -> MemoryWriteResult {
-        let address_aligned = address & 0xfffffffc;
-        let read = self.read_u32le(address_aligned, env)?;
-        let value = match address % 4 {
-            0 => read & 0x00ffffff | (value as u32) << 24,
-            1 => read & 0xff00ffff | (value as u32) << 16,
-            2 => read & 0xffff00ff | (value as u32) << 8,
-            3 => read & 0xffffff00 | value as u32,
-            _ => panic!(),
-        };
-        let mut write = self.write_u32le(address_aligned, value, env)?;
-        Ok(())
-    }
-}
-
-impl MemoryInterface for SystemControl {
     fn size(&self) -> u32 {
         0x1000
     }
@@ -239,15 +208,17 @@ impl MemoryInterface for SystemControl {
 
 #[cfg(test)]
 mod tests {
-    use super::VtorRegister;
+    use crate::memory::MemoryAccessError;
+
+    use super::Vtor;
 
     #[test]
     fn test_vtor_register() {
-        let mut reg = VtorRegister::default();
-        assert_eq!(reg.set(0xffffff80), Ok(()));
+        let mut reg = Vtor::default();
+        assert_eq!(reg.write(0xffffff80), Ok(()));
         assert_eq!(reg.0, 0xffffff80);
-        assert_eq!(reg.set(0xffffffff), Err(()));
-        assert_eq!(reg.set(0), Ok(()));
+        assert_eq!(reg.write(0xffffffff), Err(MemoryAccessError::InvalidValue));
+        assert_eq!(reg.write(0), Ok(()));
         assert_eq!(reg.0, 0);
     }
 }
