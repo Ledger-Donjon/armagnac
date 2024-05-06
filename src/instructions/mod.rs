@@ -23,6 +23,7 @@ pub mod it;
 pub mod ldm;
 pub mod ldr;
 pub mod ldrb;
+pub mod ldrd;
 pub mod ldrh;
 pub mod lsl;
 pub mod lsr;
@@ -184,6 +185,13 @@ pub fn rdn_args_string(rd: RegisterIndex, rn: RegisterIndex) -> String {
     }
 }
 
+/// Returns instruction indexing argument string.
+///
+/// Depending on the `index`, `add`, `wback` and `imm` parameters, can be one of
+/// - "[Rn]"
+/// - "[Rn, #imm]"
+/// - "[Rn], #imm"
+/// - "[Rn, #imm]!"
 pub fn indexing_args(rn: RegisterIndex, imm: u32, index: bool, add: bool, wback: bool) -> String {
     let neg = if add { "" } else { "-" };
     match (index, wback) {
