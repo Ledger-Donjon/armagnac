@@ -40,6 +40,7 @@ pub mod pop;
 pub mod push;
 pub mod rbit;
 pub mod rsb;
+pub mod sdiv;
 pub mod sev;
 pub mod stmdb;
 pub mod str;
