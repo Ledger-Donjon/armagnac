@@ -18,6 +18,7 @@ pub mod clz;
 pub mod cmp;
 pub mod cps;
 pub mod dsb;
+pub mod eor;
 pub mod isb;
 pub mod it;
 pub mod ldm;
