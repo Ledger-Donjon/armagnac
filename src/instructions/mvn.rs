@@ -1,7 +1,7 @@
 //! Implements MVN (immediate) and MVN (register) instructions.
 
 use crate::{
-    arith::thumb_expand_imm_optc,
+    arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
@@ -10,7 +10,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::Instruction;
+use super::{unpredictable, Instruction};
 
 /// MVN (immediate) instruction.
 pub struct MvnImm {
@@ -29,7 +29,7 @@ impl Instruction for MvnImm {
         &["11110x00011x11110xxxxxxxxxxxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
@@ -54,7 +54,66 @@ impl Instruction for MvnImm {
         if self.set_flags { "mvns" } else { "mvn" }.into()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         format!("{}, #{}", self.rd, self.imm32)
+    }
+}
+
+/// MVN (register) instruction.
+pub struct MvnReg {
+    /// Destination register.
+    rd: RegisterIndex,
+    /// Source register.
+    rm: RegisterIndex,
+    /// Shift to be applied to Rm.
+    shift: Shift,
+    /// True if condition flags are updated.
+    set_flags: bool,
+}
+
+impl Instruction for MvnReg {
+    fn patterns() -> &'static [&'static str] {
+        &["0100001111xxxxxx", "11101010011x1111(0)xxxxxxxxxxxxxxx"]
+    }
+
+    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match tn {
+            1 => Self {
+                rd: ins.reg3(0),
+                rm: ins.reg3(3),
+                shift: Shift::lsl(0),
+                set_flags: !state.in_it_block(),
+            },
+            2 => {
+                let rd = ins.reg4(8);
+                let rm = ins.reg4(0);
+                unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
+                Self {
+                    rd,
+                    rm,
+                    shift: Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6)),
+                    set_flags: ins.bit(20),
+                }
+            }
+            _ => panic!(),
+        })
+    }
+
+    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+        let carry_in = proc.registers.apsr.c();
+        let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let result = !shifted;
+        if self.set_flags {
+            proc.registers.apsr.set_nz(result).set_c(carry);
+        }
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        if self.set_flags { "mvns" } else { "mvn" }.into()
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!("{}, {}{}", self.rd, self.rm, self.shift.arg_string())
     }
 }

@@ -259,6 +259,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::msr::Msr>();
         dec.insert::<instructions::mul::Mul>();
         dec.insert::<instructions::mvn::MvnImm>();
+        dec.insert::<instructions::mvn::MvnReg>();
         dec.insert::<instructions::nop::Nop>();
         dec.insert::<instructions::orr::OrrImm>();
         dec.insert::<instructions::orr::OrrReg>();
