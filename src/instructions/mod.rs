@@ -28,6 +28,7 @@ pub mod ldr;
 pub mod ldrb;
 pub mod ldrd;
 pub mod ldrh;
+pub mod ldrsb;
 pub mod lsl;
 pub mod lsr;
 pub mod mla;
@@ -161,6 +162,7 @@ impl DecodeHelper for u32 {
         self >> lsb_index & 0xfff
     }
 
+    /// Extracts `index`, `add` and `wback` flags respectively from bits 10, 9 and 8.
     fn puw(&self) -> (bool, bool, bool) {
         (self & 1 << 10 != 0, self & 1 << 9 != 0, self & 1 << 8 != 0)
     }
