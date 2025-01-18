@@ -42,6 +42,7 @@ pub mod rbit;
 pub mod rsb;
 pub mod sdiv;
 pub mod sev;
+pub mod stm;
 pub mod stmdb;
 pub mod str;
 pub mod strb;
