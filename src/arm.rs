@@ -344,7 +344,7 @@ impl Arm7Processor {
     ///
     /// * `value` - New Stack Pointer value
     pub fn set_sp(&mut self, value: u32) {
-        self.registers[13] = value
+        *self.registers.sp_mut() = value
     }
 
     /// Returns current value of the Link Register (r14)
@@ -358,12 +358,12 @@ impl Arm7Processor {
     ///
     /// * `value` - New Link Register value
     pub fn set_lr(&mut self, value: u32) {
-        self.registers[14] = value
+        self.registers.lr = value
     }
 
     /// Returns current value of the Program Counter (r15)
     pub fn pc(&self) -> u32 {
-        self.registers[15]
+        self.registers.pc
     }
 
     /// Sets Program Counter (r15) value
@@ -372,7 +372,7 @@ impl Arm7Processor {
     ///
     /// * `value` - New Program Counter value
     pub fn set_pc(&mut self, value: u32) {
-        self.registers[15] = value;
+        self.registers.pc = value;
     }
 
     fn decode_instruction(
@@ -443,7 +443,7 @@ impl Arm7Processor {
             self.it_state.advance();
 
             let mut jump = false;
-            if self.registers.apsr.test(condition) {
+            if self.registers.xpsr.test(condition) {
                 jump = ins.execute(self)?;
             }
             if !jump {
@@ -480,28 +480,11 @@ impl Arm7Processor {
 
     /// Returns true if execution is privileged
     pub fn is_privileged(&self) -> bool {
-        if self.registers.handler_mode {
+        if self.registers.mode == Mode::Handler {
             true
         } else {
             !self.registers.control.privileged_bit()
         }
-    }
-
-    /// Returns sum of values and update N, Z, C, and V flags in APSR.
-    ///
-    /// # Arguments
-    ///
-    /// * `x` - First sum operand
-    /// * `y` - Second sum operand
-    /// * `carry_in` - Input carry bit
-    pub fn add_with_carry(&mut self, x: u32, y: u32, carry_in: bool) -> u32 {
-        let (result, carry, overflow) = add_with_carry(x, y, carry_in);
-        self.registers
-            .apsr
-            .set_nz(result)
-            .set_c(carry)
-            .set_v(overflow);
-        result
     }
 
     /// Write value to PC, with interworking for ARM only from ARMv7
@@ -511,14 +494,14 @@ impl Arm7Processor {
 
     /// Write value to PC, with interworking
     pub fn blx_write_pc(&mut self, address: u32) {
-        self.registers.epsr.set_t(address & 1 == 1);
+        self.registers.xpsr.set_t(address & 1 == 1);
         self.set_pc(address & 0xfffffffe)
     }
 
     /// Write value to PC, with interworking
-    pub fn bx_write_pc(&mut self, address: u32) {
-        if self.registers.handler_mode && (address >> 28 == 0xf) {
             todo!()
+    pub fn bx_write_pc(&mut self, address: u32) -> Result<(), RunError> {
+        if self.registers.mode == Mode::Handler && (address >> 28 == 0xf) {
         } else {
             self.blx_write_pc(address)
         }
@@ -526,7 +509,7 @@ impl Arm7Processor {
 
     pub fn condition_passed(&self) -> bool {
         if let Some(condition) = self.it_state.current_condition() {
-            self.registers.apsr.test(condition)
+            self.registers.xpsr.test(condition)
         } else {
             true
         }
@@ -539,12 +522,5 @@ impl Index<RegisterIndex> for Arm7Processor {
 
     fn index(&self, index: RegisterIndex) -> &Self::Output {
         &self.registers[index]
-    }
-}
-
-/// Indexing implemented for easier access to the registers.
-impl IndexMut<RegisterIndex> for Arm7Processor {
-    fn index_mut(&mut self, index: RegisterIndex) -> &mut Self::Output {
-        &mut self.registers[index]
     }
 }

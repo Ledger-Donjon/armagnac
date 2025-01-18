@@ -52,9 +52,9 @@ impl Instruction for BicImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let result = proc.registers[self.rn] & !self.imm32;
-        proc.registers[self.rd] = result;
+        proc.registers.set(self.rd, result);
         if self.set_flags {
-            proc.registers.apsr.set_nz(result).set_c_opt(self.carry);
+            proc.registers.xpsr.set_nz(result).set_c_opt(self.carry);
         }
         Ok(false)
     }
@@ -118,12 +118,12 @@ impl Instruction for BicReg {
     }
 
     fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let result = proc.registers[self.rn] & !shifted;
-        proc.registers[self.rd] = result;
+        proc.registers.set(self.rd, result);
         if self.set_flags {
-            proc.registers.apsr.set_nz(result).set_c(carry);
+            proc.registers.xpsr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }

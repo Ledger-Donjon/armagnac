@@ -43,7 +43,7 @@ impl Instruction for Mla {
         let op2 = proc[self.rm] as i32;
         let addend = proc[self.ra] as i32;
         let result = op1.wrapping_mul(op2).wrapping_add(addend);
-        proc[self.rd] = result as u32;
+        proc.registers.set(self.rd, result as u32);
         Ok(false)
     }
 

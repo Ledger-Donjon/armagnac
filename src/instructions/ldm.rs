@@ -65,12 +65,12 @@ impl Instruction for Ldm {
                 proc.bx_write_pc(value);
                 jump = true;
             } else {
-                proc.registers[reg] = value;
+                proc.registers.set(reg, value);
             }
             address = address.wrapping_add(4);
         }
-        if self.wback {
-            proc.registers[self.rn] = address;
+        if self.wback && !self.registers.contains(&self.rn) {
+            proc.registers.set(self.rn, address);
         }
         Ok(jump)
     }

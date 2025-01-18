@@ -98,7 +98,7 @@ impl Instruction for StrImm {
         let address = if self.index { offset_addr } else { rn };
         proc.set_u32le_at(address, proc.registers[self.rt])?;
         if self.wback {
-            proc.registers[self.rn] = offset_addr
+            proc.registers.set(self.rn, offset_addr)
         }
         Ok(false)
     }
@@ -159,7 +159,7 @@ impl Instruction for StrReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
         let data = proc[self.rt];
@@ -235,7 +235,7 @@ impl Instruction for StrdImm {
         proc.set_u32le_at(address, rt)?;
         proc.set_u32le_at(address.wrapping_add(4), rt2)?;
         if self.wback {
-            proc[self.rn] = offset_addr;
+            proc.registers.set(self.rn, offset_addr);
         }
         Ok(false)
     }

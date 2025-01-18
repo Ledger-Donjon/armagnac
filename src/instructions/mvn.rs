@@ -43,9 +43,9 @@ impl Instruction for MvnImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let result = !self.imm32;
-        proc[self.rd] = result;
+        proc.registers.set(self.rd, result);
         if self.set_flags {
-            proc.registers.apsr.set_nz(result).set_c_opt(self.carry);
+            proc.registers.xpsr.set_nz(result).set_c_opt(self.carry);
         }
         Ok(false)
     }
@@ -100,11 +100,12 @@ impl Instruction for MvnReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let result = !shifted;
+        proc.registers.set(self.rd, result);
         if self.set_flags {
-            proc.registers.apsr.set_nz(result).set_c(carry);
+            proc.registers.xpsr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }

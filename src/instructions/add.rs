@@ -92,9 +92,9 @@ impl Instruction for AddImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let (r, c, v) = add_with_carry(proc.registers[self.rn], self.imm32, false);
-        proc.registers[self.rd] = r;
+        proc.registers.set(self.rd, r);
         if self.set_flags {
-            proc.registers.apsr.set_nz(r).set_c(c).set_v(v);
+            proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
         }
         Ok(false)
     }
@@ -189,16 +189,16 @@ impl Instruction for AddReg {
     }
 
     fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc.registers[self.rn], shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(r);
             Ok(true)
         } else {
-            proc.registers[self.rd] = r;
+            proc.registers.set(self.rd, r);
             if self.set_flags {
-                proc.registers.apsr.set_nz(r).set_c(c).set_v(v);
+                proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
             }
             Ok(false)
         }
@@ -279,8 +279,15 @@ impl Instruction for AddSpPlusImm {
     }
 
     fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
-        let result = proc.add_with_carry(proc.sp(), self.imm32, self.set_flags);
-        proc.registers[self.rd] = result;
+        let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
+        proc.registers.set(self.rd, result);
+        if self.set_flags {
+            proc.registers
+                .xpsr
+                .set_nz(result)
+                .set_c(carry)
+                .set_v(overflow);
+        }
         Ok(false)
     }
 
@@ -358,17 +365,17 @@ impl Instruction for AddSpPlusReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
             Ok(true)
         } else {
-            proc.registers[self.rd] = result;
+            proc.registers.set(self.rd, result);
             if self.set_flags {
                 proc.registers
-                    .apsr
+                    .xpsr
                     .set_nz(result)
                     .set_c(carry)
                     .set_v(overflow);

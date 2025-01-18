@@ -84,7 +84,7 @@ impl Instruction for LdrhImm {
         let addr = if self.0.index { offset_addr } else { rn };
         let data = proc.u16le_at(addr)?;
         if self.0.wback {
-            proc.registers[self.0.rn] = offset_addr;
+            proc.registers.set(self.0.rn, offset_addr);
         }
         if self.0.rt.is_pc() {
             if addr & 3 == 0 {
@@ -93,7 +93,7 @@ impl Instruction for LdrhImm {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.0.rt] = data as u32
+            proc.registers.set(self.0.rt, data as u32)
         }
         Ok(false)
     }
@@ -147,7 +147,7 @@ impl Instruction for LdrhLit {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.rt] = data as u32
+            proc.registers.set(self.rt, data as u32)
         }
         Ok(false)
     }
@@ -206,11 +206,11 @@ impl Instruction for LdrhReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.apsr.c();
+        let carry_in = proc.registers.xpsr.c();
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let address = proc.registers[self.rn].wrapping_add(offset);
         let data = proc.u16le_at(address)?;
-        proc.registers[self.rt] = data as u32;
+        proc.registers.set(self.rt, data as u32);
         Ok(false)
     }
 

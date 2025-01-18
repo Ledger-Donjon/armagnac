@@ -182,7 +182,7 @@ impl InstructionDecoder {
         });
     }
 
-    /// Try to decode an [u32] into an [Instruction2].
+    /// Try to decode an [u32] into an [Instruction].
     ///
     /// # Arguments
     ///
@@ -282,10 +282,10 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::sub::SubSpMinusImm>();
         dec.insert::<instructions::ubfx::Ubfx>();
         dec.insert::<instructions::udiv::Udiv>();
-        dec.insert::<instructions::uxt::Uxtb>();
-        dec.insert::<instructions::uxt::Uxth>();
         dec.insert::<instructions::tst::TstImm>();
         dec.insert::<instructions::tst::TstReg>();
+        dec.insert::<instructions::uxtb::Uxtb>();
+        dec.insert::<instructions::uxth::Uxth>();
         Self(dec)
     }
 

@@ -40,7 +40,7 @@ impl Instruction for Clz {
             count += 1;
             x = x << 1 | 1;
         }
-        proc.registers[self.rd] = count;
+        proc.registers.set(self.rd, count);
         Ok(false)
     }
 

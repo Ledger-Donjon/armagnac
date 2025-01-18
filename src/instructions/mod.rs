@@ -50,7 +50,8 @@ pub mod sub;
 pub mod tst;
 pub mod ubfx;
 pub mod udiv;
-pub mod uxt;
+pub mod uxtb;
+pub mod uxth;
 
 /// All instructions must implement this trait in order to be integrated into the emulator.
 pub trait Instruction {

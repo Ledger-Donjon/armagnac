@@ -1,5 +1,7 @@
 //! Implements MRS instruction.
 
+use core::panic;
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
@@ -37,33 +39,42 @@ impl Instruction for Mrs {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let val = match self.sysm {
-            RegisterIndex::Apsr => todo!(),
-            RegisterIndex::Iapsr => todo!(),
-            RegisterIndex::Eapsr => todo!(),
-            RegisterIndex::Xpsr => todo!(),
-            RegisterIndex::Epsr => Some(0), // EPSR reads as 0 for MRS
-            RegisterIndex::Iepsr => todo!(),
-            RegisterIndex::Msp => {
-                if proc.is_privileged() {
-                    Some(proc.registers.msp)
-                } else {
-                    None
+        let mut rd = 0;
+        let sysm = self.sysm.index_sys();
+        match sysm >> 3 {
+            0b00000 => {
+                if sysm & 1 == 1 {
+                    rd |= proc.registers.xpsr.ipsr();
+                }
+                if sysm & 4 == 0 {
+                    rd |= proc.registers.xpsr.apsr() & 0xf8000000;
+                    // TODO DSP extension
                 }
             }
-            RegisterIndex::Psp => {
+            0b00001 => {
                 if proc.is_privileged() {
-                    Some(proc.registers.psp)
-                } else {
-                    None
+                    match sysm & 7 {
+                        0 => rd = proc.registers.msp,
+                        1 => rd = proc.registers.psp,
+                        _ => {}
+                    }
                 }
             }
-            RegisterIndex::Primask => todo!(),
+            0b00010 => match sysm & 7 {
+                0b000 => {
+                    if proc.is_privileged() {
+                        rd = proc.registers.primask.pm() as u32;
+                    }
+                }
+                0b001 => todo!(),
+                0b010 => todo!(),
+                0b011 => todo!(),
+                0b100 => todo!(),
+                _ => {}
+            },
             _ => panic!(),
-        };
-        if let Some(val) = val {
-            proc.registers[self.rd] = val;
         }
+        proc.registers.set(self.rd, rd);
         Ok(false)
     }
 

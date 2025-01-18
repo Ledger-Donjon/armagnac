@@ -39,7 +39,7 @@ impl Instruction for Rbit {
             b = b << 1 | a & 1;
             a >>= 1;
         }
-        proc.registers[self.rd] = b;
+        proc.registers.set(self.rd, b);
         Ok(false)
     }
 

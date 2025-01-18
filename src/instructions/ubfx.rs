@@ -45,7 +45,7 @@ impl Instruction for Ubfx {
         let msb = self.lsb + self.width_minus_1;
         debug_assert!(msb <= 31);
         let result = proc.registers[self.rn] << (31 - msb) >> (31 - msb + self.lsb);
-        proc.registers[self.rd] = result;
+        proc.registers.set(self.rd, result);
         Ok(false)
     }
 

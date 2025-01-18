@@ -3,12 +3,14 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{reg, unpredictable, ItState},
-    registers::RegisterIndex,
+    helpers::BitAccess,
+    instructions::{reg, unpredictable, DecodeHelper, ItState},
+    registers::{Mode, RegisterIndex},
 };
 
 use super::Instruction;
 
+/// MSR (register) instruction.
 pub struct Msr {
     /// Destination special register.
     sysm: RegisterIndex,
@@ -23,8 +25,8 @@ impl Instruction for Msr {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rn = reg(ins >> 16 & 0xf);
-        let sysm = ins & 0xff;
+        let rn = ins.reg4(16);
+        let sysm = ins.imm8(0);
         let good_sysm = match sysm {
             0..=3 | 5..=9 | 16..=20 => true,
             _ => false,
@@ -56,6 +58,17 @@ impl Instruction for Msr {
                 }
             }
             RegisterIndex::Primask => todo!(),
+            RegisterIndex::Basepri => todo!(),
+            RegisterIndex::BasepriMask => todo!(),
+            RegisterIndex::FaultMask => todo!(),
+            RegisterIndex::Control => {
+                if proc.is_privileged() {
+                    proc.registers.control.set_privileged_bit(val.bit(0));
+                    if proc.registers.mode != Mode::Handler {
+                        proc.registers.control.set_spsel(val.bit(1))
+                    }
+                }
+            }
             _ => panic!(),
         }
         Ok(false)

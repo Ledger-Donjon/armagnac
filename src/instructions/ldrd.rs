@@ -61,10 +61,12 @@ impl Instruction for LdrdImm {
         let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.registers[self.rt] = proc.u32le_at(address)?;
-        proc.registers[self.rt2] = proc.u32le_at(address.wrapping_add(4))?;
+        let value = proc.u32le_at(address)?;
+        proc.registers.set(self.rt, value);
+        let value = proc.u32le_at(address.wrapping_add(4))?;
+        proc.registers.set(self.rt2, value);
         if self.wback {
-            proc.registers[self.rn] = offset_addr;
+            proc.registers.set(self.rn, offset_addr);
         }
         Ok(false)
     }
@@ -123,8 +125,10 @@ impl Instruction for LdrdLit {
             return Err(RunError::InstructionUnpredictable);
         }
         let address = proc.pc().wrapping_add_or_sub(self.imm32, self.add);
-        proc.registers[self.rt] = proc.u32le_at(address)?;
-        proc.registers[self.rt2] = proc.u32le_at(address.wrapping_add(4))?;
+        let value = proc.u32le_at(address)?;
+        proc.registers.set(self.rt, value);
+        let value = proc.u32le_at(address.wrapping_add(4))?;
+        proc.registers.set(self.rt2, value);
         Ok(false)
     }
 

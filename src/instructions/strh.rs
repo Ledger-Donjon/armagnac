@@ -86,7 +86,7 @@ impl Instruction for StrhImm {
         let address = if self.index { offset_addr } else { rn };
         proc.set_u16le_at(address, proc.registers[self.rt] as u16)?;
         if self.wback {
-            proc.registers[self.rn] = offset_addr
+            proc.registers.set(self.rn, offset_addr)
         }
         Ok(false)
     }

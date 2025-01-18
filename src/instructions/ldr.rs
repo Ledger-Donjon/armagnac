@@ -12,7 +12,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{other, reg, undefined, unpredictable, Instruction};
+use super::{other, reg, undefined, unpredictable, DecodeHelper, Instruction};
 
 pub struct LdrImm {
     /// Base register.
@@ -101,7 +101,7 @@ impl Instruction for LdrImm {
         let addr = if self.index { offset_addr } else { rn };
         let data = proc.u32le_at(addr)?;
         if self.wback {
-            proc.registers[self.rn] = offset_addr;
+            proc.registers.set(self.rn, offset_addr);
         }
         if self.rt.is_pc() {
             if addr & 3 == 0 {
@@ -110,7 +110,7 @@ impl Instruction for LdrImm {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.rt] = data
+            proc.registers.set(self.rt, data)
         }
         Ok(false)
     }
@@ -186,7 +186,7 @@ impl Instruction for LdrLit {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.rt] = data
+            proc.registers.set(self.rt, data)
         }
         Ok(false)
     }
@@ -197,7 +197,7 @@ impl Instruction for LdrLit {
 
     fn args(&self, pc: u32) -> String {
         let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
-        format!("{}, 0x{:0x}", self.rt, address)
+        format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
     }
 }
 
@@ -227,18 +227,18 @@ impl Instruction for LdrReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rt: reg(ins & 3),
-                rn: reg(ins >> 3 & 3),
-                rm: reg(ins >> 6 & 3),
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
+                rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 index: true,
                 add: true,
                 wback: false,
             },
             2 => {
-                let rt = reg(ins >> 12 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rt = ins.reg4(12);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
                 other(rn.is_pc())?; // LDR (literal)
                 unpredictable(rm.is_sp_or_pc())?;
                 unpredictable(rt.is_pc() && state.in_it_block_not_last())?;
@@ -257,7 +257,7 @@ impl Instruction for LdrReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.apsr.c());
+        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
         let base = proc.registers[self.rn];
         let offset_addr = if self.add {
             base.wrapping_add(offset)
@@ -267,7 +267,7 @@ impl Instruction for LdrReg {
         let addr = if self.index { offset_addr } else { base };
         let data = proc.u32le_at(addr)?;
         if self.wback {
-            proc.registers[self.rn] = offset_addr;
+            proc.registers.set(self.rn, offset_addr);
         }
         if self.rt.is_pc() {
             if offset_addr & 3 == 0 {
@@ -276,7 +276,7 @@ impl Instruction for LdrReg {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
-            proc.registers[self.rt] = data
+            proc.registers.set(self.rt, data)
         }
         Ok(false)
     }

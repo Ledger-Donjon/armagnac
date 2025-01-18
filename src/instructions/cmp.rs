@@ -1,7 +1,7 @@
 //! Implements CMP (immediate) and CMP (register) instructions.
 
 use crate::{
-    arith::{thumb_expand_imm, Shift},
+    arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     it_state::ItState,
@@ -39,7 +39,12 @@ impl Instruction for CmpImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
-        proc.add_with_carry(rn, !self.imm32, true);
+        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], !self.imm32, true);
+        proc.registers
+            .xpsr
+            .set_nz(result)
+            .set_c(carry)
+            .set_v(overflow);
         Ok(false)
     }
 
@@ -106,8 +111,14 @@ impl Instruction for CmpReg {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
-        proc.add_with_carry(rn, !(proc.registers[self.rm]), true);
+        let carry_in = proc.registers.xpsr.c();
+        let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
+        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], !shifted, true);
+        proc.registers
+            .xpsr
+            .set_nz(result)
+            .set_c(carry)
+            .set_v(overflow);
         Ok(false)
     }
 

@@ -38,7 +38,7 @@ impl Instruction for Udiv {
             unimplemented!("Division by zero handling")
         }
         let result = proc.registers[self.rn] / divisor;
-        proc.registers[self.rd] = result;
+        proc.registers.set(self.rd, result);
         Ok(false)
     }
 

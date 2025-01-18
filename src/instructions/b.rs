@@ -44,13 +44,12 @@ impl Instruction for B {
                 }
             }
             3 => {
-                other(ins >> 22 & 7 == 7)?;
+                other(ins >> 23 & 7 == 7)?;
                 // cond cannot be 15 because of the previous test, so the following conversion
                 // cannot fail.
                 let cond = Condition::try_from(ins >> 22 & 0x0f).unwrap();
                 other(cond == Condition::Always)?; // Can be ISB for instance
                                                    // I think there is an error in ARM spec on J1 and J2, to be checked.
-                todo!();
                 let imm21 = (ins >> 26 & 1) << 20
                     | (ins >> 11 & 1) << 19
                     | (ins >> 13 & 1) << 18

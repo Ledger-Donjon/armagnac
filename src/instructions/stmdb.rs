@@ -53,7 +53,7 @@ impl Instruction for Stmdb {
             proc.set_u32le_at(addr, proc.registers[reg])?;
         }
         if self.wback {
-            proc.registers[self.rn] = addr;
+            proc.registers.set(self.rn, addr);
         }
         Ok(false)
     }

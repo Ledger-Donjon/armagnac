@@ -72,9 +72,9 @@ impl Instruction for LdrbImm {
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
         let data = proc.u8_at(addr)?;
-        proc.registers[self.0.rt] = data as u32;
+        proc.registers.set(self.0.rt, data as u32);
         if self.0.wback {
-            proc.registers[self.0.rn] = offset_addr;
+            proc.registers.set(self.0.rn, offset_addr);
         }
         Ok(false)
     }

@@ -1,7 +1,7 @@
 use core::panic;
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Index, IndexMut},
+    ops::Index,
 };
 
 use crate::{condition::Condition, helpers::BitAccess};
@@ -106,6 +106,26 @@ impl RegisterIndex {
             Self::Lr => Some(14),
             Self::Pc => Some(15),
             _ => None,
+        }
+    }
+
+    pub fn index_sys(&self) -> u32 {
+        match self {
+            RegisterIndex::Apsr => 0,
+            RegisterIndex::Iapsr => 1,
+            RegisterIndex::Eapsr => 2,
+            RegisterIndex::Xpsr => 3,
+            RegisterIndex::Ipsr => 5,
+            RegisterIndex::Epsr => 6,
+            RegisterIndex::Iepsr => 7,
+            RegisterIndex::Msp => 8,
+            RegisterIndex::Psp => 9,
+            RegisterIndex::Primask => 16,
+            RegisterIndex::Basepri => 17,
+            RegisterIndex::BasepriMask => 18,
+            RegisterIndex::FaultMask => 19,
+            RegisterIndex::Control => 20,
+            _ => panic!("not a sys register"),
         }
     }
 
@@ -222,12 +242,18 @@ impl MainRegisterList {
         self.contains(&RegisterIndex::Pc)
     }
 
+    /// Iterates over the registers present in the list.
     pub fn iter(&self) -> MainRegisterListIterator {
         MainRegisterListIterator {
             list: self.0,
             forward: 0,
             backward: 15,
         }
+    }
+
+    /// Returns the lowest register in the list, or `None` if the list is empty.
+    pub fn lowest(&self) -> Option<RegisterIndex> {
+        self.iter().next()
     }
 }
 
@@ -292,13 +318,62 @@ impl DoubleEndedIterator for MainRegisterListIterator {
     }
 }
 
-/// Application Program Status Register
+/// Program Status Register.
+///
+/// Regroups APSR, IPSR and EPSR together.
 #[derive(Debug)]
-pub struct ApplicationProgramStatusRegister(u32);
+pub struct ProgramStatusRegister(u32);
 
-impl ApplicationProgramStatusRegister {
+impl ProgramStatusRegister {
+    /// APSR sub register bits mask.
+    const APSR_MASK: u32 = 0xf80f0000;
+    /// IPSR sub register bits mask.
+    const IPSR_MASK: u32 = 0x000001ff;
+    /// EPSR sub register bits mask.
+    const EPSR_MASK: u32 = 0x0700fc00;
+
     pub fn new() -> Self {
-        ApplicationProgramStatusRegister(0)
+        ProgramStatusRegister(0)
+    }
+
+    /// Returns XPSR register value.
+    pub fn get(&self) -> u32 {
+        self.0
+    }
+
+    /// Sets register value, except reserved and unused bits.
+    pub fn set(&mut self, value: u32) {
+        self.0 = value & 0xff0ffdff;
+    }
+
+    /// Returns APSR register value.
+    pub fn apsr(&self) -> u32 {
+        self.0 & Self::APSR_MASK
+    }
+
+    /// Sets APSR register value.
+    pub fn set_apsr(&mut self, value: u32) {
+        self.0 = self.0 & !Self::APSR_MASK | value & Self::APSR_MASK;
+    }
+
+    /// Returns IPSR register value.
+    pub fn ipsr(&self) -> u32 {
+        self.0 & Self::IPSR_MASK
+    }
+
+    /// Sets IPSR register value.
+    pub fn set_ipsr(&mut self, value: u32) {
+        self.0 = self.0 & !Self::IPSR_MASK | value & Self::IPSR_MASK;
+    }
+
+    /// Returns EPSR register value.
+    pub fn epsr(&self) -> u32 {
+        self.0 & Self::EPSR_MASK
+    }
+
+    /// Sets EPSR register value.
+    pub fn set_epsr(&mut self, value: u32) {
+        self.0 = self.0 & !Self::EPSR_MASK | value & Self::EPSR_MASK;
     }
 
     pub fn n(&self) -> bool {
@@ -362,6 +437,41 @@ impl ApplicationProgramStatusRegister {
         self.set_n(v >> 31 != 0).set_z(v == 0)
     }
 
+    pub fn ici_it(&self) -> u8 {
+        ((self.0 & 0x06000000) >> 19 | (self.0 >> 10 & 0x3f)) as u8
+    }
+
+    pub fn set_ici_it(&mut self, value: u8) -> &mut Self {
+        let value = value as u32;
+        self.0 = self.0 & 0xf9ff03ff | (value & 0xc0) << 19 | (value & 0x3f) << 10;
+        self
+    }
+
+    pub fn t(&self) -> bool {
+        self.0.bit(24)
+    }
+
+    pub fn set_t(&mut self, value: bool) -> &mut Self {
+        self.0.set_bit(24, value);
+        self
+    }
+
+    /// Returns the exception number of the IPSR register.
+    pub fn exception_number(&self) -> u16 {
+        (self.0 & 0x1ff) as u16
+    }
+
+    /// Sets the exception number in the IPSR register.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - Exception number, on 9 bits.
+    pub fn set_exception_number(&mut self, number: u16) -> &mut Self {
+        debug_assert!(number <= 0x1ff);
+        self.set_ipsr(number as u32);
+        self
+    }
+
     /// Returns true if execution condition is met regarding current flags in APSR.
     ///
     /// # Arguments
@@ -388,23 +498,6 @@ impl ApplicationProgramStatusRegister {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct ExecutionProgramStatusRegister(u32);
-
-impl ExecutionProgramStatusRegister {
-    pub fn new() -> Self {
-        Self(0)
-    }
-
-    pub fn t(&self) -> bool {
-        self.0.bit(24)
-    }
-
-    pub fn set_t(&mut self, value: bool) {
-        self.0.set_bit(24, value)
-    }
-}
-
 /// Base struct for PRIMASK and FAULTMASK registers
 #[derive(Debug)]
 pub struct MaskRegister(u32);
@@ -414,7 +507,7 @@ impl MaskRegister {
         Self(0)
     }
 
-    /// Returns priority mask bit
+    /// Returns priority mask bit (bit 0).
     pub fn pm(&self) -> bool {
         self.0.bit(0)
     }
@@ -444,26 +537,35 @@ impl ControlRegister {
         self.0.bit(0)
     }
 
-    /// Change the privileged thread bit
+    /// Change the privileged thread bit.
     ///
     /// # Arguments
     ///
-    /// * `value` - false to enable privileged thread mode
+    /// * `value` - false to enable privileged thread mode.
     pub fn set_privileged_bit(&mut self, value: bool) {
         self.0.set_bit(0, value)
     }
 
     /// Returns false if MSP is used, true if PSP is used (in thread mode).
-    pub fn stack_bit(&self) -> bool {
+    pub fn spsel(&self) -> bool {
         self.0.bit(1)
     }
 
     /// Change the stack selection bit
     ///
     /// * `value` - false to select MSP, true to select PSP (in thread mode).
-    pub fn set_stack_bit(&mut self, value: bool) {
+    pub fn set_spsel(&mut self, value: bool) {
         self.0.set_bit(1, value)
     }
+}
+
+/// Processor execution mode.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    /// Fundamental mode for application execution. Selected on reset.
+    Thread,
+    /// Mode for exceptions execution.
+    Handler,
 }
 
 #[derive(Debug)]
@@ -485,14 +587,14 @@ pub struct CoreRegisters {
     pub pc: u32,
     pub msp: u32,
     pub psp: u32,
-    pub apsr: ApplicationProgramStatusRegister,
-    pub epsr: ExecutionProgramStatusRegister,
+    /// Groups APSR, IPSR and EPSR registers.
+    pub xpsr: ProgramStatusRegister,
     pub primask: MaskRegister,
     pub faultmask: MaskRegister,
     pub control: ControlRegister,
     /// Current execution mode
     /// Used in particular to return MSP or PSP when SP is requested
-    pub handler_mode: bool,
+    pub mode: Mode,
 }
 
 impl CoreRegisters {
@@ -515,25 +617,25 @@ impl CoreRegisters {
             pc: 0,
             msp: 0,
             psp: 0,
-            apsr: ApplicationProgramStatusRegister::new(),
-            epsr: ExecutionProgramStatusRegister::new(),
+            xpsr: ProgramStatusRegister::new(),
             primask: MaskRegister::new(),
             faultmask: MaskRegister::new(),
             control: ControlRegister::new(),
-            handler_mode: false,
+            mode: Mode::Thread,
         }
     }
 
-    /// Returns `RegisterIndex::Msp` or `RegisterIndex::Psp` depending on current execution mode
+    /// Returns [`RegisterIndex::Msp`] or [`RegisterIndex::Psp`] depending on current execution mode
     /// and control register value.
     pub fn translate_sp(&self) -> RegisterIndex {
-        if self.handler_mode {
-            RegisterIndex::Msp
-        } else {
-            if self.control.stack_bit() {
-                RegisterIndex::Psp
-            } else {
-                RegisterIndex::Msp
+        match self.mode {
+            Mode::Handler => RegisterIndex::Msp,
+            Mode::Thread => {
+                if self.control.spsel() {
+                    RegisterIndex::Psp
+                } else {
+                    RegisterIndex::Msp
+                }
             }
         }
     }
@@ -543,8 +645,56 @@ impl CoreRegisters {
     }
 
     pub fn sp_mut(&mut self) -> &mut u32 {
-        let sp = self.translate_sp();
-        &mut self[sp]
+        match self.translate_sp() {
+            RegisterIndex::Msp => &mut self.msp,
+            RegisterIndex::Psp => &mut self.psp,
+            _ => panic!(),
+        }
+    }
+
+    /// Sets a register value
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - Index of the register to be modified.
+    /// * `value` - New register value.
+    pub fn set(&mut self, index: RegisterIndex, value: u32) {
+        match index {
+            RegisterIndex::R0 => self.r0 = value,
+            RegisterIndex::R1 => self.r1 = value,
+            RegisterIndex::R2 => self.r2 = value,
+            RegisterIndex::R3 => self.r3 = value,
+            RegisterIndex::R4 => self.r4 = value,
+            RegisterIndex::R5 => self.r5 = value,
+            RegisterIndex::R6 => self.r6 = value,
+            RegisterIndex::R7 => self.r7 = value,
+            RegisterIndex::R8 => self.r8 = value,
+            RegisterIndex::R9 => self.r9 = value,
+            RegisterIndex::R10 => self.r10 = value,
+            RegisterIndex::R11 => self.r11 = value,
+            RegisterIndex::R12 => self.r12 = value,
+            RegisterIndex::Sp => match self.translate_sp() {
+                RegisterIndex::Msp => self.msp = value,
+                RegisterIndex::Psp => self.psp = value,
+                _ => panic!(),
+            },
+            RegisterIndex::Lr => self.lr = value,
+            RegisterIndex::Pc => self.pc = value,
+            RegisterIndex::Apsr => self.xpsr.set_apsr(value),
+            RegisterIndex::Iapsr => todo!(),
+            RegisterIndex::Eapsr => todo!(),
+            RegisterIndex::Xpsr => self.xpsr.set(value),
+            RegisterIndex::Ipsr => self.xpsr.set_ipsr(value),
+            RegisterIndex::Epsr => self.xpsr.set_epsr(value),
+            RegisterIndex::Iepsr => todo!(),
+            RegisterIndex::Msp => self.msp = value,
+            RegisterIndex::Psp => self.psp = value,
+            RegisterIndex::Primask => self.primask.0 = value,
+            RegisterIndex::Basepri => todo!(),
+            RegisterIndex::BasepriMask => todo!(),
+            RegisterIndex::FaultMask => self.faultmask.0 = value,
+            RegisterIndex::Control => self.control.0 = value,
+        }
     }
 }
 
@@ -553,12 +703,6 @@ impl Index<u32> for CoreRegisters {
 
     fn index(&self, index: u32) -> &Self::Output {
         &self[RegisterIndex::new_main(index)]
-    }
-}
-
-impl IndexMut<u32> for CoreRegisters {
-    fn index_mut(&mut self, index: u32) -> &mut Self::Output {
-        &mut self[RegisterIndex::new_main(index)]
     }
 }
 
@@ -587,7 +731,7 @@ impl Index<RegisterIndex> for CoreRegisters {
             },
             RegisterIndex::Lr => &self.lr,
             RegisterIndex::Pc => &self.pc,
-            RegisterIndex::Apsr => &self.apsr.0,
+            RegisterIndex::Apsr => &self.xpsr.0,
             RegisterIndex::Iapsr => todo!(),
             RegisterIndex::Eapsr => todo!(),
             RegisterIndex::Xpsr => todo!(),
@@ -601,47 +745,6 @@ impl Index<RegisterIndex> for CoreRegisters {
             RegisterIndex::BasepriMask => todo!(),
             RegisterIndex::FaultMask => &self.faultmask.0,
             RegisterIndex::Control => &self.control.0,
-        }
-    }
-}
-
-impl IndexMut<RegisterIndex> for CoreRegisters {
-    fn index_mut(&mut self, index: RegisterIndex) -> &mut Self::Output {
-        match index {
-            RegisterIndex::R0 => &mut self.r0,
-            RegisterIndex::R1 => &mut self.r1,
-            RegisterIndex::R2 => &mut self.r2,
-            RegisterIndex::R3 => &mut self.r3,
-            RegisterIndex::R4 => &mut self.r4,
-            RegisterIndex::R5 => &mut self.r5,
-            RegisterIndex::R6 => &mut self.r6,
-            RegisterIndex::R7 => &mut self.r7,
-            RegisterIndex::R8 => &mut self.r8,
-            RegisterIndex::R9 => &mut self.r9,
-            RegisterIndex::R10 => &mut self.r10,
-            RegisterIndex::R11 => &mut self.r11,
-            RegisterIndex::R12 => &mut self.r12,
-            RegisterIndex::Sp => match self.translate_sp() {
-                RegisterIndex::Msp => &mut self.msp,
-                RegisterIndex::Psp => &mut self.psp,
-                _ => panic!(),
-            },
-            RegisterIndex::Lr => &mut self.lr,
-            RegisterIndex::Pc => &mut self.pc,
-            RegisterIndex::Apsr => &mut self.apsr.0,
-            RegisterIndex::Iapsr => todo!(),
-            RegisterIndex::Eapsr => todo!(),
-            RegisterIndex::Xpsr => todo!(),
-            RegisterIndex::Ipsr => todo!(),
-            RegisterIndex::Epsr => todo!(),
-            RegisterIndex::Iepsr => todo!(),
-            RegisterIndex::Msp => &mut self.msp,
-            RegisterIndex::Psp => &mut self.psp,
-            RegisterIndex::Primask => &mut self.primask.0,
-            RegisterIndex::Basepri => todo!(),
-            RegisterIndex::BasepriMask => todo!(),
-            RegisterIndex::FaultMask => &mut self.faultmask.0,
-            RegisterIndex::Control => &mut self.control.0,
         }
     }
 }

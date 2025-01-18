@@ -50,6 +50,6 @@ impl Instruction for Cbnz {
     fn args(&self, pc: u32) -> String {
         // PC value of a Thumb instruction is it's address + 4
         let label = pc.wrapping_add(self.imm32).wrapping_add(4);
-        format!("0x{:x}", label)
+        format!("{}, 0x{:x}", self.rn, label)
     }
 }

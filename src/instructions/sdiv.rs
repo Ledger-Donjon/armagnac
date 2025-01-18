@@ -40,7 +40,7 @@ impl Instruction for Sdiv {
         } else {
             (proc.registers[self.rn] as i32 / rm as i32) as u32
         };
-        proc.registers[self.rd] = result;
+        proc.registers.set(self.rd, result);
         Ok(false)
     }
 
