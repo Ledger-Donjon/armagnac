@@ -48,7 +48,7 @@ impl Instruction for Sdiv {
         "sdiv".into()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
     }
 }

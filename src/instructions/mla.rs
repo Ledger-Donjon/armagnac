@@ -8,7 +8,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{add, Instruction};
+use super::Instruction;
 
 /// MLA instruction.
 pub struct Mla {

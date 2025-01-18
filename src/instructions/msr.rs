@@ -4,7 +4,7 @@ use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    instructions::{reg, unpredictable, DecodeHelper, ItState},
+    instructions::{unpredictable, DecodeHelper, ItState},
     registers::{Mode, RegisterIndex},
 };
 

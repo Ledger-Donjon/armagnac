@@ -39,7 +39,7 @@ impl Instruction for CmpImm {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
-        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], !self.imm32, true);
+        let (result, carry, overflow) = add_with_carry(rn, !self.imm32, true);
         proc.registers
             .xpsr
             .set_nz(result)

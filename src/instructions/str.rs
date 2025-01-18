@@ -133,7 +133,7 @@ impl Instruction for StrReg {
         &["0101000xxxxxxxxx", "111110000100xxxxxxxx000000xxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
                 rt: ins.reg3(0),
@@ -163,7 +163,7 @@ impl Instruction for StrReg {
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
         let data = proc[self.rt];
-        proc.set_u32le_at(address, data);
+        proc.set_u32le_at(address, data)?;
         Ok(false)
     }
 
@@ -171,7 +171,7 @@ impl Instruction for StrReg {
         "str".into()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         format!(
             "{}, [{}, {}{}]",
             self.rt,
