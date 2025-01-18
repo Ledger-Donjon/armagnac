@@ -87,3 +87,72 @@ impl Instruction for LdrbImm {
         self.0.args(pc)
     }
 }
+
+/// LDRB (register) instruction.
+pub struct LdrbReg {
+    /// Destination register.
+    rt: RegisterIndex,
+    /// Base register.
+    rn: RegisterIndex,
+    /// Offset register.
+    rm: RegisterIndex,
+    /// Shift to be applied to Rn.
+    shift: Shift,
+}
+
+impl Instruction for LdrbReg {
+    fn patterns() -> &'static [&'static str] {
+        &["0101110xxxxxxxxx", "111110000001xxxxxxxx000000xxxxxx"]
+    }
+
+    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match tn {
+            1 => Self {
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
+                rm: ins.reg3(6),
+                shift: Shift::lsl(0),
+            },
+            2 => {
+                let rm = ins.reg4(0);
+                let rt = ins.reg4(12);
+                let rn = ins.reg4(16);
+                other(rn.is_pc())?; // LDR (literal)
+                unpredictable(rm.is_sp_or_pc())?;
+                unpredictable(rt.is_pc() && state.in_it_block_not_last())?;
+                Self {
+                    rt,
+                    rn,
+                    rm,
+                    shift: Shift::lsl(ins.imm2(4)),
+                }
+            }
+            _ => panic!(),
+        })
+    }
+
+    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+        // From the specification, INDEX is always true, ADD is always true and WBACK always false,
+        // so the implementation has been simplified.
+        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
+        let base = proc.registers[self.rn];
+        let addr = base.wrapping_add(offset);
+        let data = proc.u8_at(addr)?;
+        proc.registers.set(self.rt, data as u32);
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        "ldrb".into()
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!(
+            "{}, [{}, {}{}]",
+            self.rt,
+            self.rn,
+            self.rm,
+            self.shift.arg_string()
+        )
+    }
+}
