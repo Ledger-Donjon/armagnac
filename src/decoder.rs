@@ -283,6 +283,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::sub::SubSpMinusImm>();
         dec.insert::<instructions::ubfx::Ubfx>();
         dec.insert::<instructions::udiv::Udiv>();
+        dec.insert::<instructions::tbb::Tbb>();
         dec.insert::<instructions::tst::TstImm>();
         dec.insert::<instructions::tst::TstReg>();
         dec.insert::<instructions::uxtb::Uxtb>();
