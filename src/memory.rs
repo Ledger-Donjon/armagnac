@@ -14,7 +14,12 @@ pub enum MemoryAccessError {
     InvalidAddress,
     InvalidSize,
     InvalidValue,
+    InvalidAlignment,
     ReadOnly,
+    Illegal,
+    /// Access denied because of unsufficient privileged.
+    PrivilegedOnly,
+    HardwareError,
 }
 
 /// Extra data passed to peripherals when performing read, write or update operations. For
@@ -28,13 +33,16 @@ pub struct Env {
     pub cycles: u64,
     /// Actions
     pub actions: Vec<MemoryOpAction>,
+    /// True if access is privileged.
+    pub privileged: bool,
 }
 
 impl Env {
-    pub fn new(cycles: u64) -> Self {
+    pub fn new(cycles: u64, privileged: bool) -> Self {
         Self {
             cycles,
             actions: Vec::new(),
+            privileged,
         }
     }
 }
