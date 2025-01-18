@@ -133,16 +133,24 @@ impl<T: RegistersMemoryInterface> MemoryInterface for T {
     }
 }
 
-/// Mapped RAM memory
+/// RAM memory.
 pub struct RamMemory {
     pub data: Vec<u8>,
-    write: bool,
+    pub write: bool,
 }
 
 impl RamMemory {
-    pub fn new_zero(size: u32) -> RamMemory {
+    pub fn new_zero(size: usize) -> RamMemory {
         let mut v = Vec::new();
-        v.resize(size as usize, 0);
+        v.resize(size, 0);
+        RamMemory {
+            data: v,
+            write: true,
+        }
+    }
+
+    pub fn new_from_value(size: usize, value: u8) -> RamMemory {
+        let v = repeat_n(value, size).collect();
         RamMemory {
             data: v,
             write: true,
@@ -154,6 +162,13 @@ impl RamMemory {
         RamMemory {
             data: Vec::from(data),
             write: true,
+        }
+    }
+
+    pub fn read_only(self) -> Self {
+        Self {
+            write: false,
+            ..self
         }
     }
 }

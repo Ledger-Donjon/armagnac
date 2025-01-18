@@ -201,7 +201,7 @@ impl Arm7Processor {
     /// * `address` - RAM memory start address.
     /// * `size` - RAM memory size.
     pub fn map_ram(&mut self, address: u32, size: u32) -> Result<Rc<RefCell<RamMemory>>, ()> {
-        let ram = Rc::new(RefCell::new(RamMemory::new_zero(size)));
+        let ram = Rc::new(RefCell::new(RamMemory::new_zero(size as usize)));
         self.map_iface(address, ram.clone())?;
         Ok(ram)
     }
