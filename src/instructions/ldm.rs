@@ -62,7 +62,7 @@ impl Instruction for Ldm {
         for reg in self.registers.iter() {
             let value = proc.u32le_at(address)?;
             if reg.is_pc() {
-                proc.bx_write_pc(value);
+                proc.bx_write_pc(value)?;
                 jump = true;
             } else {
                 proc.registers.set(reg, value);
