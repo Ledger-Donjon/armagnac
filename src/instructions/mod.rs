@@ -51,6 +51,7 @@ pub mod str;
 pub mod strb;
 pub mod strh;
 pub mod sub;
+pub mod svc;
 pub mod tbb;
 pub mod tst;
 pub mod ubfx;
