@@ -27,7 +27,6 @@ impl ItState {
             (0b1110, 0b0001 | 0b0010 | 0b0100 | 0b1000) => Ok(Self(value)),
             (0b1110, _) => Err(()),
             (_, _) => Ok(Self(value)),
-            _ => panic!(),
         }
     }
 
@@ -166,7 +165,7 @@ mod tests {
 
     #[test]
     fn test_to_then_else() {
-        let mut state = ItState::try_new(0b10101011).unwrap();
+        let state = ItState::try_new(0b10101011).unwrap();
         assert_eq!(
             state.to_then_else(),
             vec![ItThenElse::Else, ItThenElse::Then, ItThenElse::Else]

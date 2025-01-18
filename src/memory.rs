@@ -97,7 +97,7 @@ pub trait RegistersMemoryInterface {
     fn read32(&mut self, reg: Self::Register, env: &mut Env) -> MemoryReadResult<u32>;
     fn write32(&mut self, reg: Self::Register, value: u32, env: &mut Env) -> MemoryWriteResult;
     fn size(&self) -> u32;
-    fn update(&mut self, env: &mut Env) {}
+    fn update(&mut self, _env: &mut Env) {}
 }
 
 impl<T: RegistersMemoryInterface> MemoryInterface for T {
@@ -138,8 +138,7 @@ impl<T: RegistersMemoryInterface> MemoryInterface for T {
             3 => read & 0xffffff00 | value as u32,
             _ => panic!(),
         };
-        let mut write = self.write_u32le(address_aligned, value, env)?;
-        Ok(())
+        self.write_u32le(address_aligned, value, env)
     }
 
     fn size(&self) -> u32 {
@@ -196,7 +195,7 @@ impl MemoryInterface for RamMemory {
         self.data.len() as u32
     }
 
-    fn read_u8(&mut self, address: u32, env: &mut Env) -> MemoryReadResult<u8> {
+    fn read_u8(&mut self, address: u32, _env: &mut Env) -> MemoryReadResult<u8> {
         if let Some(val) = self.data.get(address as usize) {
             Ok(*val)
         } else {
@@ -204,7 +203,7 @@ impl MemoryInterface for RamMemory {
         }
     }
 
-    fn write_u8(&mut self, address: u32, value: u8, env: &mut Env) -> MemoryWriteResult {
+    fn write_u8(&mut self, address: u32, value: u8, _env: &mut Env) -> MemoryWriteResult {
         if self.write {
             if let Some(dest) = self.data.get_mut(address as usize) {
                 *dest = value;

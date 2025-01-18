@@ -548,7 +548,7 @@ impl Arm7Processor {
 
             // TODO: handle priorities
             if let Some(irq) = self.interrupt_requests.pop_first() {
-                self.exception_entry(irq);
+                self.exception_entry(irq)?;
             }
 
             Ok(Event::Instruction { ins })

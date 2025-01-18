@@ -1,7 +1,7 @@
 //! Implements EOR (immediate) and EOR (register) instructions.
 
 use crate::{
-    arith::{shift_c, thumb_expand_imm_c, thumb_expand_imm_optc, Shift},
+    arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
