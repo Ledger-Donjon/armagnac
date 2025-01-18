@@ -220,6 +220,8 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::add::AddSpPlusReg>();
         dec.insert::<instructions::and::AndImm>();
         dec.insert::<instructions::and::AndReg>();
+        dec.insert::<instructions::asr::AsrImm>();
+        dec.insert::<instructions::asr::AsrReg>();
         dec.insert::<instructions::b::B>();
         dec.insert::<instructions::bic::BicImm>();
         dec.insert::<instructions::bic::BicReg>();

@@ -8,6 +8,7 @@ use crate::{
 
 pub mod add;
 pub mod and;
+pub mod asr;
 pub mod b;
 pub mod bic;
 pub mod bl;

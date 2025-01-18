@@ -30,6 +30,15 @@ pub fn add_with_carry(x: u32, y: u32, carry_in: bool) -> (u32, bool, bool) {
     (result, carry_out, overflow)
 }
 
+/// Returns the arithmetic shift right of `value` and the carry output.
+pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
+    assert!((shift > 0) && (shift < 32));
+    (
+        ((value as i32) >> shift) as u32,
+        value & (1 << shift - 1) != 0,
+    )
+}
+
 /// Returns left shifted value and carry out.
 ///
 /// # Arguments
@@ -162,6 +171,13 @@ impl Shift {
         }
     }
 
+    pub fn asr(n: u32) -> Self {
+        Self {
+            t: ShiftType::Asr,
+            n,
+        }
+    }
+
     pub fn lsl(n: u32) -> Self {
         debug_assert!(n < 32);
         Self {
@@ -199,7 +215,7 @@ pub fn shift_c(value: u32, shift: Shift, carry_in: bool) -> (u32, bool) {
         match shift.t {
             ShiftType::Lsl => lsl_c(value, shift.n),
             ShiftType::Lsr => lsr_c(value, shift.n),
-            ShiftType::Asr => todo!(),
+            ShiftType::Asr => asr_c(value, shift.n),
             ShiftType::Ror => ror_c(value, shift.n),
             ShiftType::Rrx => todo!(),
         }
@@ -269,7 +285,7 @@ pub fn thumb_expand_imm_c(imm12: u32, carry_in: bool) -> Result<(u32, bool), Ari
 
 #[cfg(test)]
 mod tests {
-    use crate::arith::{add_with_carry, lsl_c, lsr_c, ror, ror_c, sign_extend, Shift};
+    use crate::arith::{add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, sign_extend, Shift};
 
     use super::{shift_c, ShiftType};
 
@@ -286,6 +302,25 @@ mod tests {
             add_with_carry(0x7fffffff, 0, true),
             (0x80000000, false, true)
         );
+    }
+
+    #[test]
+    fn test_asr_c() {
+        for i in 1..=31 {
+            let magic = 0x33e8628f;
+            assert_eq!(asr_c(magic, i), (magic >> i, magic & (1 << (i - 1)) != 0));
+        }
+        for i in 1..=31 {
+            let magic = 0xb3e8628f;
+            let mask = u32::MAX << (32 - i);
+            assert_eq!(
+                asr_c(magic, i),
+                (magic >> i | mask, magic & (1 << (i - 1)) != 0)
+            );
+        }
+        assert_eq!(asr_c(0x80000000, 8), (0xff800000, false));
+        assert_eq!(asr_c(0x80000000, 31), (0xffffffff, false));
+        assert_eq!(asr_c(0xc0000000, 31), (0xffffffff, true));
     }
 
     #[test]
