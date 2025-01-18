@@ -154,14 +154,36 @@ impl Arm7Processor {
         )
     }
 
+    /// Maps an interface to the memory space. Returns an error if the new interface size overflows
+    /// the address space, or if the new interface memory region intersects with an already mapped
+    /// memory region.
     pub fn map_iface(
         &mut self,
         address: u32,
         iface: Rc<RefCell<dyn MemoryInterface>>,
     ) -> Result<(), ()> {
-        // TODO check overlap
-        // TODO check len ovf
         let size = iface.borrow().size();
+
+        // Check for size overflow
+        if address.checked_add(size).is_none() {
+            return Err(());
+        }
+
+        // Check overlap with another mapping
+        if self
+            .memory_mappings
+            .0
+            .iter()
+            .find(|m| {
+                let a = m.address.max(address);
+                let b = (m.address + m.size).min(address + size);
+                a < b
+            })
+            .is_some()
+        {
+            return Err(());
+        }
+
         self.memory_mappings.0.push(MemoryMap {
             address: address,
             size,
