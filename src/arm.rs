@@ -1,6 +1,8 @@
+use core::panic;
 use std::{
     cell::RefCell,
-    ops::{Index, IndexMut, Range},
+    collections::BTreeSet,
+    ops::{Index, Range},
     rc::Rc,
 };
 
@@ -8,10 +10,13 @@ use crate::{
     arith::add_with_carry,
     condition::Condition,
     decoder::{ArmV7InstructionDecoder, InstructionDecodeError},
-    instructions::{thumb_ins_size, Instruction, InstructionSize},
+    helpers::BitAccess,
+    instructions::{thumb_ins_size, unpredictable, Instruction, InstructionSize},
+    irq::Irq,
     it_state::ItState,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
-    registers::{CoreRegisters, RegisterIndex},
+    memory_protection_unit::MemoryProtectionUnitV8M,
+    registers::{CoreRegisters, Mode, RegisterIndex},
     system_control::SystemControl,
 };
 
@@ -25,6 +30,8 @@ struct MemoryMap {
 pub enum RunError {
     InstructionUnknown,
     InstructionUnpredictable,
+    /// Execution leads to unpredictable result.
+    Unpredictable,
     MemRead {
         address: u32,
         size: u32,
@@ -97,13 +104,23 @@ impl MemoryMappings {
     }
 }
 
+#[derive(Clone, Copy)]
+pub enum ArmVersion {
+    V7,
+    V8M,
+}
+
 /// ARMv7-M processor state.
 pub struct Arm7Processor {
-    /// r0-r15 registers.
+    /// ARM emutaled version.
+    pub version: ArmVersion,
+    /// r0-r15 and sys registers.
     pub registers: CoreRegisters,
     pub execution_priority: i16,
     /// Current IT block state.
     pub it_state: ItState,
+    /// Indicates which exceptions are currently active.
+    exception_active: Vec<bool>,
     memory_mappings: MemoryMappings,
     instruction_decoder: ArmV7InstructionDecoder,
     pub cycles: u64,
@@ -114,6 +131,12 @@ pub struct Arm7Processor {
     /// stacked in this attribute during instruction emulation, and then processed one the
     /// instruction is completed.
     memory_op_actions: Vec<MemoryOpAction>,
+    /// Pending interrupt requests
+    interrupt_requests: BTreeSet<Irq>,
+    /// System control registers peripheral.
+    /// Needed for instance to fetch VTOR during an exception.
+    system_control: Rc<RefCell<SystemControl>>,
+    pub tolerate_pop_stack_unaligned_pc: bool,
 }
 
 type InstructionBox = Box<dyn Instruction>;
@@ -129,21 +152,42 @@ impl Mnemonic for Box<dyn Instruction> {
 }
 
 impl Arm7Processor {
-    pub fn new() -> Arm7Processor {
+    /// Creates a new ARMv7 processor
+    ///
+    /// # Arguments
+    ///
+    /// * `external_exception_count` - Number of available external exceptions.
+    pub fn new(version: ArmVersion, external_exception_count: usize) -> Arm7Processor {
+        let exception_count = 15usize.checked_add(external_exception_count).unwrap();
+        let system_control = Rc::new(RefCell::new(SystemControl::new()));
         let mut processor = Arm7Processor {
+            version,
             registers: CoreRegisters::new(),
             memory_mappings: MemoryMappings::new(),
             execution_priority: 0,
             it_state: ItState::new(),
+            exception_active: (0..exception_count).map(|_| false).collect(),
             instruction_decoder: ArmV7InstructionDecoder::new(),
             cycles: 0,
             code_hooks: Vec::new(),
             event_on_instruction: false,
             memory_op_actions: Vec::new(),
+            interrupt_requests: BTreeSet::new(),
+            system_control: system_control.clone(),
+            tolerate_pop_stack_unaligned_pc: false,
         };
-        processor
-            .map_iface(0xe000e000, Rc::new(RefCell::new(SystemControl::new())))
-            .unwrap();
+        processor.map_iface(0xe000e000, system_control).unwrap();
+        match version {
+            ArmVersion::V7 => {}
+            ArmVersion::V8M => {
+                processor
+                    .map_iface(
+                        0xe000ed90,
+                        Rc::new(RefCell::new(MemoryProtectionUnitV8M::new(16))),
+                    )
+                    .unwrap();
+            }
+        }
         processor
     }
 
@@ -212,6 +256,7 @@ impl Arm7Processor {
 
     /// Returns bytes at given address in memory
     pub fn u8_at(&mut self, address: u32) -> Result<u8, RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
             .get_mut(address)
@@ -220,11 +265,11 @@ impl Arm7Processor {
                 size: 1,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
-        let mut env = Env::new(self.cycles);
         let read = mapping
             .iface
             .borrow_mut()
             .read_u8(address - mapping.address, &mut env);
+        self.memory_op_actions.extend(env.actions);
         match read {
             Ok(val) => Ok(val),
             Err(e) => Err(RunError::MemRead {
@@ -237,6 +282,7 @@ impl Arm7Processor {
 
     ///// Set byte value at address
     pub fn set_u8_at(&mut self, address: u32, value: u8) -> Result<(), RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
             .get_mut(address)
@@ -245,12 +291,12 @@ impl Arm7Processor {
                 size: 1,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
-        let mut env = Env::new(self.cycles);
-        match mapping
+        let write = mapping
             .iface
             .borrow_mut()
-            .write_u8(address - mapping.address, value, &mut env)
-        {
+            .write_u8(address - mapping.address, value, &mut env);
+        self.memory_op_actions.extend(env.actions);
+        match write {
             Ok(()) => Ok(()),
             Err(e) => Err(RunError::MemWrite {
                 address: address,
@@ -261,6 +307,7 @@ impl Arm7Processor {
     }
 
     pub fn set_u16le_at(&mut self, address: u32, value: u16) -> Result<(), RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
             .get_mut(address)
@@ -269,12 +316,13 @@ impl Arm7Processor {
                 size: 2,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
-        let mut env = Env::new(self.cycles);
-        match mapping
-            .iface
-            .borrow_mut()
-            .write_u16le(address - mapping.address, value, &mut env)
-        {
+        let write =
+            mapping
+                .iface
+                .borrow_mut()
+                .write_u16le(address - mapping.address, value, &mut env);
+        self.memory_op_actions.extend(env.actions);
+        match write {
             Ok(()) => Ok(()),
             Err(e) => Err(RunError::MemWrite {
                 address: address,
@@ -286,12 +334,13 @@ impl Arm7Processor {
 
     /// Returns halfword at given address in memory
     pub fn u16le_at(&mut self, address: u32) -> Result<u16, RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         if let Some(mapping) = self.memory_mappings.get_mut(address) {
-            let mut env = Env::new(self.cycles);
             let read = mapping
                 .iface
                 .borrow_mut()
                 .read_u16le(address - mapping.address, &mut env);
+            self.memory_op_actions.extend(env.actions);
             match read {
                 Ok(val) => Ok(val),
                 Err(e) => Err(RunError::MemRead {
@@ -311,6 +360,7 @@ impl Arm7Processor {
 
     /// Returns 32-bit word at given address in memory
     pub fn u32le_at(&mut self, address: u32) -> Result<u32, RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
             .get_mut(address)
@@ -319,12 +369,12 @@ impl Arm7Processor {
                 size: 4,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
-        let mut env = Env::new(self.cycles);
-        match mapping
+        let read = mapping
             .iface
             .borrow_mut()
-            .read_u32le(address - mapping.address, &mut env)
-        {
+            .read_u32le(address - mapping.address, &mut env);
+        self.memory_op_actions.extend(env.actions);
+        match read {
             Ok(val) => Ok(val),
             Err(e) => Err(RunError::MemRead {
                 address: address,
@@ -335,6 +385,7 @@ impl Arm7Processor {
     }
 
     pub fn set_u32le_at(&mut self, address: u32, value: u32) -> Result<(), RunError> {
+        let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
             .get_mut(address)
@@ -343,16 +394,17 @@ impl Arm7Processor {
                 size: 4,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
-        let mut env = Env::new(self.cycles);
-        mapping
-            .iface
-            .borrow_mut()
-            .write_u32le(address - mapping.address, value, &mut env)
-            .map_err(|e| RunError::MemWrite {
-                address,
-                size: 4,
-                cause: e,
-            })
+        let write =
+            mapping
+                .iface
+                .borrow_mut()
+                .write_u32le(address - mapping.address, value, &mut env);
+        self.memory_op_actions.extend(env.actions);
+        write.map_err(|e| RunError::MemWrite {
+            address,
+            size: 4,
+            cause: e,
+        })
     }
 
     /// Returns current value of the Stack Pointer (r13)
@@ -428,18 +480,25 @@ impl Arm7Processor {
 
     /// Call `update` on memory mapping which requested an update during a previous operation.
     pub fn update_peripherals(&mut self) -> Option<Event> {
-        let mut env = Env::new(self.cycles);
+        let mut env = Env::new(self.cycles, self.is_privileged());
         for mapping in self.memory_mappings.0.iter_mut() {
             mapping.iface.borrow_mut().update(&mut env);
         }
+        self.memory_op_actions.extend(env.actions);
         None
+    }
+
+    pub fn request_interrupt(&mut self, irq: Irq) {
+        self.interrupt_requests.insert(irq);
     }
 
     pub fn stepi(&mut self) -> Result<Event, RunError> {
         if let Some(event) = self.update_peripherals() {
             return Ok(event);
         }
+
         let pc = self.pc();
+
         if self
             .code_hooks
             .iter()
@@ -477,12 +536,178 @@ impl Arm7Processor {
             for action in self.memory_op_actions.iter() {
                 match action {
                     MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins: ins }),
+                    MemoryOpAction::Irq(irq) => {
+                        // A peripheral emitted an interrupt request, save it.
+                        self.interrupt_requests.insert(*irq);
+                    }
                     MemoryOpAction::Update(_) => panic!(), // This should be filtered prior
                 }
             }
+            self.memory_op_actions.clear();
             self.cycles += 1;
+
+            // TODO: handle priorities
+            if let Some(irq) = self.interrupt_requests.pop_first() {
+                self.exception_entry(irq);
+            }
+
             Ok(Event::Instruction { ins })
         }
+    }
+
+    fn exception_entry(&mut self, number: Irq) -> Result<(), RunError> {
+        self.push_stack()?;
+        self.exception_taken(number);
+        Ok(())
+    }
+
+    /// Returns from exception
+    fn exception_return(&mut self, exc_return: u32) -> Result<(), RunError> {
+        assert!(self.registers.mode == Mode::Handler);
+        ////unpredictable(address & 0xf0000000 != 0xf0000000)?;
+        let number = self.registers.xpsr.exception_number();
+        let nested_activation = false; // TODO
+        if !self.exception_active[number as usize] {
+            self.deactivate(number);
+            todo!();
+            return Ok(());
+        }
+        let frame_ptr = match exc_return & 0xf {
+            0b0001 => todo!(),
+            0b1001 => todo!(),
+            0b1101 => {
+                // Returning to thread using process stack
+                if nested_activation && !self.system_control.borrow().ccr.nonbasethrdena() {
+                    todo!()
+                } else {
+                    self.registers.mode = Mode::Thread;
+                    self.registers.control.set_spsel(true);
+                    self.registers.psp
+                }
+            }
+            _ => {
+                self.deactivate(number);
+                todo!()
+            }
+        };
+        self.deactivate(number);
+        self.pop_stack(frame_ptr, exc_return)?;
+
+        if self.registers.mode == Mode::Handler && self.registers.xpsr.ipsr() == 0 {
+            todo!();
+        }
+
+        if self.registers.mode == Mode::Thread && self.registers.xpsr.ipsr() != 0 {
+            todo!();
+        }
+
+        // TODO ClearExclusiveLocal()
+        // TODO SetEventRegister()
+        Ok(())
+    }
+
+    /// Deactivates an exception
+    fn deactivate(&mut self, number: u16) {
+        self.exception_active[number as usize] = false;
+        if self.registers.xpsr.exception_number() != 2 {
+            // 2 is NMI
+            self.registers.faultmask.set_pm(false);
+        }
+    }
+
+    /// On exception entry, save some registers on stack.
+    ///
+    /// Corresponds to `PushStack()` in ARM architecture reference manual.
+    fn push_stack(&mut self) -> Result<(), RunError> {
+        let frame_size = 0x20;
+        let force_align = self.system_control.borrow().ccr.stkalign();
+        let sp_mask = !((force_align as u32) << 2);
+        let frame_ptr_align = self.sp().bit(2) && force_align;
+        let frame_ptr = (self.sp() - frame_size) & sp_mask;
+        self.set_sp(frame_ptr);
+
+        let return_address = self.pc();
+        println!("DEBUG SET RETURN ADDRESS {:0x}", return_address);
+        self.set_u32le_at(frame_ptr, self.registers.r0)?;
+        self.set_u32le_at(frame_ptr + 0x04, self.registers.r1)?;
+        self.set_u32le_at(frame_ptr + 0x08, self.registers.r2)?;
+        self.set_u32le_at(frame_ptr + 0x0c, self.registers.r3)?;
+        self.set_u32le_at(frame_ptr + 0x10, self.registers.r12)?;
+        self.set_u32le_at(frame_ptr + 0x14, self.registers.lr)?;
+        self.set_u32le_at(frame_ptr + 0x18, return_address)?;
+        let mut xpsr = self.registers.xpsr.get();
+        xpsr.set_bit(9, frame_ptr_align);
+        self.set_u32le_at(frame_ptr + 0x1c, xpsr)?;
+
+        let lr = match self.registers.mode {
+            Mode::Handler => 0xfffffff1,
+            Mode::Thread => {
+                if !self.registers.control.spsel() {
+                    0xfffffff9
+                } else {
+                    0xfffffffd
+                }
+            }
+        };
+        self.set_lr(lr);
+
+        Ok(())
+    }
+
+    /// On exception return, restore some registers from the stack.
+    ///
+    /// This corresponds to `PopStack()` from ARM architecture reference manual.
+    fn pop_stack(&mut self, frame_ptr: u32, exc_return: u32) -> Result<(), RunError> {
+        let frame_size = 0x20;
+        let force_align = self.system_control.borrow().ccr.stkalign();
+        self.registers.r0 = self.u32le_at(frame_ptr)?;
+        self.registers.r1 = self.u32le_at(frame_ptr + 0x04)?;
+        self.registers.r2 = self.u32le_at(frame_ptr + 0x08)?;
+        self.registers.r3 = self.u32le_at(frame_ptr + 0x0c)?;
+        self.registers.r12 = self.u32le_at(frame_ptr + 0x10)?;
+        self.registers.lr = self.u32le_at(frame_ptr + 0x14)?;
+        let mut pc = self.u32le_at(frame_ptr + 0x18)?;
+        // PC must be halfword aligned.
+        if pc % 2 != 0 {
+            if !self.tolerate_pop_stack_unaligned_pc {
+                return Err(RunError::Unpredictable);
+            }
+            pc &= 0xfffffffe;
+        };
+        self.registers.pc = pc;
+        let psr = self.u32le_at(frame_ptr + 0x1c)?;
+
+        let sp_mask = ((self.registers.xpsr.get().bit(9) && force_align) as u32) << 2;
+        match exc_return & 0xf {
+            0b0001 | 0b1001 | 0b1101 => {
+                let new_sp = (self.sp() + frame_size) | sp_mask;
+                self.set_sp(new_sp);
+            }
+            _ => {}
+        }
+
+        self.registers.xpsr.set(psr & 0xfff0ffff); // TODO remove mask if FP extension
+        Ok(())
+    }
+
+    fn exception_taken(&mut self, number: Irq) {
+        let vtor = self.system_control.borrow().vtor.offset();
+        let vector_address = number.number() as u32 * 4 + vtor;
+        let jump_address = self.u32le_at(vector_address).unwrap();
+        self.set_pc(jump_address & 0xfffffffe);
+        self.registers.mode = Mode::Handler;
+        self.registers
+            .xpsr
+            .set_exception_number(number.number())
+            .set_t(jump_address & 1 != 0)
+            .set_ici_it(0);
+        // TODO: Set CONTROL.FPCA to 1 if FP available
+        self.registers.control.set_spsel(false);
+        self.exception_active[number.number() as usize] = true;
+        // TODO: SCS_UpdateStatusRegs()
+        // TODO: ClearExclusiveLocal()
+        // TODO: SetEventRegister()
+        // TODO: InstructionSynchronizationBarrier()
     }
 
     /// Run until next event and return the event
@@ -521,11 +746,12 @@ impl Arm7Processor {
     }
 
     /// Write value to PC, with interworking
-            todo!()
     pub fn bx_write_pc(&mut self, address: u32) -> Result<(), RunError> {
         if self.registers.mode == Mode::Handler && (address >> 28 == 0xf) {
+            self.exception_return(address & 0x0fffffff)
         } else {
-            self.blx_write_pc(address)
+            self.blx_write_pc(address);
+            Ok(())
         }
     }
 

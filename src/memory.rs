@@ -1,9 +1,15 @@
+use std::iter::repeat_n;
+
+use crate::irq::Irq;
+
 /// Possible actions a `MemoryInterface` can request to the processor.
 pub enum MemoryOpAction {
     /// Software reset request
     Reset,
     /// Peripheral update request in n cycles
     Update(u32),
+    /// Interrupt request.
+    Irq(Irq),
 }
 
 pub type MemoryReadResult<T> = Result<T, MemoryAccessError>;
@@ -44,6 +50,10 @@ impl Env {
             actions: Vec::new(),
             privileged,
         }
+    }
+
+    pub fn request_interrupt(&mut self, irq: Irq) {
+        self.actions.push(MemoryOpAction::Irq(irq))
     }
 }
 
