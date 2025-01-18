@@ -16,6 +16,7 @@ pub mod blx;
 pub mod bx;
 pub mod cbnz;
 pub mod clz;
+pub mod cmn;
 pub mod cmp;
 pub mod cps;
 pub mod dsb;
