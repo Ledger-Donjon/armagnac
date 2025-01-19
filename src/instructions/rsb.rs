@@ -46,7 +46,7 @@ impl Instruction for RsbImm {
                     rd,
                     rn,
                     imm32: thumb_expand_imm(imm12)?,
-                    set_flags: ins.bit(4),
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),
