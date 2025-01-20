@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub mod add;
+pub mod adr;
 pub mod and;
 pub mod asr;
 pub mod b;
