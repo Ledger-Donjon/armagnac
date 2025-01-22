@@ -255,7 +255,7 @@ impl Instruction for AddSpPlusImm {
                 let set_flags = ins >> 20 & 1 != 0;
                 other(rd.is_pc() && set_flags)?; // CMN (immediate)
                 unpredictable(rd.is_pc())?;
-                let imm12 = (ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xf;
+                let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
                 let imm32 = thumb_expand_imm(imm12)?;
                 Self {
                     rd: rd,
@@ -270,7 +270,7 @@ impl Instruction for AddSpPlusImm {
                 }
                 Self {
                     rd,
-                    imm32: (ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xf,
+                    imm32: ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0),
                     set_flags: false,
                 }
             }
