@@ -160,7 +160,7 @@ pub struct LdrsbReg {
 
 impl Instruction for LdrsbReg {
     fn patterns() -> &'static [&'static str] {
-        &["0101110xxxxxxxxx", "111110000001xxxxxxxx000000xxxxxx"]
+        &["0101011xxxxxxxxx", "111110010001xxxxxxxx000000xxxxxx"]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
