@@ -6,6 +6,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
+pub mod adc;
 pub mod add;
 pub mod adr;
 pub mod and;

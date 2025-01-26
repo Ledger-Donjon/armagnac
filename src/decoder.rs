@@ -214,6 +214,8 @@ pub struct ArmV7InstructionDecoder(InstructionDecoder);
 impl ArmV7InstructionDecoder {
     pub fn new() -> Self {
         let mut dec = InstructionDecoder::new();
+        dec.insert::<instructions::adc::AdcImm>();
+        dec.insert::<instructions::adc::AdcReg>();
         dec.insert::<instructions::add::AddImm>();
         dec.insert::<instructions::add::AddReg>();
         dec.insert::<instructions::add::AddSpPlusImm>();
