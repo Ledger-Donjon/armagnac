@@ -63,7 +63,7 @@ mod tests {
     };
 
     #[test]
-    fn rev16() {
+    fn test_rev16() {
         let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12345678;
         let ins = Rev16 {

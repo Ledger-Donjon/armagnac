@@ -96,7 +96,7 @@ pub struct LdrbReg {
     rn: RegisterIndex,
     /// Offset register.
     rm: RegisterIndex,
-    /// Shift to be applied to Rn.
+    /// Shift to be applied to Rm.
     shift: Shift,
 }
 

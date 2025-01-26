@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::{
     arith::{shift_c, Shift},
     arm::{Arm7Processor, RunError},

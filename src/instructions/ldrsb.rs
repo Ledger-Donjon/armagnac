@@ -1,5 +1,12 @@
 use crate::{
-    align::Align, arith::{shift_c, Shift}, arm::{Arm7Processor, RunError}, decoder::DecodeError, helpers::BitAccess, instructions::indexing_args, it_state::ItState, registers::RegisterIndex
+    align::Align,
+    arith::{shift_c, Shift},
+    arm::{Arm7Processor, RunError},
+    decoder::DecodeError,
+    helpers::BitAccess,
+    instructions::indexing_args,
+    it_state::ItState,
+    registers::RegisterIndex,
 };
 
 use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
@@ -8,10 +15,10 @@ use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction
 ///
 /// Load Register Signed Byte.
 pub struct LdrsbImm {
-    /// Base register.
-    pub rn: RegisterIndex,
     /// Destination register.
     pub rt: RegisterIndex,
+    /// Base register.
+    pub rn: RegisterIndex,
     /// Offset from Rn.
     pub imm32: u32,
     /// True to load with indexing.
@@ -108,13 +115,11 @@ pub struct LdrsbLit {
 }
 
 impl Instruction for LdrsbLit {
-    fn patterns() -> &'static [&'static str]
-    {
+    fn patterns() -> &'static [&'static str] {
         &["11111001x0011111xxxxxxxxxxxxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError>
-    {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         assert_eq!(tn, 1);
         let rt = ins.reg4(12);
         other(rt.is_pc())?; // PLI
@@ -194,8 +199,8 @@ impl Instruction for LdrsbReg {
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
         let rn = proc.registers[self.rn];
-        let addr = rn.wrapping_add(offset);
-        let data = ((proc.u8_at(addr)? as i8) as i32) as u32;
+        let address = rn.wrapping_add(offset);
+        let data = ((proc.u8_at(address)? as i8) as i32) as u32;
         proc.registers.set(self.rt, data as u32);
         Ok(false)
     }
@@ -217,8 +222,10 @@ impl Instruction for LdrsbReg {
 
 #[cfg(test)]
 mod tests {
-    use super::{LdrsbImm, LdrsbReg};
-    use crate::{arith::Shift, arm::Arm7Processor, instructions::{ldrsb::LdrsbLit, Instruction}, registers::RegisterIndex};
+    use super::{LdrsbImm, LdrsbLit, LdrsbReg};
+    use crate::{
+        arith::Shift, arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex,
+    };
 
     #[test]
     fn test_ldrsb_imm() {
@@ -253,7 +260,7 @@ mod tests {
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0xfffffff8);
     }
-    
+
     #[test]
     fn test_ldrsb_lit() {
         let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
