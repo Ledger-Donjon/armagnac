@@ -258,20 +258,17 @@ impl Instruction for LdrReg {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
-        let base = proc.registers[self.rn];
-        let offset_addr = if self.add {
-            base.wrapping_add(offset)
-        } else {
-            base.wrapping_sub(offset)
-        };
-        let addr = if self.index { offset_addr } else { base };
-        let data = proc.u32le_at(addr)?;
+        let rn = proc.registers[self.rn];
+        let offset_addr = rn.wrapping_add_or_sub(offset, self.add);
+        let address = if self.index { offset_addr } else { rn };
+        let data = proc.u32le_at(address)?;
         if self.wback {
             proc.registers.set(self.rn, offset_addr);
         }
         if self.rt.is_pc() {
-            if offset_addr & 3 == 0 {
-                todo!();
+            if address & 3 == 0 {
+                proc.bx_write_pc(data)?;
+                return Ok(true)
             } else {
                 return Err(RunError::InstructionUnpredictable);
             }
