@@ -258,7 +258,7 @@ impl Instruction for SubSpMinusImm {
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, #{}",
-            rdn_args_string(self.rd, RegisterIndex::Pc),
+            rdn_args_string(self.rd, RegisterIndex::Sp),
             self.imm32
         )
     }
