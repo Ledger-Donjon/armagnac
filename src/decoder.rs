@@ -242,6 +242,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::isb::Isb>();
         dec.insert::<instructions::it::It>();
         dec.insert::<instructions::ldm::Ldm>();
+        dec.insert::<instructions::ldmdb::Ldmdb>();
         dec.insert::<instructions::ldr::LdrImm>();
         dec.insert::<instructions::ldr::LdrImm>();
         dec.insert::<instructions::ldr::LdrLit>();
