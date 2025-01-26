@@ -118,3 +118,26 @@ impl Instruction for MvnReg {
         format!("{}, {}{}", self.rd, self.rm, self.shift.arg_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::MvnReg;
+    use crate::{
+        arith::Shift, arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex,
+    };
+
+    #[test]
+    fn test_mvn_reg() {
+        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        proc.registers.r0 = 0x10;
+        proc.registers.r1 = 0x11;
+        let ins = MvnReg {
+            rd: RegisterIndex::R0,
+            rm: RegisterIndex::R1,
+            shift: Shift::lsl(0),
+            set_flags: false,
+        };
+        ins.execute(&mut proc).unwrap();
+        assert_eq!(proc.registers.r0, 0xffffffee);
+    }
+}

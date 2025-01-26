@@ -250,3 +250,74 @@ impl AddOrSub for u32 {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        instructions::{indexing_args, rdn_args_string},
+        registers::RegisterIndex,
+    };
+
+    #[test]
+    fn test_rdn_args_string() {
+        assert_eq!(rdn_args_string(RegisterIndex::R0, RegisterIndex::R0), "r0");
+        assert_eq!(
+            rdn_args_string(RegisterIndex::R0, RegisterIndex::R1),
+            "r0, r1"
+        );
+    }
+
+    #[test]
+    fn test_indexing_args() {
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, true, true, false),
+            "[r1]"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, true, false, false),
+            "[r1]"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, true, true, false),
+            "[r1, #12]"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, true, false, false),
+            "[r1, #-12]"
+        );
+
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, true, true, true),
+            "[r1, #0]!"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, true, false, true),
+            "[r1, #-0]!"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, true, true, true),
+            "[r1, #12]!"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, true, false, true),
+            "[r1, #-12]!"
+        );
+
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, false, true, true),
+            "[r1], #0"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 0, false, false, true),
+            "[r1], #-0"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, false, true, true),
+            "[r1], #12"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, false, false, true),
+            "[r1], #-12"
+        );
+    }
+}
