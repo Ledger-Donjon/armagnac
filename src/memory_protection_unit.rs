@@ -184,8 +184,7 @@ impl RegistersMemoryInterface for MemoryProtectionUnitV8M {
                 if !env.privileged {
                     return Err(MemoryAccessError::PrivilegedOnly);
                 }
-                let rbar = self
-                    .rbar
+                self.rbar
                     .get_mut(self.rnr.region() as usize)
                     .ok_or(MemoryAccessError::InvalidAddress)?
                     .write(value)?;
@@ -194,8 +193,7 @@ impl RegistersMemoryInterface for MemoryProtectionUnitV8M {
                 if !env.privileged {
                     return Err(MemoryAccessError::PrivilegedOnly);
                 }
-                let rlar = self
-                    .rlar
+                self.rlar
                     .get_mut(self.rnr.region() as usize)
                     .ok_or(MemoryAccessError::InvalidAddress)?
                     .0 = value;

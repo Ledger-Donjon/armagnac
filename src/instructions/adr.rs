@@ -14,7 +14,11 @@ pub struct Adr {
 
 impl Instruction for Adr {
     fn patterns() -> &'static [&'static str] {
-        &["10100xxxxxxxxxxx", "11110x10101011110xxxxxxxxxxxxxxx", "11110x10000011110xxxxxxxxxxxxxxx"]
+        &[
+            "10100xxxxxxxxxxx",
+            "11110x10101011110xxxxxxxxxxxxxxx",
+            "11110x10000011110xxxxxxxxxxxxxxx",
+        ]
     }
 
     fn try_decode(
@@ -35,7 +39,7 @@ impl Instruction for Adr {
                     rd,
                     imm32: if tn == 2 { -imm12 } else { imm12 },
                 }
-            },
+            }
             _ => panic!(),
         })
     }
@@ -69,8 +73,10 @@ mod tests {
         proc.registers.r0 = 0;
         Adr {
             rd: RegisterIndex::R0,
-            imm32: offset
-        }.execute(proc).unwrap();
+            imm32: offset,
+        }
+        .execute(proc)
+        .unwrap();
         assert_eq!(proc.registers.r0, (0x1000 as i32 + offset) as u32);
     }
 

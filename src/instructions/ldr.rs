@@ -268,7 +268,7 @@ impl Instruction for LdrReg {
         if self.rt.is_pc() {
             if address & 3 == 0 {
                 proc.bx_write_pc(data)?;
-                return Ok(true)
+                return Ok(true);
             } else {
                 return Err(RunError::InstructionUnpredictable);
             }

@@ -136,6 +136,11 @@ pub struct Arm7Processor {
     /// System control registers peripheral.
     /// Needed for instance to fetch VTOR during an exception.
     system_control: Rc<RefCell<SystemControl>>,
+    /// When poping PC from the stack (during exception return for instance), PC should be aligned,
+    /// otherwise execution is unpredictable according to the ARM specification. However, some
+    /// implementation may still set LSB to 1 for Thumb mode, and this can work on some hardware.
+    /// So to allow emulation in that case, `tolerate_pop_stack_unaligned_pc` can be set to `true`.
+    /// If `false` (the default) an error will be reported by the emulation if PC is unaligned.
     pub tolerate_pop_stack_unaligned_pc: bool,
 }
 
@@ -563,7 +568,10 @@ impl Arm7Processor {
         Ok(())
     }
 
-    /// Returns from exception
+    /// Returns from exception.
+    ///
+    /// Corresponds to the function `ExceptionReturn()` described in the ARM Architecture Reference
+    /// Manual.
     fn exception_return(&mut self, exc_return: u32) -> Result<(), RunError> {
         assert!(self.registers.mode == Mode::Handler);
         ////unpredictable(address & 0xf0000000 != 0xf0000000)?;
@@ -669,7 +677,10 @@ impl Arm7Processor {
         self.registers.r12 = self.u32le_at(frame_ptr + 0x10)?;
         self.registers.lr = self.u32le_at(frame_ptr + 0x14)?;
         let mut pc = self.u32le_at(frame_ptr + 0x18)?;
-        // PC must be halfword aligned.
+        // PC should be halfword aligned, otherwise execution is unpredictable according to the
+        // specification. However, some implementations may not respect this and it may still work
+        // on hardware, so we have the option `tolerate_pop_stack_unaligned_pc` to tolerate this if
+        // needed.
         if pc % 2 != 0 {
             if !self.tolerate_pop_stack_unaligned_pc {
                 return Err(RunError::Unpredictable);
