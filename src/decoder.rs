@@ -226,6 +226,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::asr::AsrImm>();
         dec.insert::<instructions::asr::AsrReg>();
         dec.insert::<instructions::b::B>();
+        dec.insert::<instructions::bfc::Bfc>();
         dec.insert::<instructions::bic::BicImm>();
         dec.insert::<instructions::bic::BicReg>();
         dec.insert::<instructions::bl::Bl>();
