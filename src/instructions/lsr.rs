@@ -9,7 +9,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{reg, unpredictable, Instruction};
+use super::{reg, unpredictable, DecodeHelper, Instruction};
 
 /// LSR (immediate) instruction.
 pub struct LsrImm {
@@ -33,17 +33,18 @@ impl Instruction for LsrImm {
             1 => Self {
                 rd: reg(ins & 7),
                 rm: reg(ins >> 3 & 7),
-                shift: (ins >> 6 & 0x1f) as u8,
+                shift: Shift::from_bits(1, ins.imm5(6)).n as u8,
                 set_flags: !state.in_it_block(),
             },
             2 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
+                let shift = Shift::from_bits(1, ins.imm3(12) << 2 | ins.imm2(6));
                 Self {
                     rd,
                     rm,
-                    shift: (ins >> 12 & 7 | ins >> 6 & 3) as u8,
+                    shift: shift.n as u8,
                     set_flags: ins >> 20 & 1 != 0,
                 }
             }
