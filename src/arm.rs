@@ -40,6 +40,7 @@ pub enum RunError {
     MemWrite {
         address: u32,
         size: u32,
+        value: u32,
         cause: MemoryAccessError,
     },
 }
@@ -294,6 +295,7 @@ impl Arm7Processor {
             .ok_or(RunError::MemWrite {
                 address,
                 size: 1,
+                value: value as u32,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
         let write = mapping
@@ -306,6 +308,7 @@ impl Arm7Processor {
             Err(e) => Err(RunError::MemWrite {
                 address: address,
                 size: 1,
+                value: value as u32,
                 cause: e,
             }),
         }
@@ -319,6 +322,7 @@ impl Arm7Processor {
             .ok_or(RunError::MemWrite {
                 address,
                 size: 2,
+                value: value as u32,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
         let write =
@@ -332,6 +336,7 @@ impl Arm7Processor {
             Err(e) => Err(RunError::MemWrite {
                 address: address,
                 size: 2,
+                value: value as u32,
                 cause: e,
             }),
         }
@@ -397,6 +402,7 @@ impl Arm7Processor {
             .ok_or(RunError::MemWrite {
                 address,
                 size: 4,
+                value,
                 cause: MemoryAccessError::InvalidAddress,
             })?;
         let write =
@@ -408,6 +414,7 @@ impl Arm7Processor {
         write.map_err(|e| RunError::MemWrite {
             address,
             size: 4,
+            value,
             cause: e,
         })
     }
