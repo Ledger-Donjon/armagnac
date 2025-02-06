@@ -210,10 +210,10 @@ impl Instruction for AddReg {
 
     fn args(&self, _pc: u32) -> String {
         format!(
-            "{}, {}, {}",
+            "{}, {}{}",
             rdn_args_string(self.rd, self.rn),
             self.rm,
-            self.shift
+            self.shift.arg_string()
         )
     }
 }
