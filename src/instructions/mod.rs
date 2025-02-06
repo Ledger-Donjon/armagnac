@@ -66,6 +66,7 @@ pub mod tst;
 pub mod ubfx;
 pub mod udiv;
 pub mod umlal;
+pub mod umull;
 pub mod uxtb;
 pub mod uxth;
 
