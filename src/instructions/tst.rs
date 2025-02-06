@@ -30,7 +30,7 @@ impl Instruction for TstImm {
         debug_assert_eq!(tn, 1);
         let rn = ins.reg4(16);
         unpredictable(rn.is_sp_or_pc())?;
-        let imm12 = ins.imm1(20) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
+        let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
         Ok(Self { rn, imm32, carry })
     }
@@ -99,6 +99,6 @@ impl Instruction for TstReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        todo!()
+        format!("{}, {}{}", self.rn, self.rm, self.shift.arg_string())
     }
 }
