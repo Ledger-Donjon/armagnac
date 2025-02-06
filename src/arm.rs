@@ -560,6 +560,14 @@ impl Arm7Processor {
 
             // TODO: handle priorities
             if let Some(irq) = self.interrupt_requests.pop_first() {
+                let max_num = self.exception_active.len();
+                let num = irq.number();
+                assert!(
+                    (num as usize) < max_num,
+                    "Exception number too high: got {}, max is {}",
+                    num,
+                    max_num - 1
+                );
                 if !self.exception_active[irq.number() as usize] {
                     self.exception_entry(irq)?;
                 }
