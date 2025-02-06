@@ -163,7 +163,7 @@ impl Arm7Processor {
     ///
     /// * `external_exception_count` - Number of available external exceptions.
     pub fn new(version: ArmVersion, external_exception_count: usize) -> Arm7Processor {
-        let exception_count = 15usize.checked_add(external_exception_count).unwrap();
+        let exception_count = 16usize.checked_add(external_exception_count).unwrap();
         let system_control = Rc::new(RefCell::new(SystemControl::new()));
         let mut processor = Arm7Processor {
             version,
