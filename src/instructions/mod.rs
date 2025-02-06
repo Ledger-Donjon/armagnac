@@ -132,6 +132,7 @@ pub trait DecodeHelper {
     fn imm1(&self, lsb_index: u8) -> u32;
     fn imm2(&self, lsb_index: u8) -> u32;
     fn imm3(&self, lsb_index: u8) -> u32;
+    fn imm4(&self, lsb_index: u8) -> u32;
     fn imm5(&self, lsb_index: u8) -> u32;
     fn imm8(&self, lsb_index: u8) -> u32;
     fn imm12(&self, lsb_index: u8) -> u32;
@@ -157,6 +158,10 @@ impl DecodeHelper for u32 {
 
     fn imm3(&self, lsb_index: u8) -> u32 {
         self >> lsb_index & 7
+    }
+
+    fn imm4(&self, lsb_index: u8) -> u32 {
+        self >> lsb_index & 0xf
     }
 
     fn imm5(&self, lsb_index: u8) -> u32 {
