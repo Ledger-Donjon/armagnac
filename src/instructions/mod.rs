@@ -33,6 +33,7 @@ pub mod ldrb;
 pub mod ldrd;
 pub mod ldrh;
 pub mod ldrsb;
+pub mod ldrsh;
 pub mod lsl;
 pub mod lsr;
 pub mod mla;
