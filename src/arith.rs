@@ -47,7 +47,10 @@ pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
 /// * `shift` - Shift count. Must be > 0.
 pub fn lsl_c(value: u32, shift: u32) -> (u32, bool) {
     assert!(shift > 0);
-    let extended = (value as u64) << shift;
+    // Max shift by 63 to avoid overflow errors.
+    // We cannot use wrapping_shl here since it does not conform to what ARM implements when
+    // shift >= 32.
+    let extended = (value as u64) << shift.min(63);
     (extended as u32, extended & 1 << 32 != 0)
 }
 
@@ -179,7 +182,6 @@ impl Shift {
     }
 
     pub fn lsl(n: u32) -> Self {
-        debug_assert!(n < 32);
         Self {
             t: ShiftType::Lsl,
             n,
@@ -187,7 +189,6 @@ impl Shift {
     }
 
     pub fn lsr(n: u32) -> Self {
-        debug_assert!(n < 32);
         Self {
             t: ShiftType::Lsr,
             n,
