@@ -194,6 +194,13 @@ impl Shift {
             n,
         }
     }
+
+    pub fn ror(n: u32) -> Self {
+        Self {
+            t: ShiftType::Ror,
+            n,
+        }
+    }
 }
 
 impl Display for Shift {
