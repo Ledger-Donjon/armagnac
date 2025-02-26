@@ -44,6 +44,7 @@ pub mod msr;
 pub mod mul;
 pub mod mvn;
 pub mod nop;
+pub mod orn;
 pub mod orr;
 pub mod pop;
 pub mod push;
