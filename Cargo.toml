@@ -1,7 +1,12 @@
 [package]
 name = "armagnac"
+description = "A simple ARM emulation library for simulating embedded systems"
+repository = "https://github.com/Ledger-Donjon/armagnac"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["arm", "emulator"]
+categories = ["simulation", "embedded", "virtualization"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
