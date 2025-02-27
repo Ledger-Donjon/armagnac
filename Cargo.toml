@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 num_enum = "0.7.2"
+object = "0.35.0"
