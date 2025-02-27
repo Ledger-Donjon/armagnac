@@ -416,6 +416,28 @@ impl Arm7Processor {
         })
     }
 
+    /// Reads `size` successive bytes starting at `address`.
+    ///
+    /// Panics if address overflows. This may change in the future.
+    pub fn bytes_at(&mut self, address: u32, size: u32) -> Result<Vec<u8>, RunError> {
+        let mut result = Vec::new();
+        result.reserve_exact(size as usize);
+        for a in address..address.checked_add(size).unwrap() {
+            result.push(self.u8_at(a)?);
+        }
+        Ok(result)
+    }
+
+    /// Writes bytes starting at `address`.
+    ///
+    /// Panics if address overflows. This may change in the future.
+    pub fn set_bytes_at(&mut self, address: u32, data: &[u8]) -> Result<(), RunError> {
+        for i in 0..data.len() as u32 {
+            self.set_u8_at(address.checked_add(i).unwrap(), data[i as usize])?
+        }
+        Ok(())
+    }
+
     /// Returns current value of the Stack Pointer (r13)
     pub fn sp(&self) -> u32 {
         self.registers[13]
