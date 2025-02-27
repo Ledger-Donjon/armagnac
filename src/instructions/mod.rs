@@ -53,6 +53,7 @@ pub mod rev;
 pub mod rev16;
 pub mod ror;
 pub mod rsb;
+pub mod sbc;
 pub mod sdiv;
 pub mod sev;
 pub mod stm;

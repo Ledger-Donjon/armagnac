@@ -284,6 +284,8 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::orr::OrrReg>();
         dec.insert::<instructions::pop::Pop>();
         dec.insert::<instructions::push::Push>();
+        dec.insert::<instructions::sbc::SbcImm>();
+        dec.insert::<instructions::sbc::SbcReg>();
         dec.insert::<instructions::sev::Sev>();
         dec.insert::<instructions::rbit::Rbit>();
         dec.insert::<instructions::rev::Rev>();
