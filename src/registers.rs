@@ -508,8 +508,14 @@ impl ProgramStatusRegister {
     }
 }
 
+impl Debug for ProgramStatusRegister {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.0, f)
+    }
+}
+
 /// Base struct for PRIMASK and FAULTMASK registers
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct MaskRegister(u32);
 
 impl MaskRegister {
@@ -532,14 +538,25 @@ impl MaskRegister {
     }
 }
 
+impl Debug for MaskRegister {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.0, f)
+    }
+}
+
 /// Special purpose control register
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct ControlRegister(u32);
 
 impl ControlRegister {
     /// Returns register state at reset.
     pub fn new() -> Self {
         Self(0)
+    }
+
+    /// Returns raw value of the register.
+    pub fn read(&self) -> u32 {
+        self.0
     }
 
     /// Returns false if thread has privileged mode, true if not.
@@ -569,6 +586,12 @@ impl ControlRegister {
     }
 }
 
+impl Debug for ControlRegister {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        Debug::fmt(&self.0, f)
+    }
+}
+
 /// Processor execution mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -578,7 +601,7 @@ pub enum Mode {
     Handler,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CoreRegisters {
     pub r0: u32,
     pub r1: u32,

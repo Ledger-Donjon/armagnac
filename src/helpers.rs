@@ -48,6 +48,7 @@ impl BitAccess for u8 {
 }
 
 /// 32-bit register with access rules such as reserved bits, write mask, etc.
+#[derive(Clone, Copy)]
 pub struct MaskedRegister {
     pub value: u32,
     pub reserved_mask: u32,
@@ -68,6 +69,8 @@ impl MaskedRegister {
     }
 
     /// Sets the bits which are reserved and must not be written to one.
+    ///
+    /// Bits defined as 1 in the mask are considered reserved.
     pub fn reserved(self, mask: u32) -> Self {
         Self {
             reserved_mask: mask,
@@ -75,6 +78,9 @@ impl MaskedRegister {
         }
     }
 
+    /// Defines which bits can be written, considering others as reserved.
+    ///
+    /// Bits defined as 1 in the mask are writable.
     pub fn write_mask_reserved(self, mask: u32) -> Self {
         Self {
             reserved_mask: !mask,

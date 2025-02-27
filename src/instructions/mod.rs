@@ -125,7 +125,7 @@ pub fn other(cond: bool) -> Result<(), DecodeError> {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum InstructionSize {
     Ins16 = 2,
     Ins32 = 4,

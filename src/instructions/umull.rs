@@ -1,9 +1,15 @@
-use crate::{arm::{Arm7Processor, RunError}, decoder::DecodeError, instructions::{unpredictable, DecodeHelper}, it_state::ItState, registers::RegisterIndex};
+use crate::{
+    arm::{Arm7Processor, RunError},
+    decoder::DecodeError,
+    instructions::{unpredictable, DecodeHelper},
+    it_state::ItState,
+    registers::RegisterIndex,
+};
 
 use super::Instruction;
 
 /// UMULL instruction.
-/// 
+///
 /// Unsigned Multiply Long.
 pub struct Umull {
     /// Lower 32 bits of the result.
@@ -17,13 +23,11 @@ pub struct Umull {
 }
 
 impl Instruction for Umull {
-    fn patterns() -> &'static [&'static str]
-    {
+    fn patterns() -> &'static [&'static str] {
         &["111110111010xxxxxxxxxxxx0000xxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError>
-    {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let rdlo = ins.reg4(12);
         let rdhi = ins.reg4(8);
@@ -74,7 +78,7 @@ mod tests {
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x70b88d78);
         assert_eq!(proc.registers.r1, 0x09a0cd05);
-        
+
         proc.registers.r2 = 0x11223344;
         proc.registers.r3 = 0xff00ff00;
         ins.execute(&mut proc).unwrap();

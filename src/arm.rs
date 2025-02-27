@@ -7,13 +7,11 @@ use std::{
 };
 
 use crate::{
-    arith::add_with_carry,
     condition::Condition,
     decoder::{ArmV7InstructionDecoder, InstructionDecodeError},
     helpers::BitAccess,
-    instructions::{thumb_ins_size, unpredictable, Instruction, InstructionSize},
+    instructions::{thumb_ins_size, Instruction, InstructionSize},
     irq::Irq,
-    it_state::ItState,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
     mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
     registers::{CoreRegisters, Mode, RegisterIndex},
@@ -196,11 +194,12 @@ impl Arm7Processor {
         processor
     }
 
-    pub fn map(&mut self, address: u32, data: &[u8]) -> Result<(), ()> {
-        self.map_iface(
-            address,
-            Rc::new(RefCell::new(RamMemory::new_from_slice(data))),
-        )
+    /// Maps and returns a RAM memory with `data` as initial value. The size of the created memory
+    /// is the size of `data`.
+    pub fn map(&mut self, address: u32, data: &[u8]) -> Result<Rc<RefCell<RamMemory>>, ()> {
+        let ram = Rc::new(RefCell::new(RamMemory::new_from_slice(data)));
+        self.map_iface(address, ram.clone())?;
+        Ok(ram)
     }
 
     /// Maps an interface to the memory space. Returns an error if the new interface size overflows
@@ -598,6 +597,10 @@ impl Arm7Processor {
         }
     }
 
+    /// Enters exception.
+    ///
+    /// Corresponds to the function `ExceptionEntry()` described in the ARM Architecture Reference
+    /// Manual.
     fn exception_entry(&mut self, number: Irq) -> Result<(), RunError> {
         self.push_stack()?;
         self.exception_taken(number);
@@ -808,6 +811,11 @@ impl Arm7Processor {
     pub fn blx_write_pc(&mut self, address: u32) {
         self.registers.xpsr.set_t(address & 1 == 1);
         self.set_pc(address & 0xfffffffe)
+    }
+
+    /// Corresponds to operation `LoadWritePC()` described in ARMv7-M Architecture Reference Manual.
+    pub fn load_write_pc(&mut self, address: u32) -> Result<(), RunError> {
+        self.bx_write_pc(address)
     }
 
     /// Write value to PC, with interworking

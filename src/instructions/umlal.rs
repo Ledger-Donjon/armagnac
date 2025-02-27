@@ -83,7 +83,7 @@ mod tests {
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x70b88d78);
         assert_eq!(proc.registers.r1, 0x09a0cd05);
-        
+
         proc.registers.r2 = 0x11223344;
         proc.registers.r3 = 0xff00ff00;
         ins.execute(&mut proc).unwrap();
