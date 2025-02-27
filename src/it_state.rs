@@ -12,6 +12,8 @@ pub enum ItThenElse {
 /// ARMv7-M processor IT block state.
 ///
 /// The state is stored in the same encoding as specified in the Architecture Reference Manual.
+/// Note that the processor IT state is stored accross bits in the EPSR register, so this struct
+/// makes manipulation of the IT state easier.
 impl ItState {
     pub fn new() -> Self {
         Self(0)

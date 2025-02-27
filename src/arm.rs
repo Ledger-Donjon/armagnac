@@ -118,8 +118,6 @@ pub struct Arm7Processor {
     /// r0-r15 and sys registers.
     pub registers: CoreRegisters,
     pub execution_priority: i16,
-    /// Current IT block state.
-    pub it_state: ItState,
     /// Indicates which exceptions are currently active.
     exception_active: Vec<bool>,
     memory_mappings: MemoryMappings,
@@ -171,7 +169,6 @@ impl Arm7Processor {
             registers: CoreRegisters::new(),
             memory_mappings: MemoryMappings::new(),
             execution_priority: 0,
-            it_state: ItState::new(),
             exception_active: (0..exception_count).map(|_| false).collect(),
             instruction_decoder: ArmV7InstructionDecoder::new(),
             cycles: 0,
@@ -466,13 +463,11 @@ impl Arm7Processor {
         address: u32,
     ) -> Result<(InstructionBox, InstructionSize), RunError> {
         let hw = self.u16le_at(address)?;
+        let it_state = self.registers.xpsr.it_state();
         let (ins, size) = match thumb_ins_size(hw) {
             InstructionSize::Ins16 => (
-                self.instruction_decoder.try_decode(
-                    hw as u32,
-                    InstructionSize::Ins16,
-                    self.it_state.clone(),
-                )?,
+                self.instruction_decoder
+                    .try_decode(hw as u32, InstructionSize::Ins16, it_state)?,
                 InstructionSize::Ins16,
             ),
             InstructionSize::Ins32 => {
@@ -481,7 +476,7 @@ impl Arm7Processor {
                     self.instruction_decoder.try_decode(
                         ((hw as u32) << 16) + hw2 as u32,
                         InstructionSize::Ins32,
-                        self.it_state.clone(),
+                        it_state,
                     )?,
                     InstructionSize::Ins32,
                 )
@@ -527,13 +522,15 @@ impl Arm7Processor {
             // Conditional execution testing.
             // Condition is usually defined by the current IT state, excepted for conditional
             // branch B instruction which can override it by implementing [Instruction::condition].
+            let mut it_state = self.registers.xpsr.it_state();
             let condition = ins
                 .condition()
-                .or(self.it_state.current_condition())
+                .or(it_state.current_condition())
                 .unwrap_or(Condition::Always);
             // Advance IT block state. This must be done before executing the instruction,
             // because if the current instruction is IT, it will load a new state.
-            self.it_state.advance();
+            it_state.advance();
+            self.registers.xpsr.set_it_state(it_state);
 
             let mut jump = false;
             if self.registers.xpsr.test(condition) {
@@ -784,7 +781,7 @@ impl Arm7Processor {
     }
 
     pub fn condition_passed(&self) -> bool {
-        if let Some(condition) = self.it_state.current_condition() {
+        if let Some(condition) = self.registers.xpsr.it_state().current_condition() {
             self.registers.xpsr.test(condition)
         } else {
             true

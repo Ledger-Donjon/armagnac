@@ -4,7 +4,7 @@ use std::{
     ops::Index,
 };
 
-use crate::{condition::Condition, helpers::BitAccess};
+use crate::{condition::Condition, helpers::BitAccess, it_state::ItState};
 
 /// Enumeration to identify a CPU core register
 ///
@@ -321,7 +321,7 @@ impl DoubleEndedIterator for MainRegisterListIterator {
 /// Program Status Register.
 ///
 /// Regroups APSR, IPSR and EPSR together.
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct ProgramStatusRegister(u32);
 
 impl ProgramStatusRegister {
@@ -495,6 +495,16 @@ impl ProgramStatusRegister {
             Condition::LessThanOrEqual => self.z() || self.n() != self.v(),
             Condition::Always => true,
         }
+    }
+
+    /// Returns an [`ItState`] from the EPSR register value.
+    pub fn it_state(&self) -> ItState {
+        ItState(((self.0 >> 25 & 3) | (self.0 >> 10 & 0x3f) << 2) as u8)
+    }
+
+    /// Sets IT state in the EPSR register from an [`ItState`] object.
+    pub fn set_it_state(&mut self, it: ItState) {
+        self.0 = (self.0 & 0xf9ff03ff) | ((it.0 & 3) as u32) << 25 | ((it.0 >> 2) as u32) << 10;
     }
 }
 

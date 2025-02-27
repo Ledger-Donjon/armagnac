@@ -10,6 +10,9 @@ use crate::{
 
 use super::Instruction;
 
+// IT instruction.
+//
+// If Then.
 pub struct It {
     /// IT state to be set.
     state: ItState,
@@ -37,7 +40,7 @@ impl Instruction for It {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        proc.it_state = self.state;
+        proc.registers.xpsr.set_it_state(self.state);
         Ok(false)
     }
 
