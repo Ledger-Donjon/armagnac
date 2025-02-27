@@ -15,7 +15,7 @@ use crate::{
     irq::Irq,
     it_state::ItState,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
-    memory_protection_unit::MemoryProtectionUnitV8M,
+    mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
     registers::{CoreRegisters, Mode, RegisterIndex},
     system_control::SystemControl,
 };
@@ -181,7 +181,9 @@ impl Arm7Processor {
         };
         processor.map_iface(0xe000e000, system_control).unwrap();
         match version {
-            ArmVersion::V7 => {}
+            ArmVersion::V7 => processor
+                .map_iface(0xe000ed90, Rc::new(RefCell::new(MpuV7M::new())))
+                .unwrap(),
             ArmVersion::V8M => {
                 processor
                     .map_iface(

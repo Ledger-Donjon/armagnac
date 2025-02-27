@@ -6,24 +6,7 @@ use crate::memory::{
     Env, MemoryAccessError, MemoryReadResult, MemoryWriteResult, RegistersMemoryInterface,
 };
 
-/// MPU Control Register.
-struct CtrlRegister(u32);
-
-impl CtrlRegister {
-    fn write(&mut self, value: u32) -> MemoryWriteResult {
-        if value & 0xfffffff8 != 0 {
-            return Err(MemoryAccessError::InvalidValue);
-        }
-        self.0 = value;
-        Ok(())
-    }
-}
-
-impl Default for CtrlRegister {
-    fn default() -> Self {
-        Self(0)
-    }
-}
+use super::Ctrl;
 
 /// MPU Region Number Register.
 struct RnrRegister(u32);
@@ -109,7 +92,7 @@ pub enum MemoryProtectionUnitRegisterV8M {
 /// Memory Protection Unit form Arm-v8-M.
 pub struct MemoryProtectionUnitV8M {
     /// MPU_CTRL register.
-    ctrl: CtrlRegister,
+    ctrl: Ctrl,
     /// MPU_RNR register.
     rnr: RnrRegister,
     /// MPU_RBAR registers.

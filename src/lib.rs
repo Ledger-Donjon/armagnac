@@ -11,6 +11,6 @@ mod instructions;
 pub mod irq;
 mod it_state;
 pub mod memory;
-pub mod memory_protection_unit;
+pub mod mpu;
 pub mod registers;
 mod system_control;
