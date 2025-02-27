@@ -2,8 +2,8 @@ use crate::{
     helpers::{BitAccess, MaskedRegister},
     irq::Irq,
     memory::{
-        Env, MemoryAccessError, MemoryInterface, MemoryOpAction, MemoryReadResult,
-        MemoryWriteResult, RegistersMemoryInterface,
+        Env, MemoryAccessError, MemoryOpAction, MemoryReadResult, MemoryWriteResult,
+        RegistersMemoryInterface,
     },
 };
 

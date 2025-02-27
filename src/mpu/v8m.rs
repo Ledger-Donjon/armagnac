@@ -1,12 +1,8 @@
-use std::fmt::DebugList;
-
-use num_enum::TryFromPrimitive;
-
+use super::Ctrl;
 use crate::memory::{
     Env, MemoryAccessError, MemoryReadResult, MemoryWriteResult, RegistersMemoryInterface,
 };
-
-use super::Ctrl;
+use num_enum::TryFromPrimitive;
 
 /// MPU Region Number Register.
 struct RnrRegister(u32);
@@ -102,7 +98,7 @@ pub struct MemoryProtectionUnitV8M {
     /// MPU_MAIR0 register.
     mair0: MairRegister,
     /// MPU_MAIR1 register.
-    mair1: MairRegister,
+    _mair1: MairRegister,
 }
 
 impl MemoryProtectionUnitV8M {
@@ -113,7 +109,7 @@ impl MemoryProtectionUnitV8M {
             rbar: vec![Default::default(); region_count],
             rlar: vec![Default::default(); region_count],
             mair0: Default::default(),
-            mair1: Default::default(),
+            _mair1: Default::default(),
         }
     }
 }

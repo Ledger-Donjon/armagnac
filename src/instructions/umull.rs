@@ -41,7 +41,7 @@ impl Instruction for Umull {
     }
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
-        let result = (proc.registers[self.rn] as u64 * proc.registers[self.rm] as u64);
+        let result = proc.registers[self.rn] as u64 * proc.registers[self.rm] as u64;
         proc.registers.set(self.rdhi, (result >> 32) as u32);
         proc.registers.set(self.rdlo, result as u32);
         Ok(false)
@@ -51,7 +51,7 @@ impl Instruction for Umull {
         "umull".into()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         format!("{}, {}, {}, {}", self.rdlo, self.rdhi, self.rn, self.rm)
     }
 }

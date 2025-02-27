@@ -1,5 +1,5 @@
 use crate::{
-    arith::{ror, sign_extend},
+    arith::ror,
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     it_state::ItState,

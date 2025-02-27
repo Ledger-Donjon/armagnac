@@ -45,7 +45,7 @@ impl RegistersMemoryInterface for MpuV7M {
     fn read32(
         &mut self,
         reg: Self::Register,
-        env: &mut crate::memory::Env,
+        _env: &mut crate::memory::Env,
     ) -> crate::memory::MemoryReadResult<u32> {
         Ok(match reg {
             Register::Type => todo!(),
@@ -66,7 +66,7 @@ impl RegistersMemoryInterface for MpuV7M {
         &mut self,
         reg: Self::Register,
         value: u32,
-        env: &mut crate::memory::Env,
+        _env: &mut crate::memory::Env,
     ) -> crate::memory::MemoryWriteResult {
         match reg {
             Register::Type => todo!(),
