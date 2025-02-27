@@ -51,6 +51,7 @@ pub mod push;
 pub mod rbit;
 pub mod rev;
 pub mod rev16;
+pub mod ror;
 pub mod rsb;
 pub mod sdiv;
 pub mod sev;
