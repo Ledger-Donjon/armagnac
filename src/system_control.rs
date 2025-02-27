@@ -172,6 +172,16 @@ impl Default for Aircr {
 pub struct Ccr(u32);
 
 impl Ccr {
+    /// Set new value.
+    pub fn write(&mut self, value: u32) -> MemoryWriteResult {
+        let mask = 0x0000031f;
+        if value & !mask != 0 {
+            return Err(MemoryAccessError::InvalidValue);
+        }
+        self.0 = value & mask;
+        Ok(())
+    }
+
     /// Returns NONBASETHRDENA bit value.
     pub fn nonbasethrdena(&self) -> bool {
         self.0.bit(0)
@@ -285,7 +295,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Vtor => todo!(),
             SystemControlRegister::Aircr => self.aircr.0,
             SystemControlRegister::Scr => todo!(),
-            SystemControlRegister::Ccr => todo!(),
+            SystemControlRegister::Ccr => self.ccr.0,
             SystemControlRegister::Shpr(i) => self.shpr[i as usize].into(),
             SystemControlRegister::Shcsr => self.shcsr.0,
             SystemControlRegister::Cfsr => todo!(),
@@ -322,7 +332,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Vtor => self.vtor.write(value)?,
             SystemControlRegister::Aircr => self.aircr.write(value, env)?,
             SystemControlRegister::Scr => todo!(),
-            SystemControlRegister::Ccr => todo!(),
+            SystemControlRegister::Ccr => self.ccr.write(value)?,
             SystemControlRegister::Shpr(i) => self.shpr[i as usize] = value,
             SystemControlRegister::Shcsr => self.shcsr.write(value)?,
             SystemControlRegister::Cfsr => todo!(),

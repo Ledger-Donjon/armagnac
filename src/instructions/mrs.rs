@@ -69,7 +69,7 @@ impl Instruction for Mrs {
                 0b001 => todo!(),
                 0b010 => todo!(),
                 0b011 => todo!(),
-                0b100 => todo!(),
+                0b100 => rd = proc.registers.control.read() & 3,
                 _ => {}
             },
             _ => panic!(),

@@ -1,9 +1,13 @@
 //! Implements LDRB (immediate), LDRB (literal) and LDRB (register) instructions.
 
+use core::panic;
+
 use crate::{
+    arith::{shift_c, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     it_state::ItState,
+    registers::RegisterIndex,
 };
 
 use super::{ldr::LdrImm, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
