@@ -8,7 +8,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{indexing_args, other, reg, undefined, unpredictable, AddOrSub, Instruction};
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
 
 /// STRB (immediate) instruction.
 pub struct StrbImm {
@@ -38,16 +38,16 @@ impl Instruction for StrbImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rt: reg(ins & 7),
-                rn: reg(ins >> 3 & 7),
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
                 imm32: ins >> 6 & 0x1f,
                 index: true,
                 add: true,
                 wback: false,
             },
             2 => {
-                let rn = reg(ins >> 16 & 0xf);
-                let rt = reg(ins >> 12 & 0xf);
+                let rn = ins.reg4(16);
+                let rt = ins.reg4(12);
                 undefined(rn.is_pc())?;
                 unpredictable(rt.is_sp_or_pc())?;
                 Self {
@@ -61,8 +61,8 @@ impl Instruction for StrbImm {
             }
             3 => {
                 let puw = ins >> 8 & 7;
-                let rn = reg(ins >> 16 & 0xf);
-                let rt = reg(ins >> 12 & 0xf);
+                let rn = ins.reg4(16);
+                let rt = ins.reg4(12);
                 let wback = puw & 1 != 0;
                 other(puw == 6)?; // STRBT
                 undefined(rn.is_pc() || puw & 5 == 0)?;
@@ -124,15 +124,15 @@ impl Instruction for StrbReg {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rt: reg(ins & 7),
-                rn: reg(ins >> 3 & 7),
-                rm: reg(ins >> 6 & 7),
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
+                rm: ins.reg3(6),
                 shift: 0,
             },
             2 => {
-                let rn = reg(ins >> 16 & 0xf);
-                let rt = reg(ins >> 12 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rn = ins.reg4(16);
+                let rt = ins.reg4(12);
+                let rm = ins.reg4(0);
                 undefined(rn.is_pc())?;
                 unpredictable(rt.is_sp_or_pc() || rm.is_sp_or_pc())?;
                 Self {

@@ -146,11 +146,11 @@ pub trait DecodeHelper {
 
 impl DecodeHelper for u32 {
     fn reg3(&self, lsb_index: u8) -> RegisterIndex {
-        reg(self >> lsb_index & 0x7)
+        RegisterIndex::new_main(self >> lsb_index & 0x7)
     }
 
     fn reg4(&self, lsb_index: u8) -> RegisterIndex {
-        reg(self >> lsb_index & 0xf)
+        RegisterIndex::new_main(self >> lsb_index & 0xf)
     }
 
     fn imm1(&self, lsb_index: u8) -> u32 {
@@ -197,12 +197,6 @@ pub fn thumb_ins_size(halfword: u16) -> InstructionSize {
         0b11101..=0b11111 => InstructionSize::Ins32,
         _ => InstructionSize::Ins16,
     }
-}
-
-/// Helper function for instruction decoding to create a [RegisterIndex], giving easier
-/// readability.
-fn reg(index: u32) -> RegisterIndex {
-    RegisterIndex::new_main(index)
 }
 
 /// Returns "{rd}" if rd is equal to rn, else "{rd}, {rn}".

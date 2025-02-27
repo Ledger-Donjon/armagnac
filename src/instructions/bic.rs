@@ -9,7 +9,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{reg, unpredictable, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction};
 
 /// BIC (immediate) instruction.
 pub struct BicImm {
@@ -33,8 +33,8 @@ impl Instruction for BicImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
                 let imm12 = (ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xff;
                 let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
@@ -90,19 +90,19 @@ impl Instruction for BicReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rdn = reg(ins & 7);
+                let rdn = ins.reg3(0);
                 Self {
                     rd: rdn,
                     rn: rdn,
-                    rm: reg(ins >> 3 & 7),
+                    rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
                 }
             }
             2 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc() || rm.is_sp_or_pc())?;
                 let shift = Shift::from_bits(ins >> 4 & 3, (ins >> 12 & 7) << 2 | ins >> 6 & 3);
                 Self {

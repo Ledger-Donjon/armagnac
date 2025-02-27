@@ -3,7 +3,7 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{reg, unpredictable},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -25,7 +25,7 @@ impl Instruction for Bx {
         debug_assert_eq!(tn, 1);
         unpredictable(state.in_it_block_not_last())?;
         Ok(Self {
-            rm: reg(ins >> 3 & 0xf),
+            rm: ins.reg4(3),
         })
     }
 

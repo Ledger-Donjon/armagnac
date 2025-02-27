@@ -4,10 +4,10 @@ use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     instructions::ItState,
-    registers::MainRegisterList,
+    registers::{MainRegisterList, RegisterIndex},
 };
 
-use super::{reg, unpredictable, Instruction};
+use super::{unpredictable, Instruction};
 
 /// POP instruction.
 pub struct Pop {
@@ -40,7 +40,7 @@ impl Instruction for Pop {
             3 => {
                 let rt = ins >> 12 & 0xf;
                 let registers = MainRegisterList::new((1 << rt) as u16);
-                let rt = reg(rt);
+                let rt = RegisterIndex::new_main(rt);
                 unpredictable(rt.is_sp() || (rt.is_pc() && state.in_it_block_not_last()))?;
                 Self { registers }
             }

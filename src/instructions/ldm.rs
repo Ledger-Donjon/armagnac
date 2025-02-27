@@ -7,7 +7,7 @@ use crate::{
     registers::{MainRegisterList, RegisterIndex},
 };
 
-use super::{other, reg, unpredictable, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// LDM instruction.
 pub struct Ldm {
@@ -27,7 +27,7 @@ impl Instruction for Ldm {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rn = reg(ins >> 8 & 7);
+                let rn = ins.reg3(8);
                 let registers = MainRegisterList::new((ins & 0xff) as u16);
                 unpredictable(registers.is_empty())?;
                 Self {
@@ -38,7 +38,7 @@ impl Instruction for Ldm {
             }
             2 => {
                 let wback = ins >> 21 & 1 != 0;
-                let rn = reg(ins >> 16 & 0xf);
+                let rn = ins.reg4(16);
                 other(wback && rn.is_sp())?;
                 let registers = MainRegisterList::new((ins & 0xdfff) as u16);
                 unpredictable(rn.is_pc() || registers.len() < 2 || (ins & 0xc000 == 0xc000))?;

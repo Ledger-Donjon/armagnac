@@ -8,7 +8,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{reg, unpredictable, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction};
 
 /// CMP (immediate) instruction.
 pub struct CmpImm {
@@ -26,11 +26,11 @@ impl Instruction for CmpImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rn: reg(ins >> 8 & 7),
+                rn: ins.reg3(8),
                 imm32: ins & 0xff,
             },
             2 => Self {
-                rn: reg(ins >> 16 & 0xf),
+                rn: ins.reg4(16),
                 imm32: thumb_expand_imm((ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xff)?,
             },
             _ => panic!(),
@@ -79,16 +79,16 @@ impl Instruction for CmpReg {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rn: reg(ins & 7),
-                rm: reg(ins >> 3 & 7),
+                rn: ins.reg3(0),
+                rm: ins.reg3(3),
                 shift: Shift::lsl(0),
             },
             2 => {
                 let rn = (ins >> 7 & 1) << 3 | ins & 7;
                 let rm = ins >> 3 & 0xf;
                 unpredictable(rn < 8 && rm < 8)?;
-                let rn = reg(rn);
-                let rm = reg(rm);
+                let rn = RegisterIndex::new_main(rn);
+                let rm = RegisterIndex::new_main(rm);
                 unpredictable(rn.is_pc() || rm.is_pc())?;
                 Self {
                     rn,
@@ -97,8 +97,8 @@ impl Instruction for CmpReg {
                 }
             }
             3 => {
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
                 unpredictable(rn.is_pc() || rm.is_sp_or_pc())?;
                 Self {
                     rn,

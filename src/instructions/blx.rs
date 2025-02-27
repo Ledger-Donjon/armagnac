@@ -3,7 +3,7 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{reg, unpredictable},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -23,7 +23,7 @@ impl Instruction for Blx {
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rm = reg(ins >> 3 & 0xf);
+        let rm = ins.reg4(3);
         unpredictable(rm.is_pc())?;
         unpredictable(state.in_it_block_not_last())?;
         Ok(Self { rm })

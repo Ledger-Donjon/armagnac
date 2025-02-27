@@ -5,7 +5,7 @@ use core::panic;
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{reg, unpredictable, ItState},
+    instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
 
@@ -25,7 +25,7 @@ impl Instruction for Mrs {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rd = reg(ins >> 8 & 0xf);
+        let rd = ins.reg4(8);
         let sysm = ins & 0xff;
         let good_sysm = match sysm {
             0..=3 | 5..=9 | 16..=20 => true,

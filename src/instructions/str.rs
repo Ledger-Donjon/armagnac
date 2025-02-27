@@ -9,7 +9,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{indexing_args, other, reg, undefined, unpredictable, AddOrSub, Instruction};
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, Instruction};
 
 /// STR (immediate) instruction.
 pub struct StrImm {
@@ -40,15 +40,15 @@ impl Instruction for StrImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rt: reg(ins & 7),
-                rn: reg(ins >> 3 & 7),
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
                 imm32: (ins >> 6 & 0x1f) << 2,
                 index: true,
                 add: true,
                 wback: false,
             },
             2 => Self {
-                rt: reg(ins >> 8 & 7),
+                rt: ins.reg3(8),
                 rn: RegisterIndex::Sp,
                 imm32: (ins & 0xff) << 2,
                 index: true,
@@ -56,8 +56,8 @@ impl Instruction for StrImm {
                 wback: false,
             },
             3 => {
-                let rn = reg(ins >> 16 & 0xf);
-                let rt = reg(ins >> 12 & 0xf);
+                let rn = ins.reg4(16);
+                let rt = ins.reg4(12);
                 undefined(rn.is_pc())?;
                 unpredictable(rt.is_pc())?;
                 Self {
@@ -70,8 +70,8 @@ impl Instruction for StrImm {
                 }
             }
             4 => {
-                let rn = reg(ins >> 16 & 0xf);
-                let rt = reg(ins >> 12 & 0xf);
+                let rn = ins.reg4(16);
+                let rt = ins.reg4(12);
                 let puw = ins >> 8 & 7;
                 let imm32 = ins & 0xff;
                 let wback = puw & 1 != 0;

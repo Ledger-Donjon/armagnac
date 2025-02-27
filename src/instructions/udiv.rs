@@ -3,7 +3,7 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{rdn_args_string, reg, unpredictable, ItState},
+    instructions::{rdn_args_string, unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
 
@@ -25,9 +25,9 @@ impl Instruction for Udiv {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rd = reg(ins >> 8 & 0xf);
-        let rn = reg(ins >> 16 & 0xf);
-        let rm = reg(ins & 0xf);
+        let rd = ins.reg4(8);
+        let rn = ins.reg4(16);
+        let rm = ins.reg4(0);
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc() || rm.is_sp_or_pc())?;
         Ok(Self { rd, rn, rm })
     }

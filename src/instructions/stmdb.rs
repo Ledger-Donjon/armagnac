@@ -3,7 +3,7 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{other, reg, unpredictable, ItState},
+    instructions::{other, unpredictable, DecodeHelper, ItState},
     registers::{MainRegisterList, RegisterIndex},
 };
 
@@ -30,7 +30,7 @@ impl Instruction for Stmdb {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rn = reg(ins >> 16 & 0xf);
+        let rn = ins.reg4(16);
         let registers = MainRegisterList::new((ins & 0x5fff) as u16);
         let wback = ins >> 21 & 1 != 0;
         other(wback && rn.is_sp())?; // PUSH

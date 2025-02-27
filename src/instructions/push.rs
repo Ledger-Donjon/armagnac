@@ -7,7 +7,7 @@ use crate::{
     registers::{MainRegisterList, RegisterIndex},
 };
 
-use super::{reg, stmdb::Stmdb, unpredictable, Instruction};
+use super::{stmdb::Stmdb, unpredictable, Instruction};
 
 /// PUSH instruction.
 pub struct Push {
@@ -39,7 +39,7 @@ impl Instruction for Push {
             3 => {
                 let rt = ins >> 12 & 0xf;
                 let registers = MainRegisterList::new((1 << rt) as u16);
-                let rt = reg(rt);
+                let rt = RegisterIndex::new_main(rt);
                 unpredictable(rt.is_sp_or_pc())?;
                 Self { registers }
             }

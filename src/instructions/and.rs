@@ -10,7 +10,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{other, reg, unpredictable, DecodeHelper, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// AND immediate instruction.
 pub struct AndImm {
@@ -34,8 +34,8 @@ impl Instruction for AndImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
                 let imm12 = ((ins >> 26 & 1) << 11) | ((ins >> 12 & 7) << 8) | (ins & 0xff);
                 let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
                 let set_flags = ins >> 20 & 1 != 0;

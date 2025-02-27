@@ -3,7 +3,7 @@
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{reg, unpredictable, ItState},
+    instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
 
@@ -27,8 +27,8 @@ impl Instruction for Ubfx {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rd = reg(ins >> 8 & 0xf);
-        let rn = reg(ins >> 16 & 0xf);
+        let rd = ins.reg4(8);
+        let rn = ins.reg4(16);
         let lsb = ((ins >> 12 & 7) << 2 | ins >> 6 & 3) as u8;
         let width_minus_1 = (ins & 0x1f) as u8;
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;

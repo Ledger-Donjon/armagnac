@@ -10,7 +10,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{reg, unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction};
 
 /// MOV (immediate) instruction.
 pub struct MovImm {
@@ -110,7 +110,7 @@ impl Instruction for MovReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rd = reg(ins & 7 | (ins >> 7 & 1) << 3);
+                let rd = RegisterIndex::new_main(ins & 7 | (ins >> 7 & 1) << 3);
                 unpredictable(rd.is_pc() && state.in_it_block_not_last())?;
                 Self {
                     rd,
@@ -127,8 +127,8 @@ impl Instruction for MovReg {
                 }
             }
             3 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rm = ins.reg4(0);
                 let set_flags = ins >> 20 & 1 != 0;
                 unpredictable(set_flags && (rd.is_sp_or_pc() || rm.is_sp_or_pc()))?;
                 unpredictable(

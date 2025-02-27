@@ -9,7 +9,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{other, reg, unpredictable, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// LSL (immediate) instruction.
 pub struct LslImm {
@@ -34,15 +34,15 @@ impl Instruction for LslImm {
                 let imm5 = ins >> 6 & 0x1f;
                 other(imm5 == 0)?; // MOV (register)
                 Self {
-                    rd: reg(ins & 7),
-                    rm: reg(ins >> 3 & 7),
+                    rd: ins.reg3(0),
+                    rm: ins.reg3(3),
                     shift: imm5 as u8,
                     set_flags: !state.in_it_block(),
                 }
             }
             2 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rm = ins.reg4(0);
                 let imm5 = ins >> 12 & 7 | ins >> 6 & 3;
                 other(imm5 == 0)?; // MOV (register)
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
@@ -97,18 +97,18 @@ impl Instruction for LslReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rdn = reg(ins & 7);
+                let rdn = ins.reg3(0);
                 Self {
                     rd: rdn,
                     rn: rdn,
-                    rm: reg(ins >> 3 & 7),
+                    rm: ins.reg3(3),
                     set_flags: !state.in_it_block(),
                 }
             }
             2 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc() || rm.is_sp_or_pc())?;
                 Self {
                     rd,

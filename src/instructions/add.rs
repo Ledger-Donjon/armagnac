@@ -13,7 +13,7 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::{other, reg, unpredictable, DecodeHelper, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// ADD (immediate) instruction.
 pub struct AddImm {
@@ -40,13 +40,13 @@ impl Instruction for AddImm {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<AddImm, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rd: reg(ins & 7),
-                rn: reg(ins >> 3 & 7),
+                rd: ins.reg3(0),
+                rn: ins.reg3(3),
                 imm32: ins >> 6 & 7,
                 set_flags: !state.in_it_block(),
             },
             2 => {
-                let rdn = reg(ins >> 8 & 7);
+                let rdn = ins.reg3(8);
                 Self {
                     rd: rdn,
                     rn: rdn,
@@ -56,8 +56,8 @@ impl Instruction for AddImm {
             }
             3 => {
                 let set_flags = ins >> 20 & 1 != 0;
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
                 let imm12 = (ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xff;
                 let imm32 = thumb_expand_imm(imm12)?;
                 other(rd.is_pc() && set_flags)?;
@@ -71,8 +71,8 @@ impl Instruction for AddImm {
                 }
             }
             4 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
                 if rn.is_sp_or_pc() {
                     return Err(DecodeError::Other); // ADR or ADD (SP plus immediate)
                 }
@@ -142,8 +142,8 @@ impl Instruction for AddReg {
                 set_flags: !state.in_it_block(),
             },
             2 => {
-                let rm = reg(ins >> 3 & 0xf);
-                let rdn = reg((ins >> 7 & 1) << 3 | ins & 7);
+                let rm = ins.reg4(3);
+                let rdn = RegisterIndex::new_main((ins >> 7 & 1) << 3 | ins & 7);
                 if rdn.is_sp() || rm.is_sp() {
                     return Err(DecodeError::Other); // ADD (SP plus register)
                 }
@@ -162,9 +162,9 @@ impl Instruction for AddReg {
                 }
             }
             3 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
                 let set_flags = ins >> 20 & 1 != 0;
                 if rd.is_pc() && set_flags {
                     return Err(DecodeError::Other); // CMN (register)
@@ -328,7 +328,7 @@ impl Instruction for AddSpPlusReg {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rdm = reg(ins.imm1(7) << 3 | ins.imm3(0));
+                let rdm = RegisterIndex::new_main(ins.imm1(7) << 3 | ins.imm3(0));
                 Self {
                     rd: rdm,
                     rm: rdm,
