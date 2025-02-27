@@ -34,18 +34,18 @@ impl Instruction for OrrImm {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let rd = reg(ins >> 8 & 0xf);
-        let rn = reg(ins >> 16 & 0xf);
+        let rd = ins.reg4(8);
+        let rn = ins.reg4(16);
         other(rn.is_pc())?; // MOV (immediate)
         unpredictable(rd.is_sp_or_pc() || rn.is_sp())?;
-        let imm12 = (ins >> 26 & 1) << 11 | (ins >> 12 & 7) << 8 | ins & 0xff;
+        let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
         Ok(Self {
             rd,
             rn,
             imm32,
             carry,
-            set_flags: ins >> 20 & 1 != 0,
+            set_flags: ins.bit(20),
         })
     }
 
@@ -89,20 +89,21 @@ impl Instruction for OrrReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rdn = reg(ins & 7);
+                let rdn = ins.reg3(0);
                 Self {
                     rd: rdn,
                     rn: rdn,
-                    rm: reg(ins >> 3 & 7),
+                    rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
                 }
             }
             2 => {
-                let rd = reg(ins >> 8 & 0xf);
-                let rn = reg(ins >> 16 & 0xf);
-                let rm = reg(ins & 0xf);
-                let shift = Shift::from_bits(ins >> 4 & 3, (ins >> 12 & 7) << 2 | ins >> 6 & 3);
+                let rd = ins.reg4(8);
+                let rn = ins.reg4(16);
+                let rm = ins.reg4(0);
+                other(rn.is_pc())?; // MOV (register)
+                let shift = Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6));
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp() || rm.is_sp_or_pc())?;
                 Self {
                     rd,
