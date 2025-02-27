@@ -86,7 +86,7 @@ impl Instruction for OrnReg {
         &["11101010011xxxxx(0)xxxxxxxxxxxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);

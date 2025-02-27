@@ -209,7 +209,7 @@ impl Instruction for LdrshReg {
         "ldrsh".into()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         format!(
             "{}, [{}, {}{}]",
             self.rt,

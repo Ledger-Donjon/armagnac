@@ -6,7 +6,8 @@ use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
-    instructions::{other, rdn_args_string, reg, unpredictable, ItState},
+    helpers::BitAccess,
+    instructions::{other, rdn_args_string, unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
 

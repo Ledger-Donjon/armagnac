@@ -124,7 +124,7 @@ impl Instruction for StrhReg {
         &["0101001xxxxxxxxx", "111110000010xxxxxxxx000000xxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
                 rt: ins.reg3(0),

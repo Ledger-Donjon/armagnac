@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::{
     arm::RunError,
     decoder::DecodeError,
@@ -29,7 +27,7 @@ impl Instruction for Bfc {
         &["11110(0)11011011110xxxxxxxxx(0)xxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         assert_eq!(tn, 1);
         let rd = ins.reg4(8);
         unpredictable(rd.is_sp_or_pc())?;
@@ -64,13 +62,8 @@ impl Instruction for Bfc {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        arm::Arm7Processor,
-        instructions::{rev16::Rev16, Instruction},
-        registers::RegisterIndex,
-    };
-
     use super::Bfc;
+    use crate::{arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex};
 
     fn test_bfc_vec(proc: &mut Arm7Processor, lsb: u8, msb: u8, expected_r0: u32) {
         proc.registers.r0 = 0xffffffff;
