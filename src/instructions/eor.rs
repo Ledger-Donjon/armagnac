@@ -38,7 +38,7 @@ impl Instruction for EorImm {
         let set_flags = ins.bit(20);
         let (imm32, carry) =
             thumb_expand_imm_optc(ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0))?;
-        other(rd.is_pc())?; // TEQ (immediate)
+        other(rd.is_pc() && set_flags)?; // TEQ (immediate)
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
         Ok(Self {
             rd,
