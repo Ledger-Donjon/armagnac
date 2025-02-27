@@ -3,6 +3,7 @@
 use core::panic;
 
 use crate::{
+    arith::{shift_c, Shift},
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,
     it_state::ItState,
@@ -100,6 +101,78 @@ impl Instruction for StrhImm {
             "{}, {}",
             self.rt,
             indexing_args(self.rn, self.imm32, self.index, self.add, self.wback,)
+        )
+    }
+}
+
+/// STRH (register) instruction.
+///
+/// Store Register Halfword.
+pub struct StrhReg {
+    /// Source register.
+    rt: RegisterIndex,
+    /// Base register.
+    rn: RegisterIndex,
+    /// Offset register.
+    rm: RegisterIndex,
+    /// Rm shift amount.
+    shift: u8,
+}
+
+impl Instruction for StrhReg {
+    fn patterns() -> &'static [&'static str] {
+        &["0101001xxxxxxxxx", "111110000010xxxxxxxx000000xxxxxx"]
+    }
+
+    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match tn {
+            1 => Self {
+                rt: ins.reg3(0),
+                rn: ins.reg3(3),
+                rm: ins.reg3(6),
+                shift: 0,
+            },
+            2 => {
+                let rn = ins.reg4(16);
+                undefined(rn.is_pc())?;
+                let rt = ins.reg4(12);
+                let rm = ins.reg4(0);
+                unpredictable(rt.is_sp_or_pc() || rm.is_sp_or_pc())?;
+                Self {
+                    rt,
+                    rn,
+                    rm,
+                    shift: ins.imm2(4) as u8,
+                }
+            }
+            _ => panic!(),
+        })
+    }
+
+    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+        let carry_in = proc.registers.xpsr.c();
+        let offset = shift_c(
+            proc.registers[self.rm],
+            Shift::lsl(self.shift as u32),
+            carry_in,
+        )
+        .0;
+        let address = proc.registers[self.rn].wrapping_add(offset);
+        proc.set_u16le_at(address, proc.registers[self.rt] as u16)?;
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        "strh".into()
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!(
+            "{}, [{}, {}{}]",
+            self.rt,
+            self.rn,
+            self.rm,
+            Shift::lsl(self.shift as u32).arg_string()
         )
     }
 }
