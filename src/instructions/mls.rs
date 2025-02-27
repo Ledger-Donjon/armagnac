@@ -60,7 +60,7 @@ mod tests {
     use crate::{
         arm::Arm7Processor,
         instructions::{mls::Mls, Instruction},
-        registers::RegisterIndex,
+        registers::{CoreRegisters, RegisterIndex},
     };
 
     #[test]
@@ -69,6 +69,10 @@ mod tests {
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 0x01020304;
         proc.registers.r3 = 0x87654321;
+        let expected_registers = CoreRegisters {
+            r0: 0x7ca08141,
+            ..proc.registers
+        };
         let ins = Mls {
             rd: RegisterIndex::R0,
             rn: RegisterIndex::R1,
@@ -76,6 +80,6 @@ mod tests {
             ra: RegisterIndex::R3,
         };
         ins.execute(&mut proc).unwrap();
-        assert_eq!(proc.registers.r0, 0x7ca08141);
+        assert_eq!(proc.registers, expected_registers);
     }
 }
