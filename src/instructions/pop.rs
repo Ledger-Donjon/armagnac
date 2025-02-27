@@ -50,23 +50,25 @@ impl Instruction for Pop {
 
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
         let mut addr = proc.sp();
-        let mut has_pc = false;
+        // Note: In the ARM Architecture Reference manual, the reference implementation for POP
+        // updates the SP register at the end of the procedure. However, if PC is in the registers
+        // list, `LoadWritePC()` would be called before POP effect on SP is applied, and in case of
+        // exception return the frame pointer would be wrong.
+        // I believe the specification is wrong here, moving the update of SP before seems to fix
+        // that.
+        *proc.registers.sp_mut() += 4 * self.registers.len() as u32;
+        let mut jump = false;
         for reg in self.registers.iter() {
-            let mut val = proc.u32le_at(addr)?;
+            let val = proc.u32le_at(addr)?;
             if reg.is_pc() {
-                has_pc = true;
-                if val & 1 == 1 {
-                    // Thumb mode jump
-                    val -= 1;
-                } else {
-                    todo!("pop into PC in arm mode");
-                }
+                jump = true;
+                proc.load_write_pc(val)?
+            } else {
+                proc.registers.set(reg, val);
             }
-            proc.registers.set(reg, val);
             addr = addr.wrapping_add(4);
         }
-        *proc.registers.sp_mut() = addr;
-        Ok(has_pc)
+        Ok(jump)
     }
 
     fn name(&self) -> String {

@@ -609,7 +609,7 @@ impl Arm7Processor {
     /// Corresponds to the function `ExceptionReturn()` described in the ARM Architecture Reference
     /// Manual.
     fn exception_return(&mut self, exc_return: u32) -> Result<(), RunError> {
-        assert!(self.registers.mode == Mode::Handler);
+        assert_eq!(self.registers.mode, Mode::Handler);
         ////unpredictable(address & 0xf0000000 != 0xf0000000)?;
         let number = self.registers.xpsr.exception_number();
         let nested_activation = false; // TODO
@@ -619,10 +619,24 @@ impl Arm7Processor {
             return Ok(());
         }
         let frame_ptr = match exc_return & 0xf {
-            0b0001 => todo!(),
-            0b1001 => todo!(),
+            0b0001 => {
+                // Return to Handler
+                self.registers.mode = Mode::Handler;
+                self.registers.control.set_spsel(false);
+                self.registers.msp
+            }
+            0b1001 => {
+                // Returning to Thread using Main stack
+                if nested_activation && !self.system_control.borrow().ccr.nonbasethrdena() {
+                    todo!()
+                } else {
+                    self.registers.mode = Mode::Thread;
+                    self.registers.control.set_spsel(false);
+                    self.registers.msp
+                }
+            }
             0b1101 => {
-                // Returning to thread using process stack
+                // Returning to Thread using Process stack
                 if nested_activation && !self.system_control.borrow().ccr.nonbasethrdena() {
                     todo!()
                 } else {
@@ -724,9 +738,11 @@ impl Arm7Processor {
             pc &= 0xfffffffe;
         };
         self.registers.pc = pc;
-        let psr = self.u32le_at(frame_ptr + 0x1c)?;
 
-        let sp_mask = ((self.registers.xpsr.get().bit(9) && force_align) as u32) << 2;
+        let psr = self.u32le_at(frame_ptr + 0x1c)?;
+        let sp_mask = ((psr.bit(9) && force_align) as u32) << 2;
+        self.registers.xpsr.set(psr); // Note: this does not copy bit 9
+
         match exc_return & 0xf {
             0b0001 | 0b1001 | 0b1101 => {
                 let new_sp = (self.sp() + frame_size) | sp_mask;
