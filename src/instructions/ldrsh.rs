@@ -1,3 +1,5 @@
+//! Implements LDRSH (Load Register Signed Halfword) instruction.
+
 use crate::{
     align::Align,
     arith::{shift_c, Shift},

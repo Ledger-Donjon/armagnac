@@ -1,4 +1,4 @@
-//! Implements BIC (immediate) and BIC (register) instructions.
+//! Implements BIC (Bit Clear) instruction.
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},

@@ -1,4 +1,4 @@
-//! Implements CLZ instruction.
+//! Implements CLZ (Count Leading Zeros) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

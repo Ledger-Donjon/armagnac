@@ -1,4 +1,4 @@
-//! Implements UDIV instruction.
+//! Implements UDIV (Unsigned Divide) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

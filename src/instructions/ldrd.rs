@@ -1,4 +1,4 @@
-//! Implements LDRD (immediate) and LDRD (literal) instructions.
+//! Implements LDRD (Load Register Dual) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

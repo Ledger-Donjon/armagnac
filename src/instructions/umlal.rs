@@ -1,3 +1,5 @@
+//! Implements UMLAL (Unsigned Multiply Accumulate Long) instruction.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

@@ -1,5 +1,6 @@
-use core::panic;
+//! Implements SBC (Subtract with Carry) instruction.
 
+use super::Instruction;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{Arm7Processor, RunError},
@@ -9,8 +10,7 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
+use core::panic;
 
 /// SBC (immediate) instruction.
 ///

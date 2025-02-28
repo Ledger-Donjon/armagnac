@@ -1,4 +1,4 @@
-//! Implements MSR (register) instruction.
+//! Implements MSR (Move to Special Register) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

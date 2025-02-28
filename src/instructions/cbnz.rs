@@ -1,4 +1,4 @@
-//! Implements CBNZ and CBZ instructions.
+//! Implements CBNZ (Compare and Branch on Non-Zero) and CBZ (Compare and Branch on Zero) instructions.
 
 use crate::{
     arm::{Arm7Processor, RunError},

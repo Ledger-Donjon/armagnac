@@ -1,3 +1,5 @@
+//! Implements LDRSB (Load Register Signed Byte) instruction.
+
 use crate::{
     align::Align,
     arith::{shift_c, Shift},

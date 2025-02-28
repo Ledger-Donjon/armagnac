@@ -1,4 +1,4 @@
-//! Implements BX instruction.
+//! Implements BX (Branch and Exchange) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

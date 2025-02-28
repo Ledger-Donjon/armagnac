@@ -1,4 +1,4 @@
-//! Implements TST (immediate) and TST (register) instructions.
+//! Implements TST (Test) instruction.
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},

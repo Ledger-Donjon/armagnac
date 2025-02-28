@@ -1,4 +1,4 @@
-//! Implements STRB (immediate) and STRB (register) instructions.
+//! Implements STRB (Store Byte) instruction.
 
 use crate::{
     arith::{shift_c, Shift},

@@ -1,4 +1,4 @@
-//! Implements LDRH (immediate), LDRH (literal), LDRH (register) and LDRHT instructions.
+//! Implements LDRH (Load Register Halfword) instruction.
 
 use crate::{
     align::Align,

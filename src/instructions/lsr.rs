@@ -1,4 +1,4 @@
-//! Implements LSR (immediate) and LSR (register) instructions.
+//! Implements LSR (Logical Shift Right) instruction.
 
 use crate::{
     arith::{shift_c, Shift},

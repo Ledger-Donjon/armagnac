@@ -1,4 +1,4 @@
-//! Implements BL instruction.
+//! Implements BL (Branch with Link) instruction.
 
 use crate::{
     arith::sign_extend,

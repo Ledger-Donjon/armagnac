@@ -1,4 +1,4 @@
-//! Implements MVN (immediate) and MVN (register) instructions.
+//! Implements MVN (Move Not) instruction.
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},

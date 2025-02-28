@@ -1,4 +1,4 @@
-//! Implements NOP instruction.
+//! Implements NOP (No Operation) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

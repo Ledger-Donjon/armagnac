@@ -1,3 +1,6 @@
+//! Implements STM (Store Multiple), STMIA (Store Multiple Increment After) and STMEA (Store
+//! Multiple Empty Ascending) instructions.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

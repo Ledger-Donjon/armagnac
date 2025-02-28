@@ -1,4 +1,4 @@
-//! Implements DSB instruction.
+//! Implements DSB (Data Synchronization Barrier) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

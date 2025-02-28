@@ -1,4 +1,4 @@
-//! Implements UXTB and UXTH instructions.
+//! Implements UXTH (Unsigned Extend Halfword) instruction.
 
 use crate::{
     arith::ror,

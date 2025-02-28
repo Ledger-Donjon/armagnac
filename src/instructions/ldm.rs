@@ -1,4 +1,5 @@
-//! Implements LDM, LDMIA and LDMFD instructions.
+//! Implements LDM (Load Multiple), LDMIA (Load Multiple Increment After) and LDMFD (Load Multiple
+//! Full Descending) instructions.
 
 use crate::{
     arm::{Arm7Processor, RunError},

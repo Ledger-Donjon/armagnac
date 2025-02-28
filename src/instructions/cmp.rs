@@ -1,4 +1,4 @@
-//! Implements CMP (immediate) and CMP (register) instructions.
+//! Implements CMP (Compare) instruction.
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},

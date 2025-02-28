@@ -1,4 +1,4 @@
-//! Implements MUL instruction.
+//! Implements MUL (Multiply) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

@@ -1,4 +1,4 @@
-//! Implements LDRB (immediate), LDRB (literal) and LDRB (register) instructions.
+//! Implements LDRB (Load Register Byte) instruction.
 
 use core::panic;
 

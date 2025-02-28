@@ -1,4 +1,4 @@
-//! Implements EOR (immediate) and EOR (register) instructions.
+//! Implements EOR (Exclusive OR) instruction.
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},

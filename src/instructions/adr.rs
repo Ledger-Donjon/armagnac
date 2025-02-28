@@ -1,5 +1,6 @@
-use crate::{align::Align, registers::RegisterIndex};
+//! Implements ADR (Address to Register) instruction.
 
+use crate::{align::Align, registers::RegisterIndex};
 use super::{unpredictable, DecodeHelper, Instruction};
 
 /// ADR instruction.

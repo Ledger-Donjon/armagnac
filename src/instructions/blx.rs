@@ -1,4 +1,4 @@
-//! Implements BLX instruction.
+//! Implements BLX (Branch with Link and Exchange) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

@@ -1,4 +1,4 @@
-//! Implements SEV instruction.
+//! Implements SEV (Send Event) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

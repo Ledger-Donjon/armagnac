@@ -1,4 +1,4 @@
-//! Implements SDIV instruction.
+//! Implements SDIV (Signed Divide) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

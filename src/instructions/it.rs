@@ -1,4 +1,4 @@
-//! Implements IT instruction.
+//! Implements IT (If Then) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

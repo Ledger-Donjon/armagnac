@@ -1,4 +1,4 @@
-//! Implements UBFX instruction.
+//! Implements UBFX (Unsigned Bit Field Extract) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

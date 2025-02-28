@@ -1,4 +1,4 @@
-//! Implements STRH (immediate), STRH (register) and STRHT instructions.
+//! Implements STRH (Store Register Halfword) instruction.
 
 use core::panic;
 

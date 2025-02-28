@@ -1,5 +1,4 @@
-//! Implements SUB (immediate), SUB (register), SUB (SP minus immediate) and SUB (SP minus
-//! register) instructions.
+//! Implements SUB (Subtract) instruction.
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},

@@ -1,3 +1,5 @@
+//! Implements SBFX (Signed Bit Field Extract) instruction.
+
 use crate::{
     arith::sign_extend,
     arm::{Arm7Processor, RunError},

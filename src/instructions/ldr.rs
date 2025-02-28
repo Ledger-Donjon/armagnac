@@ -1,4 +1,4 @@
-//! Implements LDR (immediate), LDR (literal) and LDR (register) instructions.
+//! Implements LDR (Load Register) instruction.
 
 use core::panic;
 

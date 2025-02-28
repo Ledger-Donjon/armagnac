@@ -1,3 +1,5 @@
+//! Implements ORN (Logical OR NOT) instruction.
+
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{Arm7Processor, RunError},

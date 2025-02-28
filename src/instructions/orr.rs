@@ -1,4 +1,4 @@
-//! Implements ORR (immediate) and ORR (register) instructions.
+//! Implements ORR (Logical OR) instruction.
 
 use core::panic;
 

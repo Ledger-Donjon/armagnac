@@ -1,3 +1,5 @@
+//! Implements REV (Byte-Reverse Word) instruction.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

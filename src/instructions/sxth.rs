@@ -1,3 +1,5 @@
+//! Implements SXTH (Signed Extend Halfword) instruction.
+
 use crate::{
     arith::ror,
     arm::{Arm7Processor, RunError},

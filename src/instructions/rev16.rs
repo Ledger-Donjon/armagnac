@@ -1,3 +1,5 @@
+//! Implements REV16 (Byte-Reverse Packed Halfword) instruction.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

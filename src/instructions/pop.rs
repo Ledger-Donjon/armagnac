@@ -1,4 +1,4 @@
-//! Implements POP instruction.
+//! Implements POP (Pop Multiple Registers) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

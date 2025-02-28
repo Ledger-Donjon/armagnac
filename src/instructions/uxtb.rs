@@ -1,4 +1,4 @@
-//! Implements UXTB and UXTH instructions.
+//! Implements UXTB (Unsigned Extend Byte) instruction.
 
 use crate::{
     arith::ror,

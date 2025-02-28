@@ -1,3 +1,5 @@
+//! Implements CMN (Compare Negative) instruction.
+
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{Arm7Processor, RunError},

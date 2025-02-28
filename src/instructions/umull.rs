@@ -1,3 +1,5 @@
+//! Implements UMULL (Unsigned Multiply Long) instruction.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

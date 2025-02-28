@@ -1,4 +1,4 @@
-//! Implements MLA instruction.
+//! Implements MLA (Multiply Accumulate) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

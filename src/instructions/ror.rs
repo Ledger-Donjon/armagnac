@@ -1,3 +1,5 @@
+//! Implements ROR (Rotate Right) instruction.
+
 use crate::{
     arith::{shift_c, Shift},
     arm::{Arm7Processor, RunError},

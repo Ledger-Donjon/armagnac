@@ -1,4 +1,4 @@
-//! Implements AND (immediate) and AND (register) instructions.
+//! Implements AND instruction.
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},

@@ -1,3 +1,5 @@
+//! Implements BFC (Bit Field Clear) instruction.
+
 use crate::{
     arm::RunError,
     decoder::DecodeError,

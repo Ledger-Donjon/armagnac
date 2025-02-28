@@ -5,7 +5,7 @@ mod align;
 mod arith;
 pub mod arm;
 mod condition;
-mod decoder;
+pub mod decoder;
 pub mod helpers;
 pub mod instructions;
 pub mod irq;

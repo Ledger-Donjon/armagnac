@@ -1,5 +1,4 @@
-//! Implements ADD (immediate), ADD (register), ADD (SP plus immediate) and ADD (SP plus register)
-//! instructions.
+//! Implements ADD instruction.
 
 use core::panic;
 

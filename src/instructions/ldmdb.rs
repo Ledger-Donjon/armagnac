@@ -1,3 +1,6 @@
+//! Implements LDMDB (Load Multiple Decrement Before) and LDMEA (Load Multiple Empty Ascending)
+//! instructions.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     decoder::DecodeError,

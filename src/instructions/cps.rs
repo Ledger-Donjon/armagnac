@@ -1,4 +1,4 @@
-//! Implements CPS instruction.
+//! Implements CPS (Change Processor State) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

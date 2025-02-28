@@ -77,9 +77,47 @@ pub mod uxth;
 
 /// All instructions must implement this trait in order to be integrated into the emulator.
 pub trait Instruction {
+    /// Returns a list of string patterns the instruction can match.
+    ///
+    /// Patterns must define each bit of the instruction with following possible symbols:
+    /// - "0" when a bit must be zero,
+    /// - "1" when a bit must be one,
+    /// - "x" for bits part of instruction arguments (registers indexes, immediate values, etc.),
+    /// - "(0)" for bits part of instruction arguments, but expected to be zero,
+    /// - "(1)" for bits part of instruction arguments, but expected to be one.
+    ///
+    /// In the returned array, element 0 is the pattern for T1 encoding, element 1 for T2 encoding,
+    /// etc.
+    ///
+    /// Patterns format matches the patterns indicated in the ARM Architecture Reference Manual,
+    /// making easy to define them with little room for mistakes.
+    ///
+    /// Patterns can have 16 or 32 symbols. If not, the instruction decoder is expected to panic.
+    ///
+    /// For instance, the pattern "0001110xxxxxxxxx" matches the ADD instruction T1 encoding.
     fn patterns() -> &'static [&'static str]
     where
         Self: Sized;
+
+    /// Tries to decode a 16-bit or 32-bit instruction.
+    ///
+    /// `tn` corresponds to the matched encoding (1 for T1, 2 for T2, etc.) and `ins` is the
+    /// instruction value. The current IT state is also passed as parameter, as an instruction can
+    /// have a different behavior whether it is executed inside an IT block or not.
+    ///
+    /// If an instruction matches a pattern but the arguments values lead to another instruction
+    /// instead, [DecodeError::Other] is to be returned so the instruction decoder will try to find
+    /// another matching instruction. Depending on instruction arguments
+    /// [DecodeError::Unpredictable] or [DecodeError::Undefined] may be returned as well. Those
+    /// errors always matches the precise description of the ARM Technical Reference Manual.
+    ///
+    /// [other], [unpredictable] and [undefined] methods can be used as shorthands for testing
+    /// conditions and returning corresponding errors, as in the following example:
+    ///
+    /// ```
+    /// rd = ins.reg4(0);
+    /// unpredictable(rd.is_sp_or_pc())?;
+    /// ```
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError>
     where
         Self: Sized;
@@ -125,10 +163,23 @@ pub fn other(cond: bool) -> Result<(), DecodeError> {
     }
 }
 
+/// Possible instruction sizes for ARM Thumb.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum InstructionSize {
+    /// 16-bit instruction.
     Ins16 = 2,
+    /// 32-bit instruction.
     Ins32 = 4,
+}
+
+impl InstructionSize {
+    /// Returns thumb instruction size based on first halfword value.
+    pub fn from_halfword(halfword: u16) -> Self {
+        match (halfword & 0xf800) >> 11 {
+            0b11101..=0b11111 => InstructionSize::Ins32,
+            _ => InstructionSize::Ins16,
+        }
+    }
 }
 
 pub trait DecodeHelper {
@@ -184,18 +235,6 @@ impl DecodeHelper for u32 {
     /// Extracts `index`, `add` and `wback` flags respectively from bits 10, 9 and 8.
     fn puw(&self) -> (bool, bool, bool) {
         (self & 1 << 10 != 0, self & 1 << 9 != 0, self & 1 << 8 != 0)
-    }
-}
-
-/// Returns thumb instruction size based on first halfword value.
-///
-/// # Arguments
-///
-/// * `halfword` - First halfword of the instruction.
-pub fn thumb_ins_size(halfword: u16) -> InstructionSize {
-    match (halfword & 0xf800) >> 11 {
-        0b11101..=0b11111 => InstructionSize::Ins32,
-        _ => InstructionSize::Ins16,
     }
 }
 
@@ -265,9 +304,23 @@ impl AddOrSub for u32 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        instructions::{indexing_args, rdn_args_string},
+        instructions::{indexing_args, rdn_args_string, InstructionSize},
         registers::RegisterIndex,
     };
+
+    #[test]
+    fn test_instruction_size() {
+        for i in 0..u16::MAX {
+            assert_eq!(
+                InstructionSize::from_halfword(i),
+                if i >= 0xe800 {
+                    InstructionSize::Ins32
+                } else {
+                    InstructionSize::Ins16
+                }
+            )
+        }
+    }
 
     #[test]
     fn test_rdn_args_string() {

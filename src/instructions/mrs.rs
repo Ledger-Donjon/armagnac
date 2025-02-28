@@ -1,4 +1,4 @@
-//! Implements MRS instruction.
+//! Implements MRS (Move to Register from Special) instruction.
 
 use core::panic;
 

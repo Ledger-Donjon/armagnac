@@ -1,4 +1,4 @@
-//! Implements B instruction.
+//! Implements B (Branch) instruction.
 
 use crate::{
     arith::sign_extend, arm::Arm7Processor, condition::Condition, decoder::DecodeError,

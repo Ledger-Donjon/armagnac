@@ -1,4 +1,5 @@
-//! Implements STMDB and STMFD instructions.
+//! Implements STMDB (Store Multiple Decrement Before) and STMFD (Store Multiple Full Descending)
+//! instructions.
 
 use crate::{
     arm::{Arm7Processor, RunError},

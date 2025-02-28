@@ -1,4 +1,4 @@
-//! Implements ISB instruction.
+//! Implements ISB (Instruction Synchronization Barrier) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

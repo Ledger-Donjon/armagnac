@@ -1,4 +1,4 @@
-//! Implements RBIT instruction.
+//! Implements RBIT (Reverse Bits) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},

@@ -1,4 +1,4 @@
-//! Implements MOV (immediate), MOV (register).
+//! Implements MOV (Move) instruction.
 
 use core::panic;
 

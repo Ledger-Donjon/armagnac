@@ -10,7 +10,7 @@ use crate::{
     condition::Condition,
     decoder::{ArmV7InstructionDecoder, InstructionDecodeError},
     helpers::BitAccess,
-    instructions::{thumb_ins_size, Instruction, InstructionSize},
+    instructions::{Instruction, InstructionSize},
     irq::Irq,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
     mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
@@ -487,22 +487,19 @@ impl Arm7Processor {
     ) -> Result<(InstructionBox, InstructionSize), RunError> {
         let hw = self.u16le_at(address)?;
         let it_state = self.registers.xpsr.it_state();
-        let (ins, size) = match thumb_ins_size(hw) {
-            InstructionSize::Ins16 => (
+        let size = InstructionSize::from_halfword(hw);
+        let ins = match size {
+            InstructionSize::Ins16 => {
                 self.instruction_decoder
-                    .try_decode(hw as u32, InstructionSize::Ins16, it_state)?,
-                InstructionSize::Ins16,
-            ),
+                    .try_decode(hw as u32, InstructionSize::Ins16, it_state)?
+            }
             InstructionSize::Ins32 => {
                 let hw2 = self.u16le_at(address + 2)?;
-                (
-                    self.instruction_decoder.try_decode(
-                        ((hw as u32) << 16) + hw2 as u32,
-                        InstructionSize::Ins32,
-                        it_state,
-                    )?,
+                self.instruction_decoder.try_decode(
+                    ((hw as u32) << 16) + hw2 as u32,
                     InstructionSize::Ins32,
-                )
+                    it_state,
+                )?
             }
         };
         Ok((ins, size))

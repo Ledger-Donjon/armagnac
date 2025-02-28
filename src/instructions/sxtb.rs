@@ -1,3 +1,5 @@
+//! Implements SXTB (Signed Extend Byte) instruction.
+
 use super::{unpredictable, DecodeHelper, Instruction};
 use crate::{
     arith::ror,

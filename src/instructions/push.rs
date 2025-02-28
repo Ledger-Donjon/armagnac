@@ -1,4 +1,4 @@
-//! Implements PUSH instruction.
+//! Implements PUSH (Push Multiple Registers) instruction.
 
 use crate::{
     arm::{Arm7Processor, RunError},
