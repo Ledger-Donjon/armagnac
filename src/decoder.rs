@@ -28,6 +28,7 @@ pub enum InstructionPatternBit {
     ArgOne,
 }
 
+#[derive(Debug)]
 pub enum DecodeError {
     Other,
     Unpredictable,

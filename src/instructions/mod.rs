@@ -1,3 +1,10 @@
+//! ARM instructions implementation module.
+//!
+//! Each implemented instruction has its own submodule, holding a struct for each variant
+//! (immediate, register, etc.) of the instruction. For example, the AND instruction is implemented
+//! in the [and] module by the [and::AndImm] for the Immediate variant and [and::AndReg] for the
+//! Register variant.
+
 use crate::{
     arm::{Arm7Processor, RunError},
     condition::Condition,
@@ -115,24 +122,55 @@ pub trait Instruction {
     /// conditions and returning corresponding errors, as in the following example:
     ///
     /// ```
-    /// rd = ins.reg4(0);
+    /// # use armagnac::instructions::DecodeHelper;
+    /// # use armagnac::instructions::unpredictable;
+    /// # use armagnac::decoder::DecodeError;
+    /// # let ins = 0u32;
+    /// let rd = ins.reg4(0);
     /// unpredictable(rd.is_sp_or_pc())?;
+    /// # Ok::<(), DecodeError>(())
     /// ```
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError>
     where
         Self: Sized;
 
-    /// Returns instruction execution own condition, or None if the condition in the IT state is to
-    /// be followed. Only the B instruction in T1 and T3 encodings should implement this, all other
-    /// instructions rely on the blanket implementation which returns [None].
+    /// Returns instruction execution own condition, or [None] if the condition in the IT state is
+    /// to be followed. Only the B instruction in T1 and T3 encodings should implement this, all
+    /// other instructions rely on the blanket implementation which returns [None].
     fn condition(&self) -> Option<Condition> {
         None
     }
 
+    /// Execute the instruction and updates given `proc` processor state.
+    ///
+    /// Returns `Ok(true)` if the instruction has branching effect, `Ok(false)` if not, or
+    /// eventually an execution error such has invalid memory access for instance.
     fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError>;
 
+    /// Returns name of the instruction to be shown in its mnemonic.
+    ///
+    /// Returned name can be dynamic depending on the instruction effect. In particular, 's' suffix
+    /// may appear when the instruction updates the processor condition flags.
     fn name(&self) -> String;
 
+    /// Formats and returns arguments strings to be shown in the instruction mnemonic.
+    ///
+    /// Here is a typical example:
+    /// ```
+    /// # use armagnac::registers::RegisterIndex;
+    /// # struct Demo {
+    /// #     rd: RegisterIndex,
+    /// #     rn: RegisterIndex
+    /// # }
+    /// # impl Demo {
+    /// #     fn args(&self) -> String {
+    /// format!("{}, {}", self.rd, self.rn)
+    /// #     }
+    /// # }
+    /// ```
+    ///
+    /// Some formatting helper methods are provided and can be used: see [rdn_args_string],
+    /// [indexing_args] or [crate::arith::Shift::arg_string].
     fn args(&self, pc: u32) -> String;
 }
 
@@ -174,6 +212,7 @@ pub enum InstructionSize {
 
 impl InstructionSize {
     /// Returns thumb instruction size based on first halfword value.
+    /// This is used by the instruction decoder.
     pub fn from_halfword(halfword: u16) -> Self {
         match (halfword & 0xf800) >> 11 {
             0b11101..=0b11111 => InstructionSize::Ins32,
@@ -182,16 +221,36 @@ impl InstructionSize {
     }
 }
 
+/// Trait to facilitate fields and arguments extraction from an instruction encoding.
 pub trait DecodeHelper {
+    /// Extracts a 3-bit register index at `lsb_index` bit position.
     fn reg3(&self, lsb_index: u8) -> RegisterIndex;
+
+    /// Extracts a 4-bit register index at `lsb_index` bit position.
     fn reg4(&self, lsb_index: u8) -> RegisterIndex;
+
+    /// Extracts a single bit integer value at `lsb_index` bit position.
     fn imm1(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 2-bit integer value at `lsb_index` bit position.
     fn imm2(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 3-bit integer value at `lsb_index` bit position.
     fn imm3(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 4-bit integer value at `lsb_index` bit position.
     fn imm4(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 5-bit integer value at `lsb_index` bit position.
     fn imm5(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 8-bit integer value at `lsb_index` bit position.
     fn imm8(&self, lsb_index: u8) -> u32;
+
+    /// Extracts a 12-bit integer value at `lsb_index` bit position.
     fn imm12(&self, lsb_index: u8) -> u32;
+
+    /// Extracts `index`, `add` and `wback` flags respectively from bits 10, 9 and 8.
     fn puw(&self) -> (bool, bool, bool);
 }
 
@@ -232,7 +291,6 @@ impl DecodeHelper for u32 {
         self >> lsb_index & 0xfff
     }
 
-    /// Extracts `index`, `add` and `wback` flags respectively from bits 10, 9 and 8.
     fn puw(&self) -> (bool, bool, bool) {
         (self & 1 << 10 != 0, self & 1 << 9 != 0, self & 1 << 8 != 0)
     }
@@ -279,7 +337,10 @@ pub fn indexing_args(rn: RegisterIndex, imm: u32, index: bool, add: bool, wback:
 /// This is to be used by many instructions which have a bit indicating if an offset is to be added
 /// to a base value, or subtracted.
 pub trait AddOrSub {
+    /// Returns `self + rhs` if `add` is `true`, `self - rhs` otherwise.
     fn add_or_sub(&self, rhs: Self, add: bool) -> Self;
+
+    /// Returns `self.wrapping_add(rhs)` if `add` is `true`, `self.wrapping_sub(rhs)` otherwise.
     fn wrapping_add_or_sub(&self, rhs: Self, add: bool) -> Self;
 }
 
@@ -304,9 +365,83 @@ impl AddOrSub for u32 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        instructions::{indexing_args, rdn_args_string, InstructionSize},
+        instructions::{indexing_args, rdn_args_string, DecodeHelper, InstructionSize},
         registers::RegisterIndex,
     };
+
+    #[test]
+    fn test_decode_helper() {
+        // Test reg3
+        for i in 0..=7 {
+            for j in 0..=29 {
+                assert_eq!((i << j).reg3(j), RegisterIndex::new_main(i));
+            }
+        }
+
+        // Test reg4
+        for i in 0..=15 {
+            for j in 0..=28 {
+                assert_eq!((i << j).reg4(j), RegisterIndex::new_main(i));
+            }
+        }
+
+        // Test imm1
+        for i in 0..=1 {
+            for j in 0..=31 {
+                assert_eq!((i << j).imm1(j), i);
+            }
+        }
+
+        // Test imm2
+        for i in 0..=3 {
+            for j in 0..=30 {
+                assert_eq!((i << j).imm2(j), i);
+            }
+        }
+
+        // Test imm3
+        for i in 0..=7 {
+            for j in 0..=29 {
+                assert_eq!((i << j).imm3(j), i);
+            }
+        }
+
+        // Test imm4
+        for i in 0..=15 {
+            for j in 0..=28 {
+                assert_eq!((i << j).imm4(j), i);
+            }
+        }
+
+        // Test imm5
+        for i in 0..=31 {
+            for j in 0..=27 {
+                assert_eq!((i << j).imm5(j), i);
+            }
+        }
+
+        // Test imm8
+        for i in 0..=255 {
+            for j in 0..=24 {
+                assert_eq!((i << j).imm8(j), i);
+            }
+        }
+
+        // Test imm12
+        for i in 0..=4095 {
+            for j in 0..=20 {
+                assert_eq!((i << j).imm12(j), i);
+            }
+        }
+
+        // Test puw
+        for i in 0..7 {
+            assert_eq!(
+                (i << 8).puw(),
+                (i & 0b100 != 0, i & 0b010 != 0, i & 0b001 != 0)
+            )
+        }
+    }
 
     #[test]
     fn test_instruction_size() {
