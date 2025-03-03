@@ -333,3 +333,45 @@ impl ArmV7InstructionDecoder {
         self.0.try_decode(ins, size, state)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{fs::File, io::{BufRead, BufReader}};
+    use crate::{arm::Mnemonic, instructions::InstructionSize, it_state::ItState};
+    use super::ArmV7InstructionDecoder;
+
+    #[test]
+    fn test_dissassembly() {
+        let file = File::open("src/test_decoder.txt").unwrap();
+        let buf_reader = BufReader::new(file);
+        let decoder = ArmV7InstructionDecoder::new();
+
+        for line in buf_reader.lines().map(|l| l.unwrap()) {
+            // Skip comment lines
+            if &line[..1] == "#" {
+                continue;
+            }
+
+            let pos = line.find(" ").unwrap();
+            let bytes = hex::decode(&line[..pos]).unwrap();
+            let mnemonic = &line[pos + 1..];
+
+            let halfword = u16::from_le_bytes(bytes[..2].try_into().unwrap());
+            let size = InstructionSize::from_halfword(halfword);
+            let ins: u32 = match size {
+                InstructionSize::Ins16 => {
+                    assert_eq!(bytes.len(), 2);
+                    halfword as u32
+                }
+                InstructionSize::Ins32 => {
+                    assert_eq!(bytes.len(), 4);
+                    (halfword as u32) << 16 | u16::from_le_bytes(bytes[2..4].try_into().unwrap()) as u32
+                }
+            };
+
+            let state = ItState::new();
+            let ins = decoder.try_decode(ins, size, state).unwrap();
+            assert_eq!(ins.mnemonic(0x1000), mnemonic);
+        }
+    }
+}

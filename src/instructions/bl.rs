@@ -47,7 +47,7 @@ impl Instruction for Bl {
 
     fn args(&self, pc: u32) -> String {
         // PC value of a Thumb instruction is it's address + 4
-        let label = (pc as i32 + self.imm32) as u32 + 4;
+        let label = ((pc as i32).wrapping_add(self.imm32) as u32).wrapping_add(4);
         format!("0x{:x}", label)
     }
 }

@@ -132,7 +132,7 @@ impl Instruction for AdcReg {
     }
 
     fn name(&self) -> String {
-        "adc".into()
+        if self.set_flags { "adcs" } else { "adc" }.into()
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -159,6 +159,7 @@ mod tests {
         proc: &mut Arm7Processor,
         carry_in: bool,
         imm: u32,
+        set_flags: bool,
         expected_r0: u32,
         expected_carry: bool,
     ) {
@@ -170,7 +171,7 @@ mod tests {
             rd: RegisterIndex::R0,
             rn: RegisterIndex::R1,
             imm32: imm,
-            set_flags: true,
+            set_flags: set_flags,
         }
         .execute(proc)
         .unwrap();
@@ -181,10 +182,11 @@ mod tests {
     #[test]
     fn test_adc_imm() {
         let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
-        test_adc_imm_vec(&mut proc, false, 10, 110, false);
-        test_adc_imm_vec(&mut proc, true, 10, 111, false);
-        test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, 0, true);
-        test_adc_imm_vec(&mut proc, true, 0xffffffff - 99, 1, true);
+        test_adc_imm_vec(&mut proc, false, 10, true, 110, false);
+        test_adc_imm_vec(&mut proc, true, 10, true, 111, false);
+        test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, true, 0, true);
+        test_adc_imm_vec(&mut proc, true, 0xffffffff - 99, true, 1, true);
+        test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, false, 0, false);
     }
 
     fn test_adc_reg_vec(
