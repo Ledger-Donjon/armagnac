@@ -173,11 +173,7 @@ impl Instruction for LdrLit {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
-        let addr = if self.add {
-            base.wrapping_add(self.imm32)
-        } else {
-            base.wrapping_sub(self.imm32)
-        };
+        let addr = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.u32le_at(addr)?;
         if self.rt.is_pc() {
             if addr & 3 == 0 {

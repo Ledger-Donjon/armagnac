@@ -16,7 +16,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - DBG: Debug Hint
 - DMB: Data Memory Barrier
 - LDC, LDC2: Load Coprossessor
-- LDRB (literal): Load Register Byte
 - LDRBT: Load Register Byte Unprivileged
 - LDREX: Load Register Exclusive
 - LDREXB: Load Register Exclusive Byte

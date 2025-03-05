@@ -1,18 +1,14 @@
 //! Implements LDRB (Load Register Byte) instruction.
 
+use super::{ldr::LdrImm, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use crate::{
+    align::Align, arith::{shift_c, Shift}, arm::{ArmProcessor, RunError}, decoder::DecodeError, helpers::BitAccess, it_state::ItState, registers::RegisterIndex
+};
 use core::panic;
 
-use crate::{
-    arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
-    decoder::DecodeError,
-    it_state::ItState,
-    registers::RegisterIndex,
-};
-
-use super::{ldr::LdrImm, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
-
 /// LDRB (immediate) instruction.
+///
+/// Load Register Byte (immediate).
 pub struct LdrbImm(LdrImm);
 
 impl Instruction for LdrbImm {
@@ -93,6 +89,8 @@ impl Instruction for LdrbImm {
 }
 
 /// LDRB (register) instruction.
+///
+/// Load Register Byte (register).
 pub struct LdrbReg {
     /// Destination register.
     rt: RegisterIndex,
@@ -158,5 +156,52 @@ impl Instruction for LdrbReg {
             self.rm,
             self.shift.arg_string()
         )
+    }
+}
+
+/// LDRB (literal) instruction.
+///
+/// Load Register Byte (literal).
+pub struct LdrbLit {
+    /// Destination register.
+    rt: RegisterIndex,
+    /// Label offset.
+    imm32: u32,
+    /// True to add offset, false to subtract.
+    add: bool,
+}
+
+impl Instruction for LdrbLit {
+    fn patterns() -> &'static [&'static str] {
+        &["11111000x0011111xxxxxxxxxxxxxxxx"]
+    }
+
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(tn, 1);
+        let rt = ins.reg4(12);
+        other(rt.is_pc())?; // PLD
+        unpredictable(rt.is_sp())?;
+        Ok(Self {
+            rt,
+            imm32: ins.imm12(0),
+            add: ins.bit(23),
+        })
+    }
+
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+        let base = proc.pc().align(4);
+        let address = base.wrapping_add_or_sub(self.imm32, self.add);
+        let data = proc.u8_at(address)?;
+        proc.registers.set(self.rt, data as u32);
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        "ldrb".into()
+    }
+
+    fn args(&self, pc: u32) -> String {
+        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
+        format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
     }
 }
