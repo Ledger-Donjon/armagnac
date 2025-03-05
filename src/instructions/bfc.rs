@@ -65,32 +65,50 @@ impl Instruction for Bfc {
 #[cfg(test)]
 mod tests {
     use super::Bfc;
-    use crate::{arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex};
-
-    fn test_bfc_vec(proc: &mut ArmProcessor, lsb: u8, msb: u8, expected_r0: u32) {
-        proc.registers.r0 = 0xffffffff;
-        Bfc {
-            rd: RegisterIndex::R0,
-            lsb,
-            msb,
-        }
-        .execute(proc)
-        .unwrap();
-        assert_eq!(proc.registers.r0, expected_r0);
-    }
+    use crate::{
+        arm::{ArmProcessor, RunError},
+        instructions::Instruction,
+        registers::RegisterIndex,
+    };
 
     #[test]
     fn test_bfc() {
+        let vectors = [
+            (0, 0, 0b11111111_11111111_11111111_11111110),
+            (0, 2, 0b11111111_11111111_11111111_11111000),
+            (0, 29, 0b11000000_00000000_00000000_00000000),
+            (0, 30, 0b10000000_00000000_00000000_00000000),
+            (0, 31, 0b00000000_00000000_00000000_00000000),
+            (4, 7, 0b11111111_11111111_11111111_00001111),
+            (8, 15, 0b11111111_11111111_00000000_11111111),
+            (16, 23, 0b11111111_00000000_11111111_11111111),
+            (24, 30, 0b10000000_11111111_11111111_11111111),
+            (24, 31, 0b00000000_11111111_11111111_11111111),
+        ];
+
+        for v in vectors {
+            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            proc.registers.r0 = 0xffffffff;
+            Bfc {
+                rd: RegisterIndex::R0,
+                lsb: v.0,
+                msb: v.1,
+            }
+            .execute(&mut proc)
+            .unwrap();
+            assert_eq!(proc.registers.r0, v.2);
+        }
+
+        // Check that msb < lsb leads to error.
         let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-        test_bfc_vec(&mut proc, 0, 0, 0b11111111_11111111_11111111_11111110);
-        test_bfc_vec(&mut proc, 0, 2, 0b11111111_11111111_11111111_11111000);
-        test_bfc_vec(&mut proc, 0, 29, 0b11000000_00000000_00000000_00000000);
-        test_bfc_vec(&mut proc, 0, 30, 0b10000000_00000000_00000000_00000000);
-        test_bfc_vec(&mut proc, 0, 31, 0b00000000_00000000_00000000_00000000);
-        test_bfc_vec(&mut proc, 4, 7, 0b11111111_11111111_11111111_00001111);
-        test_bfc_vec(&mut proc, 8, 15, 0b11111111_11111111_00000000_11111111);
-        test_bfc_vec(&mut proc, 16, 23, 0b11111111_00000000_11111111_11111111);
-        test_bfc_vec(&mut proc, 24, 30, 0b10000000_11111111_11111111_11111111);
-        test_bfc_vec(&mut proc, 24, 31, 0b00000000_11111111_11111111_11111111);
+        assert_eq!(
+            Bfc {
+                rd: RegisterIndex::R0,
+                lsb: 10,
+                msb: 9
+            }
+            .execute(&mut proc),
+            Err(RunError::Unpredictable)
+        );
     }
 }
