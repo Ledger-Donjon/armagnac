@@ -20,6 +20,7 @@ pub mod and;
 pub mod asr;
 pub mod b;
 pub mod bfc;
+pub mod bfi;
 pub mod bic;
 pub mod bl;
 pub mod blx;
