@@ -2,7 +2,7 @@ use armagnac::arm::{ArmProcessor, ArmVersion};
 
 #[test]
 fn fibonacci() {
-    let mut proc = ArmProcessor::new(ArmVersion::V7, 0);
+    let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
     const ADDR_RAM: u32 = 0x10000000;
     const STACK_SIZE: u32 = 1024;
     proc.map_ram(ADDR_RAM, 1024).unwrap();

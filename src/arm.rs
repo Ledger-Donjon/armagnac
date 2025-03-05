@@ -105,7 +105,7 @@ impl MemoryMappings {
 
 #[derive(Clone, Copy)]
 pub enum ArmVersion {
-    V7,
+    V7M,
     V8M,
 }
 
@@ -179,7 +179,7 @@ impl ArmProcessor {
         };
         processor.map_iface(0xe000e000, system_control).unwrap();
         match version {
-            ArmVersion::V7 => processor
+            ArmVersion::V7M => processor
                 .map_iface(0xe000ed90, Rc::new(RefCell::new(MpuV7M::new())))
                 .unwrap(),
             ArmVersion::V8M => {
