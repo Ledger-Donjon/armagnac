@@ -1,7 +1,7 @@
 //! Implements SDIV (Signed Divide) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{rdn_args_string, unpredictable, DecodeHelper},
     it_state::ItState,
@@ -33,7 +33,7 @@ impl Instruction for Sdiv {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rm = proc.registers[self.rm];
         let result = if rm == 0 {
             todo!()

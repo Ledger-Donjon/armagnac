@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -35,7 +35,7 @@ impl Instruction for TstImm {
         Ok(Self { rn, imm32, carry })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = proc.registers[self.rn] & self.imm32;
         proc.registers.xpsr.set_nz(result).set_c_opt(self.carry);
         Ok(false)
@@ -86,7 +86,7 @@ impl Instruction for TstReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let result = proc.registers[self.rn] & shifted;

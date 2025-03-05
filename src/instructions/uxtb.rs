@@ -2,7 +2,7 @@
 
 use crate::{
     arith::ror,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
     registers::RegisterIndex,
@@ -46,7 +46,7 @@ impl Instruction for Uxtb {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rotated = ror(proc[self.rm], self.rotation as u32);
         proc.registers.set(self.rd, rotated & 0xff);
         Ok(false)

@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{rdn_args_string, unpredictable, DecodeHelper},
@@ -45,7 +45,7 @@ impl Instruction for AdcImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (result, carry, overflow) =
             add_with_carry(proc.registers[self.rn], self.imm32, carry_in);
@@ -116,7 +116,7 @@ impl Instruction for AdcReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], shifted, carry_in);
@@ -150,13 +150,13 @@ mod tests {
     use super::AdcImm;
     use crate::{
         arith::Shift,
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{adc::AdcReg, Instruction},
         registers::RegisterIndex,
     };
 
     fn test_adc_imm_vec(
-        proc: &mut Arm7Processor,
+        proc: &mut ArmProcessor,
         carry_in: bool,
         imm: u32,
         set_flags: bool,
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_adc_imm() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         test_adc_imm_vec(&mut proc, false, 10, true, 110, false);
         test_adc_imm_vec(&mut proc, true, 10, true, 111, false);
         test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, true, 0, true);
@@ -190,7 +190,7 @@ mod tests {
     }
 
     fn test_adc_reg_vec(
-        proc: &mut Arm7Processor,
+        proc: &mut ArmProcessor,
         carry_in: bool,
         r2: u32,
         shift: Shift,
@@ -217,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_adc_reg() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         test_adc_reg_vec(&mut proc, false, 10, Shift::lsl(0), 110, false);
         test_adc_reg_vec(&mut proc, true, 10, Shift::lsl(0), 111, false);
         test_adc_reg_vec(&mut proc, false, 0xffffffff - 99, Shift::lsl(0), 0, true);

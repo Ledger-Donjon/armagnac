@@ -1,7 +1,7 @@
 //! Implements REV (Byte-Reverse Word) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
     registers::RegisterIndex,
@@ -40,7 +40,7 @@ impl Instruction for Rev {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rm = proc.registers[self.rm];
         let result = (rm & 0xff) << 24 | (rm & 0xff00) << 8 | (rm & 0xff0000) >> 8 | rm >> 24;
         proc.registers.set(self.rd, result);
@@ -59,14 +59,14 @@ impl Instruction for Rev {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{rev::Rev, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_rev() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12345678;
         let ins = Rev {
             rd: RegisterIndex::R0,

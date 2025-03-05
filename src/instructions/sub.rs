@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{rdn_args_string, ItState},
     registers::RegisterIndex,
@@ -83,7 +83,7 @@ impl Instruction for SubImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let (result, carry, overflow) = add_with_carry(rn, !self.imm32, true);
         proc.registers.set(self.rd, result);
@@ -154,7 +154,7 @@ impl Instruction for SubReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
@@ -237,7 +237,7 @@ impl Instruction for SubSpMinusImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), !self.imm32, true);
         proc.registers.set(self.rd, result);
         if self.set_flags {

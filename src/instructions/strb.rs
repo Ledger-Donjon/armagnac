@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::RegisterIndex,
@@ -80,7 +80,7 @@ impl Instruction for StrbImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -146,7 +146,7 @@ impl Instruction for StrbReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let shift = Shift::lsl(self.shift as u32);
         let (offset, _) = shift_c(proc.registers[self.rm], shift, carry_in);

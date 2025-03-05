@@ -1,7 +1,7 @@
 //! Implements UMLAL (Unsigned Multiply Accumulate Long) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -44,7 +44,7 @@ impl Instruction for Umlal {
         Ok(Self { rdlo, rdhi, rn, rm })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = (proc.registers[self.rn] as u64 * proc.registers[self.rm] as u64)
             .wrapping_add(
                 (proc.registers[self.rdhi] as u64) << 32 | proc.registers[self.rdlo] as u64,
@@ -66,14 +66,14 @@ impl Instruction for Umlal {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{umlal::Umlal, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_umlal() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r2 = 0x12345678;
         proc.registers.r3 = 0x87654321;
         let ins = Umlal {

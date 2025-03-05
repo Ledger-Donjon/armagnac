@@ -1,7 +1,7 @@
 //! Implements B (Branch) instruction.
 
 use crate::{
-    arith::sign_extend, arm::Arm7Processor, condition::Condition, decoder::DecodeError,
+    arith::sign_extend, arm::ArmProcessor, condition::Condition, decoder::DecodeError,
     instructions::other, it_state::ItState,
 };
 
@@ -76,7 +76,7 @@ impl Instruction for B {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, crate::arm::RunError> {
         let address = (proc.pc() as i32 + self.imm32) as u32;
         proc.set_pc(address);
         Ok(true)

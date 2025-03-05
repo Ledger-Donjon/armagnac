@@ -4,7 +4,7 @@ use core::panic;
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
@@ -89,7 +89,7 @@ impl Instruction for AddImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let (r, c, v) = add_with_carry(proc.registers[self.rn], self.imm32, false);
         proc.registers.set(self.rd, r);
         if self.set_flags {
@@ -187,7 +187,7 @@ impl Instruction for AddReg {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc.registers[self.rn], shifted, false);
@@ -277,7 +277,7 @@ impl Instruction for AddSpPlusImm {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
         proc.registers.set(self.rd, result);
         if self.set_flags {
@@ -363,7 +363,7 @@ impl Instruction for AddSpPlusReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
@@ -402,7 +402,7 @@ mod tests {
     use super::AddImm;
     use crate::{
         arith::Shift,
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Instruction,
@@ -489,7 +489,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             proc.registers.set(v.rn, v.rn_value);
             let mut expected_registers = proc.registers.clone();
             AddImm {
@@ -604,7 +604,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             proc.registers.set(v.rd, 0);
             proc.registers.set(v.rn, v.rn_value);
             proc.registers.set(v.rm, v.rm_value);
@@ -682,7 +682,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             proc.registers.msp = v.sp_value;
             let mut expected_registers = proc.registers.clone();
             AddSpPlusImm {
@@ -768,7 +768,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             proc.registers.msp = v.sp_value;
             proc.registers.set(v.rm, v.rm_value);
             let mut expected_registers = proc.registers.clone();

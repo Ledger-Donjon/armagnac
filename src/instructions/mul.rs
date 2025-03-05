@@ -1,7 +1,7 @@
 //! Implements MUL (Multiply) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::rdn_args_string,
     it_state::ItState,
@@ -54,7 +54,7 @@ impl Instruction for Mul {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let op1 = proc[self.rn] as i32;
         let op2 = proc[self.rm] as i32;
         let result = op1.wrapping_mul(op2) as u32;

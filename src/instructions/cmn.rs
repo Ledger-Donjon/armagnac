@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -36,7 +36,7 @@ impl Instruction for CmnImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], self.imm32, false);
         proc.registers
             .xpsr
@@ -90,7 +90,7 @@ impl Instruction for CmnReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], shifted, false);
@@ -117,7 +117,7 @@ mod tests {
 
     use crate::{
         arith::Shift,
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{cmn::CmnImm, Instruction},
         registers::RegisterIndex,
     };
@@ -126,14 +126,14 @@ mod tests {
 
     #[test]
     fn cmn_imm() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         cmm_imm_vec(&mut proc, -4, false, true, false);
         cmm_imm_vec(&mut proc, -5, true, true, false);
         cmm_imm_vec(&mut proc, -6, false, false, false);
         cmm_imm_vec(&mut proc, i32::MAX, false, false, true);
     }
 
-    fn cmm_imm_vec(proc: &mut Arm7Processor, r0: i32, z: bool, c: bool, v: bool) {
+    fn cmm_imm_vec(proc: &mut ArmProcessor, r0: i32, z: bool, c: bool, v: bool) {
         let ins = CmnImm {
             rn: RegisterIndex::R0,
             imm32: 5,
@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     fn cmn_reg() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         cmn_reg_vec(&mut proc, -4, 5, Shift::lsl(0), false, true, false);
         cmn_reg_vec(&mut proc, -5, 5, Shift::lsl(0), true, true, false);
         cmn_reg_vec(&mut proc, -6, 5, Shift::lsl(0), false, false, false);
@@ -162,7 +162,7 @@ mod tests {
     }
 
     fn cmn_reg_vec(
-        proc: &mut Arm7Processor,
+        proc: &mut ArmProcessor,
         r0: i32,
         r1: u32,
         shift: Shift,

@@ -2,7 +2,7 @@
 //! instructions.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper, ItState},
     registers::{MainRegisterList, RegisterIndex},
@@ -44,7 +44,7 @@ impl Instruction for Stmdb {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // SP and PC cannot be pushed.
         // Instruction decoder should prevent this to happen
         debug_assert!(!self.registers.has_sp() && !self.registers.has_pc());

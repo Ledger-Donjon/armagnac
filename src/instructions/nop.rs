@@ -1,7 +1,7 @@
 //! Implements NOP (No Operation) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
 };
@@ -20,7 +20,7 @@ impl Instruction for Nop {
         Ok(Self {})
     }
 
-    fn execute(&self, _proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
         Ok(false)
     }
 

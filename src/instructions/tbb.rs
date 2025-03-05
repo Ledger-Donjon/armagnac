@@ -1,7 +1,7 @@
 //! Implements TBB (Table Branch Byte) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -36,7 +36,7 @@ impl Instruction for Tbb {
         Ok(Self { rn, rm, is_tbh })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let halfwords = if self.is_tbh {
             let address = proc.registers[self.rn] + (proc.registers[self.rm] << 1);
             proc.u16le_at(address)? as u32

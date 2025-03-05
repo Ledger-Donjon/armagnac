@@ -6,7 +6,7 @@
 //! Register variant.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     condition::Condition,
     decoder::DecodeError,
     it_state::ItState,
@@ -145,7 +145,7 @@ pub trait Instruction {
     ///
     /// Returns `Ok(true)` if the instruction has branching effect, `Ok(false)` if not, or
     /// eventually an execution error such has invalid memory access for instance.
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError>;
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError>;
 
     /// Returns name of the instruction to be shown in its mnemonic.
     ///

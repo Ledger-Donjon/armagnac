@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::rdn_args_string,
     it_state::ItState,
@@ -57,7 +57,7 @@ impl Instruction for LslImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let shift = Shift::lsl(self.shift as u32);
         let (result, c) = shift_c(proc.registers[self.rm], shift, carry_in);
@@ -121,7 +121,7 @@ impl Instruction for LslReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc.registers[self.rm] & 0xff;
         let carry_in = proc.registers.xpsr.c();
         let shift = Shift::lsl(shift_n);

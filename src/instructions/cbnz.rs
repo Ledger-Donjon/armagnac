@@ -1,7 +1,7 @@
 //! Implements CBNZ (Compare and Branch on Non-Zero) and CBZ (Compare and Branch on Zero) instructions.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -34,7 +34,7 @@ impl Instruction for Cbnz {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         if (proc.registers[self.rn] == 0) ^ self.non_zero {
             proc.set_pc(proc.pc() + self.imm32);
             Ok(true)

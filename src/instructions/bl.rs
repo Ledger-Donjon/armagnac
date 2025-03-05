@@ -2,7 +2,7 @@
 
 use crate::{
     arith::sign_extend,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
     it_state::ItState,
@@ -33,7 +33,7 @@ impl Instruction for Bl {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let pc = proc.pc();
         let address = (pc as i32 + self.imm32) as u32;
         proc.registers.lr = pc | 1;

@@ -1,7 +1,7 @@
 //! Implements SEV (Send Event) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
 };
@@ -24,7 +24,7 @@ impl Instruction for Sev {
         Ok(Self {})
     }
 
-    fn execute(&self, _proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
         todo!()
     }
 

@@ -3,7 +3,7 @@
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -78,7 +78,7 @@ impl Instruction for LdrhImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
@@ -136,7 +136,7 @@ impl Instruction for LdrhLit {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let addr = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.u16le_at(addr)?;
@@ -205,7 +205,7 @@ impl Instruction for LdrhReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let address = proc.registers[self.rn].wrapping_add(offset);
@@ -241,7 +241,7 @@ impl Instruction for Ldrht {
         todo!()
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         todo!()
     }
 

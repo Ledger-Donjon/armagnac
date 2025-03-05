@@ -1,7 +1,7 @@
 //! Implements MLA (Multiply Accumulate) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper},
     it_state::ItState,
@@ -38,7 +38,7 @@ impl Instruction for Mla {
         Ok(Self { rd, rn, rm, ra })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let op1 = proc[self.rn] as i32;
         let op2 = proc[self.rm] as i32;
         let addend = proc[self.ra] as i32;

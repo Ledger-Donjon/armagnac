@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
@@ -53,7 +53,7 @@ impl Instruction for AndImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = proc.registers[self.rn] & self.imm32;
         proc.registers.set(self.rd, result);
         if self.set_flags {
@@ -120,7 +120,7 @@ impl Instruction for AndReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let result = proc.registers[self.rn] & shifted;

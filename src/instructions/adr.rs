@@ -45,7 +45,7 @@ impl Instruction for Adr {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
         let result = proc.pc().align(4).wrapping_add(self.imm32 as u32);
         proc.registers.set(self.rd, result);
         Ok(false)
@@ -64,12 +64,12 @@ impl Instruction for Adr {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{adr::Adr, Instruction},
         registers::RegisterIndex,
     };
 
-    fn test_adr_vec(proc: &mut Arm7Processor, offset: i32) {
+    fn test_adr_vec(proc: &mut ArmProcessor, offset: i32) {
         proc.set_pc(0x1000);
         proc.registers.r0 = 0;
         Adr {
@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_adr() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         test_adr_vec(&mut proc, 0);
         test_adr_vec(&mut proc, -16);
         test_adr_vec(&mut proc, 16);

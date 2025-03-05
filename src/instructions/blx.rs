@@ -1,7 +1,7 @@
 //! Implements BLX (Branch with Link and Exchange) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -29,7 +29,7 @@ impl Instruction for Blx {
         Ok(Self { rm })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let target = proc.registers[self.rm];
         proc.registers.lr = proc.pc() - 2 | 1;
         proc.blx_write_pc(target);

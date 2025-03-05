@@ -3,7 +3,7 @@
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::indexing_args,
@@ -79,7 +79,7 @@ impl Instruction for LdrsbImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let offset_addr = proc.registers[self.rn].wrapping_add_or_sub(self.imm32, self.add);
         let addr = if self.index { offset_addr } else { rn };
@@ -133,7 +133,7 @@ impl Instruction for LdrsbLit {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = ((proc.u8_at(address)? as i8) as i32) as u32;
@@ -196,7 +196,7 @@ impl Instruction for LdrsbReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
@@ -226,12 +226,12 @@ impl Instruction for LdrsbReg {
 mod tests {
     use super::{LdrsbImm, LdrsbLit, LdrsbReg};
     use crate::{
-        arith::Shift, arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex,
+        arith::Shift, arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex,
     };
 
     #[test]
     fn test_ldrsb_imm() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
         proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
 
@@ -265,7 +265,7 @@ mod tests {
 
     #[test]
     fn test_ldrsb_lit() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
         proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
 
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_ldrsb_reg() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
         proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
 

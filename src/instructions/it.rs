@@ -1,7 +1,7 @@
 //! Implements IT (If Then) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     condition::Condition,
     decoder::DecodeError,
     instructions::{other, unpredictable},
@@ -39,7 +39,7 @@ impl Instruction for It {
         Some(Condition::Always)
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         proc.registers.xpsr.set_it_state(self.state);
         Ok(false)
     }

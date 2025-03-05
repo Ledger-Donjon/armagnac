@@ -3,7 +3,7 @@
 use core::panic;
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -38,7 +38,7 @@ impl Instruction for Mrs {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let mut rd = 0;
         let sysm = self.sysm.index_sys();
         match sysm >> 3 {

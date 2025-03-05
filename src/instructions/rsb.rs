@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
@@ -53,7 +53,7 @@ impl Instruction for RsbImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let (result, carry, overflow) = add_with_carry(!rn, self.imm32, true);
         proc.registers.set(self.rd, result);
@@ -109,7 +109,7 @@ impl Instruction for RsbReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let rn = proc.registers[self.rn];

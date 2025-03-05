@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::DecodeHelper,
@@ -41,7 +41,7 @@ impl Instruction for MvnImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = !self.imm32;
         proc.registers.set(self.rd, result);
         if self.set_flags {
@@ -99,7 +99,7 @@ impl Instruction for MvnReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (shifted, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         let result = !shifted;
@@ -123,12 +123,12 @@ impl Instruction for MvnReg {
 mod tests {
     use super::MvnReg;
     use crate::{
-        arith::Shift, arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex,
+        arith::Shift, arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex,
     };
 
     #[test]
     fn test_mvn_reg() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r0 = 0x10;
         proc.registers.r1 = 0x11;
         let ins = MvnReg {

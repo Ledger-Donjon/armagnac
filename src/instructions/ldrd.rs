@@ -1,7 +1,7 @@
 //! Implements LDRD (Load Register Dual) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{indexing_args, other, unpredictable, DecodeHelper},
@@ -57,7 +57,7 @@ impl Instruction for LdrdImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -120,7 +120,7 @@ impl Instruction for LdrdLit {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         if proc.pc() % 4 != 0 {
             return Err(RunError::InstructionUnpredictable);
         }

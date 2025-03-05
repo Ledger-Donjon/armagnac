@@ -1,7 +1,7 @@
 //! Implements DSB (Data Synchronization Barrier) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
 };
@@ -25,7 +25,7 @@ impl Instruction for Dsb {
         })
     }
 
-    fn execute(&self, _proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
         Ok(false)
     }
 

@@ -2,7 +2,7 @@
 
 use crate::{
     arith::sign_extend,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -43,7 +43,7 @@ impl Instruction for Sbfx {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let msbit = self.lsb + self.widthm1;
         if msbit <= 31 {
             let result = sign_extend(proc.registers[self.rn] >> self.lsb, self.widthm1 + 1);
@@ -72,9 +72,9 @@ impl Instruction for Sbfx {
 #[cfg(test)]
 mod tests {
     use super::Sbfx;
-    use crate::{arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex};
+    use crate::{arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex};
 
-    fn test_sbfx_vec(proc: &mut Arm7Processor, r1: u32, lsb: u8, widthm1: u8, expected_r0: u32) {
+    fn test_sbfx_vec(proc: &mut ArmProcessor, r1: u32, lsb: u8, widthm1: u8, expected_r0: u32) {
         proc.registers.r0 = 0;
         proc.registers.r1 = r1;
         Sbfx {
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_sbfx() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         let magic = 0x12b456f8;
         test_sbfx_vec(&mut proc, magic, 0, 0, 0);
         test_sbfx_vec(&mut proc, magic, 3, 0, 0xffffffff);

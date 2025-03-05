@@ -110,7 +110,7 @@ pub enum ArmVersion {
 }
 
 /// ARMv7-M processor state.
-pub struct Arm7Processor {
+pub struct ArmProcessor {
     /// ARM emutaled version.
     pub version: ArmVersion,
     /// r0-r15 and sys registers.
@@ -153,16 +153,16 @@ impl Mnemonic for Box<dyn Instruction> {
     }
 }
 
-impl Arm7Processor {
+impl ArmProcessor {
     /// Creates a new ARMv7 processor
     ///
     /// # Arguments
     ///
     /// * `external_exception_count` - Number of available external exceptions.
-    pub fn new(version: ArmVersion, external_exception_count: usize) -> Arm7Processor {
+    pub fn new(version: ArmVersion, external_exception_count: usize) -> Self {
         let exception_count = 16usize.checked_add(external_exception_count).unwrap();
         let system_control = Rc::new(RefCell::new(SystemControl::new()));
-        let mut processor = Arm7Processor {
+        let mut processor = Self {
             version,
             registers: CoreRegisters::new(),
             memory_mappings: MemoryMappings::new(),
@@ -835,7 +835,7 @@ impl Arm7Processor {
 }
 
 /// Indexing implemented for easier access to the registers.
-impl Index<RegisterIndex> for Arm7Processor {
+impl Index<RegisterIndex> for ArmProcessor {
     type Output = u32;
 
     fn index(&self, index: RegisterIndex) -> &Self::Output {

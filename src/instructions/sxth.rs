@@ -2,7 +2,7 @@
 
 use crate::{
     arith::ror,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
     registers::RegisterIndex,
@@ -49,7 +49,7 @@ impl Instruction for Sxth {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rotated = ror(proc[self.rm], self.rotation as u32);
         proc.registers
             .set(self.rd, (((rotated & 0xffff) as i16) as i32) as u32);
@@ -73,14 +73,14 @@ impl Instruction for Sxth {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{sxth::Sxth, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_sxth() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12b456f8;
 
         let mut ins = Sxth {

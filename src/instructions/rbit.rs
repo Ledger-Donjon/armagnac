@@ -1,7 +1,7 @@
 //! Implements RBIT (Reverse Bits) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -32,7 +32,7 @@ impl Instruction for Rbit {
         Ok(Self { rd, rm: rm1 })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let mut a = proc.registers[self.rm];
         let mut b = 0;
         for _ in 0..32 {

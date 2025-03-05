@@ -40,7 +40,7 @@ impl Instruction for Bfc {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::Arm7Processor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = !((0xffffffffu32 >> (32 - width)) << self.lsb);
@@ -65,9 +65,9 @@ impl Instruction for Bfc {
 #[cfg(test)]
 mod tests {
     use super::Bfc;
-    use crate::{arm::Arm7Processor, instructions::Instruction, registers::RegisterIndex};
+    use crate::{arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex};
 
-    fn test_bfc_vec(proc: &mut Arm7Processor, lsb: u8, msb: u8, expected_r0: u32) {
+    fn test_bfc_vec(proc: &mut ArmProcessor, lsb: u8, msb: u8, expected_r0: u32) {
         proc.registers.r0 = 0xffffffff;
         Bfc {
             rd: RegisterIndex::R0,
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn test_bfc() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         test_bfc_vec(&mut proc, 0, 0, 0b11111111_11111111_11111111_11111110);
         test_bfc_vec(&mut proc, 0, 2, 0b11111111_11111111_11111111_11111000);
         test_bfc_vec(&mut proc, 0, 29, 0b11000000_00000000_00000000_00000000);

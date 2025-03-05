@@ -1,7 +1,7 @@
 //! Implements MLS (Multiply and Subtract) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
@@ -41,7 +41,7 @@ impl Instruction for Mls {
         Ok(Self { rd, rn, rm, ra })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result =
             proc.registers[self.ra] - proc.registers[self.rn].wrapping_mul(proc.registers[self.rm]);
         proc.registers.set(self.rd, result);
@@ -60,14 +60,14 @@ impl Instruction for Mls {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{mls::Mls, Instruction},
         registers::{CoreRegisters, RegisterIndex},
     };
 
     #[test]
     fn test_mls() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 0x01020304;
         proc.registers.r3 = 0x87654321;

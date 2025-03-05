@@ -5,7 +5,7 @@ use core::panic;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::AddOrSub,
     it_state::ItState,
@@ -95,7 +95,7 @@ impl Instruction for LdrImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let addr = if self.index { offset_addr } else { rn };
@@ -171,7 +171,7 @@ impl Instruction for LdrLit {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let addr = if self.add {
             base.wrapping_add(self.imm32)
@@ -256,7 +256,7 @@ impl Instruction for LdrReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
         let rn = proc.registers[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(offset, self.add);

@@ -2,7 +2,7 @@
 //! Multiple Empty Ascending) instructions.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     it_state::ItState,
@@ -53,7 +53,7 @@ impl Instruction for Stm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // The ordering of register stores must respect the ARM specification, because memory
         // operations may not be commutative if address targets a peripheral.
         let mut address = proc.registers[self.rn];

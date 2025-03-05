@@ -4,7 +4,7 @@ use core::panic;
 
 use crate::{
     arith::thumb_expand_imm_optc,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::RegisterIndex,
@@ -71,7 +71,7 @@ impl Instruction for MovImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         proc.registers.set(self.rd, self.imm32);
         if self.set_flags {
             proc.registers.xpsr.set_nz(self.imm32).set_c_opt(self.carry);
@@ -140,7 +140,7 @@ impl Instruction for MovReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = proc.registers[self.rm];
         if self.rd.is_pc() {
             proc.alu_write_pc(result);

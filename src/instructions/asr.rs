@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     it_state::ItState,
@@ -52,7 +52,7 @@ impl Instruction for AsrImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (result, carry) = shift_c(
             proc.registers[self.rm],
@@ -119,7 +119,7 @@ impl Instruction for AsrReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc.registers[self.rm] & 0xff;
         let carry_in = proc.registers.xpsr.c();
         let (result, carry) = shift_c(proc.registers[self.rn], Shift::asr(shift_n), carry_in);

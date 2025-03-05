@@ -1,7 +1,7 @@
 //! Implements UDIV (Unsigned Divide) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{rdn_args_string, unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -32,7 +32,7 @@ impl Instruction for Udiv {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let divisor = proc.registers[self.rm];
         if divisor == 0 {
             unimplemented!("Division by zero handling")

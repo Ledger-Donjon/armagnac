@@ -1,7 +1,7 @@
 //! Implements SVC (Supervisor Call) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
     irq::Irq,
@@ -28,7 +28,7 @@ impl Instruction for Svc {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         proc.request_interrupt(Irq::SVCall);
         Ok(false)
     }

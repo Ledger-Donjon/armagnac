@@ -1,7 +1,7 @@
 //! Implements UBFX (Unsigned Bit Field Extract) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -41,7 +41,7 @@ impl Instruction for Ubfx {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let msb = self.lsb + self.width_minus_1;
         debug_assert!(msb <= 31);
         let result = proc.registers[self.rn] << (31 - msb) >> (31 - msb + self.lsb);

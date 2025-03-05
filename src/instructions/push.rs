@@ -1,7 +1,7 @@
 //! Implements PUSH (Push Multiple Registers) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},
@@ -47,7 +47,7 @@ impl Instruction for Push {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // PUSH is equivalent to STMDB if Rn is SP and wback is true.
         // We use the STMDB implementation.
         let stmdb = Stmdb {

@@ -3,7 +3,7 @@
 use super::{unpredictable, DecodeHelper, Instruction};
 use crate::{
     arith::ror,
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
     registers::RegisterIndex,
@@ -48,7 +48,7 @@ impl Instruction for Sxtb {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rotated = ror(proc.registers[self.rm], self.rotation as u32);
         proc.registers.set(self.rd, ((rotated as i8) as i32) as u32);
         Ok(false)
@@ -71,14 +71,14 @@ impl Instruction for Sxtb {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{sxtb::Sxtb, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_sxtb() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12b456f8;
 
         let mut ins = Sxtb {

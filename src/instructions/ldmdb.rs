@@ -2,7 +2,7 @@
 //! instructions.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -44,7 +44,7 @@ impl Instruction for Ldmdb {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
         let wback_address = proc.registers[self.rn].wrapping_sub(4 * self.registers.len() as u32);

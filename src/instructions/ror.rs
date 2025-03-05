@@ -2,7 +2,7 @@
 
 use crate::{
     arith::{shift_c, Shift},
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
@@ -47,7 +47,7 @@ impl Instruction for RorImm {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let (result, carry) = shift_c(proc.registers[self.rm], self.shift, carry_in);
         proc.registers.set(self.rd, result);
@@ -112,7 +112,7 @@ impl Instruction for RorReg {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc.registers[self.rm] & 0xff;
         let carry_in = proc.registers.xpsr.c();
         let (result, carry) = shift_c(proc.registers[self.rn], Shift::ror(shift_n), carry_in);
@@ -136,7 +136,7 @@ impl Instruction for RorReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::Arm7Processor,
+        arm::ArmProcessor,
         instructions::{
             ror::{RorImm, RorReg},
             Instruction,
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn test_ror_imm() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12345678;
         let mut ins = RorImm {
             rd: RegisterIndex::R0,
@@ -167,7 +167,7 @@ mod tests {
 
     #[test]
     fn test_ror_reg() {
-        let mut proc = Arm7Processor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 1;
         let ins = RorReg {

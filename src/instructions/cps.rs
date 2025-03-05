@@ -1,7 +1,7 @@
 //! Implements CPS (Change Processor State) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
     it_state::ItState,
@@ -33,7 +33,7 @@ impl Instruction for Cps {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         if proc.is_privileged() {
             if self.enable {
                 if self.affect_pri {

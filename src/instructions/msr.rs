@@ -1,7 +1,7 @@
 //! Implements MSR (Move to Special Register) instruction.
 
 use crate::{
-    arm::{Arm7Processor, RunError},
+    arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper, ItState},
@@ -38,7 +38,7 @@ impl Instruction for Msr {
         })
     }
 
-    fn execute(&self, proc: &mut Arm7Processor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let val = proc.registers[self.rn];
         match self.sysm {
             RegisterIndex::Apsr => todo!(),
