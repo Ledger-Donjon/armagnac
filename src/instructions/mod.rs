@@ -75,6 +75,7 @@ pub mod svc;
 pub mod sxtb;
 pub mod sxth;
 pub mod tbb;
+pub mod teq;
 pub mod tst;
 pub mod ubfx;
 pub mod udiv;

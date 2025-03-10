@@ -86,7 +86,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - SXTAB16: Signed Extend and Add Byte 16
 - SXTAH: Signed Extend and Add Halfword
 - SXTB16: Signed Extend Byte 16
-- TEQ: Test Equivalence
 - UADD16: Unsigned Add 16
 - UADD8: Unsigned Add 8
 - UASX: Unsigned Add and Subtract with Exchange
