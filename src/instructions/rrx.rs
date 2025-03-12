@@ -53,11 +53,7 @@ impl Instruction for Rrx {
     }
 
     fn name(&self) -> String {
-        if self.set_flags {
-            "rrxs"
-        } else {
-            "rrx"
-        }.into()
+        if self.set_flags { "rrxs" } else { "rrx" }.into()
     }
 
     fn args(&self, _pc: u32) -> String {

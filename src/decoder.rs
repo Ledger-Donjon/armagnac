@@ -344,9 +344,12 @@ impl BasicInstructionDecoder {
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::File, io::{BufRead, BufReader}};
     use super::BasicInstructionDecoder;
     use crate::{arm::Mnemonic, instructions::InstructionSize, it_state::ItState};
+    use std::{
+        fs::File,
+        io::{BufRead, BufReader},
+    };
 
     #[test]
     fn test_dissassembly() {
@@ -373,7 +376,8 @@ mod tests {
                 }
                 InstructionSize::Ins32 => {
                     assert_eq!(bytes.len(), 4);
-                    (halfword as u32) << 16 | u16::from_le_bytes(bytes[2..4].try_into().unwrap()) as u32
+                    (halfword as u32) << 16
+                        | u16::from_le_bytes(bytes[2..4].try_into().unwrap()) as u32
                 }
             };
 

@@ -2,7 +2,13 @@
 
 use super::{ldr::LdrImm, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
 use crate::{
-    align::Align, arith::{shift_c, Shift}, arm::{ArmProcessor, RunError}, decoder::DecodeError, helpers::BitAccess, it_state::ItState, registers::RegisterIndex
+    align::Align,
+    arith::{shift_c, Shift},
+    arm::{ArmProcessor, RunError},
+    decoder::DecodeError,
+    helpers::BitAccess,
+    it_state::ItState,
+    registers::RegisterIndex,
 };
 use core::panic;
 

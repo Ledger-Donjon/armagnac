@@ -24,9 +24,7 @@ impl Instruction for Bx {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         unpredictable(state.in_it_block_not_last())?;
-        Ok(Self {
-            rm: ins.reg4(3),
-        })
+        Ok(Self { rm: ins.reg4(3) })
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {

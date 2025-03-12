@@ -76,7 +76,6 @@ impl Helper {
             .collect();
 
         let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-        //proc.map(0, include_bytes!("trigo.bin")).unwrap();
         proc.map_ram(ADDR_RAM, 1024).unwrap();
 
         // Map program section as read-only RAM memories
