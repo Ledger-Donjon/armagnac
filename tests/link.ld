@@ -4,7 +4,7 @@ SECTIONS
   .text : { *(.text) }
   .rodata : { *(.rodata) }
   . = ALIGN(4);
-  . = 0x2000;
+  . = 0x4000;
   .data : { *(.data) }
   .bss : { *(.bss) }
 }

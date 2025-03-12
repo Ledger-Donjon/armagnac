@@ -43,7 +43,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - QSUB16: Saturating Subtract 16
 - QSUB8: Saturating Subtract 8
 - REVSH: Byte-Reverse Signed Halfword
-- RRX: Rotate Right with Extend
 - SADD16: Signed Add 16
 - SADD8: Signed Add 8
 - SASX: Signed Add and Subtract with Exchange

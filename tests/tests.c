@@ -27,3 +27,6 @@ size_t test_memcpy(char* dst) {
     return length;
 }
 
+float test_pow(float base, float exponent) {
+  return pow(base, exponent);
+}

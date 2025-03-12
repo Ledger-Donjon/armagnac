@@ -41,6 +41,17 @@ fn test_sqrt() {
     assert_eq!(f32::from_bits(result), arg.sqrt());
 }
 
+#[test]
+fn test_pow() {
+    let mut helper = Helper::new();
+    let arg0 = 5.62f32.to_bits();
+    let arg1 = 7.54f32.to_bits();
+    assert_eq!(
+        f32::from_bits(helper.call2("test_pow", arg0, arg1)),
+        449792.0f32
+    );
+}
+
 const ADDR_RAM: u32 = 0x10000000;
 const STACK_SIZE: u32 = 1024;
 
@@ -106,6 +117,14 @@ impl Helper {
     /// using R0 register.
     fn call1(&mut self, method: &str, arg0: u32) -> u32 {
         self.proc.registers.r0 = arg0;
+        self.call(method);
+        self.proc.registers.r0
+    }
+
+    /// Similar to [Self::call], with passing two function arguments and returning function result.
+    fn call2(&mut self, method: &str, arg0: u32, arg1: u32) -> u32 {
+        self.proc.registers.r0 = arg0;
+        self.proc.registers.r1 = arg1;
         self.call(method);
         self.proc.registers.r0
     }

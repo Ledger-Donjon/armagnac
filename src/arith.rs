@@ -79,6 +79,16 @@ pub fn ror_c(value: u32, shift: u32) -> (u32, bool) {
     (result, result & (1 << N - 1) != 0)
 }
 
+/// Returns `value` shifted to the right with most significant set from the input carry. The output
+/// carry is the initial value least significant bit.
+pub fn rrx_c(value: u32, carry_in: bool) -> (u32, bool) {
+    let mut result = value >> 1;
+    if carry_in {
+        result |= 0x80000000;
+    }
+    (result, value & 1 != 0)
+}
+
 /// Returns right rotated value and discard the carry.
 ///
 /// # Arguments
@@ -201,6 +211,13 @@ impl Shift {
             n,
         }
     }
+
+    pub fn rrx() -> Self {
+        Self {
+            t: ShiftType::Rrx,
+            n: 1,
+        }
+    }
 }
 
 impl Display for Shift {
@@ -225,7 +242,10 @@ pub fn shift_c(value: u32, shift: Shift, carry_in: bool) -> (u32, bool) {
             ShiftType::Lsr => lsr_c(value, shift.n),
             ShiftType::Asr => asr_c(value, shift.n),
             ShiftType::Ror => ror_c(value, shift.n),
-            ShiftType::Rrx => todo!(),
+            ShiftType::Rrx => {
+                debug_assert_eq!(shift.n, 1);
+                rrx_c(value, carry_in)
+            }
         }
     }
 }
@@ -293,7 +313,9 @@ pub fn thumb_expand_imm_c(imm12: u32, carry_in: bool) -> Result<(u32, bool), Ari
 
 #[cfg(test)]
 mod tests {
-    use crate::arith::{add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, sign_extend, Shift};
+    use crate::arith::{
+        add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, rrx_c, sign_extend, Shift,
+    };
 
     use super::{shift_c, ShiftType};
 
@@ -368,6 +390,13 @@ mod tests {
         // Only test with 0 shift, allowed for ror (but not for ror_c).
         // For the rest we can count on test_ror_c.
         assert_eq!(ror(0x12345678, 0), 0x12345678);
+    }
+
+    #[test]
+    fn test_rrx_c() {
+        assert_eq!(rrx_c(0x12345678, false), (0x091a2b3c, false));
+        assert_eq!(rrx_c(0x12345678, true), (0x891a2b3c, false));
+        assert_eq!(rrx_c(0x87654321, true), (0xc3b2a190, true));
     }
 
     #[test]

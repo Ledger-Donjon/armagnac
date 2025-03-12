@@ -2,3 +2,4 @@ test_fibonacci
 test_cos
 test_sqrt
 test_memcpy
+test_pow

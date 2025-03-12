@@ -295,6 +295,7 @@ impl ArmV7InstructionDecoder {
         dec.insert::<instructions::rev16::Rev16>();
         dec.insert::<instructions::ror::RorImm>();
         dec.insert::<instructions::ror::RorReg>();
+        dec.insert::<instructions::rrx::Rrx>();
         dec.insert::<instructions::rsb::RsbImm>();
         dec.insert::<instructions::rsb::RsbReg>();
         dec.insert::<instructions::sbfx::Sbfx>();

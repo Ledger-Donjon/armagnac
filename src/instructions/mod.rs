@@ -60,6 +60,7 @@ pub mod rbit;
 pub mod rev;
 pub mod rev16;
 pub mod ror;
+pub mod rrx;
 pub mod rsb;
 pub mod sbc;
 pub mod sbfx;
