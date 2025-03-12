@@ -1,6 +1,7 @@
-use std::fs;
+//! Utilities for resolving binary symbols during execution.
 
 use object::{Object, ObjectSymbol, SymbolKind};
+use std::fs;
 
 #[derive(Clone, PartialEq)]
 pub struct Symbol {

@@ -1,3 +1,5 @@
+//! Helpers for making registers implementation and manipulation easiers.
+
 use crate::memory::MemoryAccessError;
 
 pub trait BitAccess {

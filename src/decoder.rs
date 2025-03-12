@@ -1,3 +1,5 @@
+//! Instruction decoding module.
+
 use crate::{
     arith::ArithError,
     instructions::{self, Instruction, InstructionSize},

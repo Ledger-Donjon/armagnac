@@ -1,3 +1,5 @@
+//! Memory peripherals and interfacing.
+
 use std::iter::repeat_n;
 
 use crate::irq::Irq;
@@ -57,6 +59,8 @@ impl Env {
     }
 }
 
+/// This trait must be implemented by any platform peripheral which is connected to the processor
+/// memory bus.
 pub trait MemoryInterface {
     fn read_u8(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u8> {
         Err(MemoryAccessError::InvalidSize)
@@ -152,11 +156,15 @@ impl<T: RegistersMemoryInterface> MemoryInterface for T {
 
 /// RAM memory.
 pub struct RamMemory {
+    /// RAM memory content.
     pub data: Vec<u8>,
+    /// If `false` the memory is read-only.
+    /// Any attempt from the system to write data will return an [MemoryAccessError::ReadOnly] error.
     pub write: bool,
 }
 
 impl RamMemory {
+    /// Creates a new RAM memory with `size` capacity, all bytes initialized to zero.
     pub fn new_zero(size: usize) -> RamMemory {
         let mut v = Vec::new();
         v.resize(size, 0);
@@ -166,6 +174,7 @@ impl RamMemory {
         }
     }
 
+    /// Creates a new RAM memory with `size` capacity, all bytes initialized to `value`.
     pub fn new_from_value(size: usize, value: u8) -> RamMemory {
         let v = repeat_n(value, size).collect();
         RamMemory {
@@ -174,6 +183,8 @@ impl RamMemory {
         }
     }
 
+    /// Creates a new RAM memory with `data` as initial content. The size of the created memory is
+    /// the same as `data`.
     pub fn new_from_slice(data: &[u8]) -> RamMemory {
         assert!(data.len() < 0x100000000);
         RamMemory {
@@ -182,6 +193,7 @@ impl RamMemory {
         }
     }
 
+    /// Configure the memory as read-only.
     pub fn read_only(self) -> Self {
         Self {
             write: false,

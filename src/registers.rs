@@ -1,3 +1,5 @@
+//! Defines ARM processor core registers.
+
 use core::panic;
 use std::{
     fmt::{self, Debug, Display},

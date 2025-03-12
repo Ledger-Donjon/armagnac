@@ -1,3 +1,5 @@
+//! Implements ARM processor core functions and execution.
+
 use core::panic;
 use std::{
     cell::RefCell,
@@ -24,17 +26,22 @@ struct MemoryMap {
     iface: Rc<RefCell<dyn MemoryInterface>>,
 }
 
+/// Errors that may happen during emulation.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum RunError {
+    /// Instruction is unknown or not supported.
     InstructionUnknown,
+    /// Instruction is unpredictable.
     InstructionUnpredictable,
     /// Execution leads to unpredictable result.
     Unpredictable,
+    /// Error when reading the memory or a peripheral.
     MemRead {
         address: u32,
         size: u32,
         cause: MemoryAccessError,
     },
+    /// Error when writing to the memory or a peripheral.
     MemWrite {
         address: u32,
         size: u32,
@@ -57,10 +64,12 @@ struct CodeHook {
     range: Range<usize>,
 }
 
+/// Possible events returned during processor execution.
 pub enum Event {
     Hook {
         address: u32,
     },
+    /// Successful emulation of an instruction.
     Instruction {
         ins: InstructionBox,
     },
@@ -103,9 +112,14 @@ impl MemoryMappings {
     }
 }
 
+/// ARM architecture version.
+///
+/// Used to specify which architecture is being emulated.
 #[derive(Clone, Copy)]
 pub enum ArmVersion {
+    /// ARMv7-M
     V7M,
+    /// ARMv8-M
     V8M,
 }
 

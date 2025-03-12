@@ -1,3 +1,9 @@
+//! Defines [Irq] enumeration.
+
+/// Enumeration listing possible interrupts.
+///
+/// Some interrupt may be specific to the platform running the ARM core (specific peripheral
+/// interrupts for instance), those are defined as [Irq::External] interrupts.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Irq {
     UsageFault,

@@ -1,3 +1,5 @@
+//! Memory Protection Unit peripherals.
+
 use crate::memory::{MemoryAccessError, MemoryWriteResult};
 
 pub mod v7m;
