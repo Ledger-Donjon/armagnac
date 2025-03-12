@@ -1,8 +1,7 @@
 all:
-	arm-none-eabi-gcc -mthumb -nostartfiles fibonacci.c -o fibonacci.o
-	arm-none-eabi-objcopy fibonacci.o -O binary fibonacci.bin
-	arm-none-eabi-gcc -mthumb -nostartfiles -Tlink.ld memcpy.c -o memcpy.o
-	arm-none-eabi-objcopy memcpy.o -O binary memcpy.bin
+	arm-none-eabi-gcc -mthumb -march=armv7-m -nostartfiles -Tlink.ld tests.c -o tests.o -lm
+	arm-none-eabi-objcopy --strip-all --keep-symbols symbols.txt tests.o tests.elf
+
 
 clean:
-	rm fibonacci.o fibonacci.bin
+	rm tests.o tests.elf
