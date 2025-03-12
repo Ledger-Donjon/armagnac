@@ -43,7 +43,7 @@ impl Instruction for LslImm {
             2 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
-                let imm5 = ins >> 12 & 7 | ins >> 6 & 3;
+                let imm5 = ins.imm3(12) << 2 | ins.imm2(6);
                 other(imm5 == 0)?; // MOV (register)
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
                 Self {

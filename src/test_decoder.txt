@@ -31,6 +31,7 @@ c800 lsls   r0, r1, #3
 2090 str    r0, [sp, #128]
 0194 str    r4, [sp, #4]
 80b2 uxth   r0, r0
+5fea4121 lsls   r1, r1, #9
 92ea030f teq    r2, r3
 92f0000f teq    r2, #0
 e9fb0021 umlal  r2, r1, r9, r0
