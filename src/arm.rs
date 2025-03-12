@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     condition::Condition,
-    decoder::{ArmV7InstructionDecoder, InstructionDecodeError},
+    decoder::{BasicInstructionDecoder, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
     irq::Irq,
@@ -119,7 +119,7 @@ pub struct ArmProcessor {
     /// Indicates which exceptions are currently active.
     exception_active: Vec<bool>,
     memory_mappings: MemoryMappings,
-    instruction_decoder: ArmV7InstructionDecoder,
+    instruction_decoder: BasicInstructionDecoder,
     pub cycles: u64,
     code_hooks: Vec<CodeHook>,
     pub event_on_instruction: bool,
@@ -168,7 +168,7 @@ impl ArmProcessor {
             memory_mappings: MemoryMappings::new(),
             execution_priority: 0,
             exception_active: (0..exception_count).map(|_| false).collect(),
-            instruction_decoder: ArmV7InstructionDecoder::new(),
+            instruction_decoder: BasicInstructionDecoder::new(),
             cycles: 0,
             code_hooks: Vec::new(),
             event_on_instruction: false,

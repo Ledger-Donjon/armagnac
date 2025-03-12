@@ -210,9 +210,9 @@ impl InstructionDecoder {
     }
 }
 
-pub struct ArmV7InstructionDecoder(InstructionDecoder);
+pub struct BasicInstructionDecoder(InstructionDecoder);
 
-impl ArmV7InstructionDecoder {
+impl BasicInstructionDecoder {
     pub fn new() -> Self {
         let mut dec = InstructionDecoder::new();
         dec.insert::<instructions::adc::AdcImm>();
@@ -342,14 +342,14 @@ impl ArmV7InstructionDecoder {
 #[cfg(test)]
 mod tests {
     use std::{fs::File, io::{BufRead, BufReader}};
+    use super::BasicInstructionDecoder;
     use crate::{arm::Mnemonic, instructions::InstructionSize, it_state::ItState};
-    use super::ArmV7InstructionDecoder;
 
     #[test]
     fn test_dissassembly() {
         let file = File::open("src/test_decoder.txt").unwrap();
         let buf_reader = BufReader::new(file);
-        let decoder = ArmV7InstructionDecoder::new();
+        let decoder = BasicInstructionDecoder::new();
 
         for line in buf_reader.lines().map(|l| l.unwrap()) {
             // Skip comment lines
