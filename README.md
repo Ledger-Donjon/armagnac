@@ -26,7 +26,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - LDRT: Load Register Unprivileged
 - MCR, MCR2: Move to Coprocessor from ARM Register
 - MCRR, MCRR2: Move to Compressor from two ARM Registers
-- MOVT: Move Top
 - MRC, MRC2: Move to ARM Register from Coprocessor
 - MRRC, MRRC2: Move to two ARM Registers from Coprocessor
 - PKHBT, PKHTB: Pack Halfword

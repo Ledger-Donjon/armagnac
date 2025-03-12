@@ -277,6 +277,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::mls::Mls>();
         dec.insert::<instructions::mov::MovImm>();
         dec.insert::<instructions::mov::MovReg>();
+        dec.insert::<instructions::movt::Movt>();
         dec.insert::<instructions::mrs::Mrs>();
         dec.insert::<instructions::msr::Msr>();
         dec.insert::<instructions::mul::Mul>();

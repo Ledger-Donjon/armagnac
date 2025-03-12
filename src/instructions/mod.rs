@@ -47,6 +47,7 @@ pub mod lsr;
 pub mod mla;
 pub mod mls;
 pub mod mov;
+pub mod movt;
 pub mod mrs;
 pub mod msr;
 pub mod mul;
