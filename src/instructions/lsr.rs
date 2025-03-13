@@ -1,15 +1,15 @@
 //! Implements LSR (Logical Shift Right) instruction.
 
+use super::{unpredictable, DecodeHelper, Instruction};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// LSR (immediate) instruction.
 pub struct LsrImm {
@@ -45,7 +45,7 @@ impl Instruction for LsrImm {
                     rd,
                     rm,
                     shift: shift.n as u8,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),
@@ -109,7 +109,7 @@ impl Instruction for LsrReg {
                     rd,
                     rn,
                     rm,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),

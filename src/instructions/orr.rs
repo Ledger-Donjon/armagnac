@@ -110,7 +110,7 @@ impl Instruction for OrrReg {
                     rn,
                     rm,
                     shift,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),

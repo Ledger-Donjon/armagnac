@@ -1,14 +1,14 @@
 //! Implements STMDB (Store Multiple Decrement Before) and STMFD (Store Multiple Full Descending)
 //! instructions.
 
+use super::Instruction;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::{other, unpredictable, DecodeHelper, ItState},
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::Instruction;
 
 /// STMDB instruction.
 pub struct Stmdb {
@@ -33,7 +33,7 @@ impl Instruction for Stmdb {
         debug_assert_eq!(tn, 1);
         let rn = ins.reg4(16);
         let registers = MainRegisterList::new((ins & 0x5fff) as u16);
-        let wback = (ins >> 21) & 1 != 0;
+        let wback = ins.bit(21);
         other(wback && rn.is_sp())?; // PUSH
         unpredictable(rn.is_pc() || registers.len() < 2)?;
         unpredictable(wback && registers.contains(&rn))?;

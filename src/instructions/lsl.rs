@@ -4,6 +4,7 @@ use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
@@ -50,7 +51,7 @@ impl Instruction for LslImm {
                     rd,
                     rm,
                     shift: imm5 as u8,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),
@@ -114,7 +115,7 @@ impl Instruction for LslReg {
                     rd,
                     rn,
                     rm,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),

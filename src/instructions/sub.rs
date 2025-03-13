@@ -1,14 +1,14 @@
 //! Implements SUB (Subtract) instruction.
 
+use super::{other, unpredictable, DecodeHelper, Instruction};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::{rdn_args_string, ItState},
     registers::RegisterIndex,
 };
-
-use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// SUB (immediate) instruction.
 pub struct SubImm {
@@ -52,11 +52,11 @@ impl Instruction for SubImm {
             3 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 other(rd.is_pc() && set_flags)?; // CMP (immediate)
                 other(rn.is_sp())?; // SUB (SP minus immediate)
                 unpredictable(rd.is_sp_or_pc() || rn.is_pc())?;
-                let imm12 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let imm32 = thumb_expand_imm(imm12)?;
                 Self {
                     rd,
@@ -71,7 +71,7 @@ impl Instruction for SubImm {
                 other(rn.is_pc())?; // ADR
                 other(rn.is_sp())?; // SUB (SP minus immediate)
                 unpredictable(rd.is_sp_or_pc())?;
-                let imm32 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm32 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 Self {
                     rd,
                     rn,
@@ -138,7 +138,7 @@ impl Instruction for SubReg {
                 let rm = ins.reg4(0);
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
-                let s = (ins >> 20) & 1 != 0;
+                let s = ins.bit(20);
                 other(rd.is_pc() && s)?; // CMP (register)
                 other(rn.is_sp())?; // SUB (SP minus register)
                 unpredictable(rd.is_sp_or_pc() || rn.is_pc() || rm.is_sp_or_pc())?;
@@ -212,25 +212,25 @@ impl Instruction for SubSpMinusImm {
             },
             2 => {
                 let rd = ins.reg4(8);
-                let imm12 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let imm32 = thumb_expand_imm(imm12)?;
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 other(rd.is_pc() && set_flags)?; // CMP (immediate)
                 unpredictable(rd.is_pc())?;
                 Self {
                     rd,
                     imm32,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             3 => {
                 let rd = ins.reg4(8);
-                let imm32 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm32 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 unpredictable(rd.is_pc())?;
                 Self {
                     rd,
                     imm32,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                 }
             }
             _ => panic!(),

@@ -6,6 +6,7 @@ use crate::{
     arith::thumb_expand_imm_optc,
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::ItState,
     registers::RegisterIndex,
 };
@@ -43,22 +44,20 @@ impl Instruction for MovImm {
             },
             2 => {
                 let rd = ins.reg4(8);
-                let imm12 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
                 unpredictable(rd.is_sp_or_pc())?;
                 Self {
                     rd,
                     imm32,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags: ins.bit(20),
                     carry,
                 }
             }
             3 => {
                 let rd = ins.reg4(8);
-                let imm32 = (((ins >> 16) & 0xf) << 12)
-                    | (((ins >> 26) & 1) << 11)
-                    | (((ins >> 12) & 7) << 8)
-                    | ins & 0xff;
+                let imm32 =
+                    (ins.imm4(16) << 12) | (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 unpredictable(rd.is_sp_or_pc())?;
                 Self {
                     rd,
@@ -110,7 +109,7 @@ impl Instruction for MovReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let rd = RegisterIndex::new_main((ins & 7) | (((ins >> 7) & 1) << 3));
+                let rd = RegisterIndex::new_main((ins & 7) | (ins.imm1(7) << 3));
                 unpredictable(rd.is_pc() && state.in_it_block_not_last())?;
                 Self {
                     rd,
@@ -129,7 +128,7 @@ impl Instruction for MovReg {
             3 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 unpredictable(set_flags && (rd.is_sp_or_pc() || rm.is_sp_or_pc()))?;
                 unpredictable(
                     !set_flags && (rd.is_pc() || rm.is_pc() || (rd.is_sp() && rm.is_sp())),

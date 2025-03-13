@@ -1,14 +1,14 @@
 //! Implements LDM (Load Multiple), LDMIA (Load Multiple Increment After) and LDMFD (Load Multiple
 //! Full Descending) instructions.
 
+use super::{other, unpredictable, DecodeHelper, Instruction};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     it_state::ItState,
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// LDM instruction.
 pub struct Ldm {
@@ -38,7 +38,7 @@ impl Instruction for Ldm {
                 }
             }
             2 => {
-                let wback = (ins >> 21) & 1 != 0;
+                let wback = ins.bit(21);
                 let rn = ins.reg4(16);
                 other(wback && rn.is_sp())?;
                 let registers = MainRegisterList::new((ins & 0xdfff) as u16);

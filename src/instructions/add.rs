@@ -41,7 +41,7 @@ impl Instruction for AddImm {
             1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(3),
-                imm32: (ins >> 6) & 7,
+                imm32: ins.imm3(6),
                 set_flags: !state.in_it_block(),
             },
             2 => {
@@ -54,10 +54,10 @@ impl Instruction for AddImm {
                 }
             }
             3 => {
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
-                let imm12 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff;
+                let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let imm32 = thumb_expand_imm(imm12)?;
                 other(rd.is_pc() && set_flags)?;
                 other(rn.is_sp())?; // ADD (SP plus immediate)
@@ -81,7 +81,7 @@ impl Instruction for AddImm {
                 Self {
                     rd,
                     rn,
-                    imm32: (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff,
+                    imm32: (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff,
                     set_flags: false,
                 }
             }
@@ -134,15 +134,15 @@ impl Instruction for AddReg {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rd: (ins & 7).into(),
-                rn: ((ins >> 3) & 7).into(),
-                rm: ((ins >> 6) & 7).into(),
+                rd: ins.reg3(0),
+                rn: ins.reg3(3),
+                rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
             },
             2 => {
                 let rm = ins.reg4(3);
-                let rdn = RegisterIndex::new_main((((ins >> 7) & 1) << 3) | ins & 7);
+                let rdn = RegisterIndex::new_main((ins.imm1(7) << 3) | ins.imm3(0));
                 if rdn.is_sp() || rm.is_sp() {
                     return Err(DecodeError::Other); // ADD (SP plus register)
                 }
@@ -164,7 +164,7 @@ impl Instruction for AddReg {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 if rd.is_pc() && set_flags {
                     return Err(DecodeError::Other); // CMN (register)
                 }
@@ -174,8 +174,7 @@ impl Instruction for AddReg {
                 if rd.is_sp_or_pc() || rn.is_pc() || rm.is_sp_or_pc() {
                     return Err(DecodeError::Unpredictable);
                 }
-                let shift =
-                    Shift::from_bits((ins >> 4) & 3, (((ins >> 12) & 7) << 2) | (ins >> 6) & 3);
+                let shift = Shift::from_bits((ins >> 4) & 3, (ins.imm3(12) << 2) | ins.imm2(6));
                 Self {
                     rd,
                     rn,
@@ -241,18 +240,18 @@ impl Instruction for AddSpPlusImm {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => Self {
-                rd: ((ins >> 8) & 7).into(),
-                imm32: (ins & 0xff) << 2,
+                rd: ins.reg3(8),
+                imm32: ins.imm8(0) << 2,
                 set_flags: false,
             },
             2 => Self {
                 rd: RegisterIndex::Sp,
-                imm32: (ins & 0x7f) << 2,
+                imm32: ins.imm7(0) << 2,
                 set_flags: false,
             },
             3 => {
-                let rd = RegisterIndex::new_main((ins >> 8) & 0xf);
-                let set_flags = (ins >> 20) & 1 != 0;
+                let rd = ins.reg4(8);
+                let set_flags = ins.bit(20);
                 other(rd.is_pc() && set_flags)?; // CMN (immediate)
                 unpredictable(rd.is_pc())?;
                 let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0);
@@ -264,7 +263,7 @@ impl Instruction for AddSpPlusImm {
                 }
             }
             4 => {
-                let rd = RegisterIndex::new_main((ins >> 8) & 0xf);
+                let rd = ins.reg4(8);
                 if rd.is_pc() {
                     return Err(DecodeError::Unpredictable);
                 }

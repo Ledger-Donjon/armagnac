@@ -248,6 +248,9 @@ pub trait DecodeHelper {
     /// Extracts a 5-bit integer value at `lsb_index` bit position.
     fn imm5(&self, lsb_index: u8) -> u32;
 
+    /// Extracts a 7-bit integer value at `lsb_index` bit position.
+    fn imm7(&self, lsb_index: u8) -> u32;
+
     /// Extracts a 8-bit integer value at `lsb_index` bit position.
     fn imm8(&self, lsb_index: u8) -> u32;
 
@@ -285,6 +288,10 @@ impl DecodeHelper for u32 {
 
     fn imm5(&self, lsb_index: u8) -> u32 {
         (self >> lsb_index) & 0x1f
+    }
+
+    fn imm7(&self, lsb_index: u8) -> u32 {
+        (self >> lsb_index) & 0x7f
     }
 
     fn imm8(&self, lsb_index: u8) -> u32 {

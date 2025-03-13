@@ -36,16 +36,16 @@ impl Instruction for AndImm {
             1 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
-                let imm12 = (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | (ins & 0xff);
+                let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | (ins & 0xff);
                 let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
-                let set_flags = (ins >> 20) & 1 != 0;
+                let set_flags = ins.bit(20);
                 other(rd.is_pc() && set_flags)?; // TST (immediate)
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
                 Self {
                     rd,
                     rn,
                     imm32,
-                    set_flags: (ins >> 20) & 1 != 0,
+                    set_flags,
                     carry,
                 }
             }

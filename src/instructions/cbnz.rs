@@ -1,14 +1,14 @@
 //! Implements CBNZ (Compare and Branch on Non-Zero) and CBZ (Compare and Branch on Zero) instructions.
 
+use super::Instruction;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 pub struct Cbnz {
     /// First operand register.
@@ -30,7 +30,7 @@ impl Instruction for Cbnz {
         Ok(Self {
             rn: ins.reg3(0),
             imm32: (((ins >> 9) & 1) << 6) | (((ins >> 3) & 0x1f) << 1),
-            non_zero: (ins >> 11) & 1 != 0,
+            non_zero: ins.bit(11),
         })
     }
 

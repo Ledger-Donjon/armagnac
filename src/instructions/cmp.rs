@@ -31,9 +31,7 @@ impl Instruction for CmpImm {
             },
             2 => Self {
                 rn: ins.reg4(16),
-                imm32: thumb_expand_imm(
-                    (((ins >> 26) & 1) << 11) | (((ins >> 12) & 7) << 8) | ins & 0xff,
-                )?,
+                imm32: thumb_expand_imm((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff)?,
             },
             _ => panic!(),
         })
@@ -86,8 +84,8 @@ impl Instruction for CmpReg {
                 shift: Shift::lsl(0),
             },
             2 => {
-                let rn = (((ins >> 7) & 1) << 3) | ins & 7;
-                let rm = (ins >> 3) & 0xf;
+                let rn = (ins.imm1(7) << 3) | ins.imm3(0);
+                let rm = ins.imm4(3);
                 unpredictable(rn < 8 && rm < 8)?;
                 let rn = RegisterIndex::new_main(rn);
                 let rm = RegisterIndex::new_main(rm);
@@ -105,10 +103,7 @@ impl Instruction for CmpReg {
                 Self {
                     rn,
                     rm,
-                    shift: Shift::from_bits(
-                        (ins >> 4) & 3,
-                        (((ins >> 12) & 7) << 2) | (ins >> 6) & 3,
-                    ),
+                    shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                 }
             }
             _ => panic!(),

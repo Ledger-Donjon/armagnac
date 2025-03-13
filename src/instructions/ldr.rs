@@ -1,18 +1,17 @@
 //! Implements LDR (Load Register) instruction.
 
-use core::panic;
-
+use super::{other, undefined, unpredictable, DecodeHelper, Instruction};
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
+    helpers::BitAccess,
     instructions::AddOrSub,
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{other, undefined, unpredictable, DecodeHelper, Instruction};
+use core::panic;
 
 pub struct LdrImm {
     /// Base register.
@@ -75,7 +74,7 @@ impl Instruction for LdrImm {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let puw = (ins >> 8) & 7;
-                let imm8 = ins & 0xff;
+                let imm8 = ins.imm8(0);
                 let wback = puw & 1 != 0;
                 other(rn.is_pc())?; // LDR (literal)
                 other(puw == 6)?; // LDRT
@@ -164,7 +163,7 @@ impl Instruction for LdrLit {
                 Self {
                     rt,
                     imm32: ins & 0xfff,
-                    add: (ins >> 23) & 1 != 0,
+                    add: ins.bit(23),
                 }
             }
             _ => panic!(),

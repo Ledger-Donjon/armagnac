@@ -29,15 +29,15 @@ impl Instruction for Ubfx {
         debug_assert_eq!(tn, 1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
-        let lsb = ((((ins >> 12) & 7) << 2) | (ins >> 6) & 3) as u8;
+        let lsb = ((ins.imm3(12) << 2) | ins.imm2(6)) as u8;
         let width_minus_1 = (ins & 0x1f) as u8;
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
         unpredictable(lsb + width_minus_1 > 31)?;
         Ok(Self {
             rd,
             rn,
-            lsb: ((((ins >> 12) & 7) << 2) | (ins >> 6) & 3) as u8,
-            width_minus_1: (ins & 0x1f) as u8,
+            lsb,
+            width_minus_1: ins.imm5(0) as u8,
         })
     }
 
