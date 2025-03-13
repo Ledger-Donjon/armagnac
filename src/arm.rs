@@ -94,7 +94,7 @@ impl MemoryMappings {
             let start = mapping.address as usize;
             let end = mapping.address as usize + mapping.size as usize;
             if ((address as usize) >= start) && ((address as usize) < end) {
-                return Some(&mapping);
+                return Some(mapping);
             }
         }
         None
@@ -210,7 +210,11 @@ impl ArmProcessor {
 
     /// Maps and returns a RAM memory with `data` as initial value. The size of the created memory
     /// is the size of `data`.
-    pub fn map(&mut self, address: u32, data: &[u8]) -> Result<Rc<RefCell<RamMemory>>, ()> {
+    pub fn map(
+        &mut self,
+        address: u32,
+        data: &[u8],
+    ) -> Result<Rc<RefCell<RamMemory>>, MapConflict> {
         let ram = Rc::new(RefCell::new(RamMemory::new_from_slice(data)));
         self.map_iface(address, ram.clone())?;
         Ok(ram)
@@ -223,33 +227,27 @@ impl ArmProcessor {
         &mut self,
         address: u32,
         iface: Rc<RefCell<dyn MemoryInterface>>,
-    ) -> Result<(), ()> {
+    ) -> Result<(), MapConflict> {
         let size = iface.borrow().size();
 
         // Check for size overflow
         if address.checked_add(size).is_none() {
-            return Err(());
+            return Err(MapConflict);
         }
 
         // Check overlap with another mapping
-        if self
-            .memory_mappings
-            .0
-            .iter()
-            .find(|m| {
-                let a = m.address.max(address);
-                let b = (m.address + m.size).min(address + size);
-                a < b
-            })
-            .is_some()
-        {
-            return Err(());
+        if self.memory_mappings.0.iter().any(|m| {
+            let a = m.address.max(address);
+            let b = (m.address + m.size).min(address + size);
+            a < b
+        }) {
+            return Err(MapConflict);
         }
 
         self.memory_mappings.0.push(MemoryMap {
-            address: address,
+            address,
             size,
-            iface: iface,
+            iface,
         });
         Ok(())
     }
@@ -262,14 +260,18 @@ impl ArmProcessor {
     ///
     /// * `address` - RAM memory start address.
     /// * `size` - RAM memory size.
-    pub fn map_ram(&mut self, address: u32, size: u32) -> Result<Rc<RefCell<RamMemory>>, ()> {
+    pub fn map_ram(
+        &mut self,
+        address: u32,
+        size: u32,
+    ) -> Result<Rc<RefCell<RamMemory>>, MapConflict> {
         let ram = Rc::new(RefCell::new(RamMemory::new_zero(size as usize)));
         self.map_iface(address, ram.clone())?;
         Ok(ram)
     }
 
     pub fn hook_code(&mut self, range: Range<usize>) {
-        self.code_hooks.push(CodeHook { range: range })
+        self.code_hooks.push(CodeHook { range })
     }
 
     /// Returns bytes at given address in memory
@@ -291,7 +293,7 @@ impl ArmProcessor {
         match read {
             Ok(val) => Ok(val),
             Err(e) => Err(RunError::MemRead {
-                address: address,
+                address,
                 size: 1,
                 cause: e,
             }),
@@ -318,7 +320,7 @@ impl ArmProcessor {
         match write {
             Ok(()) => Ok(()),
             Err(e) => Err(RunError::MemWrite {
-                address: address,
+                address,
                 size: 1,
                 value: value as u32,
                 cause: e,
@@ -346,7 +348,7 @@ impl ArmProcessor {
         match write {
             Ok(()) => Ok(()),
             Err(e) => Err(RunError::MemWrite {
-                address: address,
+                address,
                 size: 2,
                 value: value as u32,
                 cause: e,
@@ -366,14 +368,14 @@ impl ArmProcessor {
             match read {
                 Ok(val) => Ok(val),
                 Err(e) => Err(RunError::MemRead {
-                    address: address,
+                    address,
                     size: 2,
                     cause: e,
                 }),
             }
         } else {
             Err(RunError::MemRead {
-                address: address,
+                address,
                 size: 2,
                 cause: MemoryAccessError::InvalidAddress,
             })
@@ -399,7 +401,7 @@ impl ArmProcessor {
         match read {
             Ok(val) => Ok(val),
             Err(e) => Err(RunError::MemRead {
-                address: address,
+                address,
                 size: 4,
                 cause: e,
             }),
@@ -543,8 +545,7 @@ impl ArmProcessor {
         if self
             .code_hooks
             .iter()
-            .find(|&ch| ch.range.contains(&(pc as usize)))
-            .is_some()
+            .any(|ch| ch.range.contains(&(pc as usize)))
         {
             Ok(Event::Hook { address: pc })
         } else {
@@ -570,15 +571,13 @@ impl ArmProcessor {
             if self.registers.xpsr.test(condition) {
                 jump = ins.execute(self)?;
             }
-            if !jump {
-                if size == InstructionSize::Ins16 {
-                    self.set_pc(self.pc() - 2)
-                }
+            if !jump && size == InstructionSize::Ins16 {
+                self.set_pc(self.pc() - 2)
             }
             // Handle actions that may come from memory accesses.
             for action in self.memory_op_actions.iter() {
                 match action {
-                    MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins: ins }),
+                    MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins }),
                     MemoryOpAction::Irq(irq) => {
                         // A peripheral emitted an interrupt request, save it.
                         self.interrupt_requests.insert(*irq);
@@ -630,7 +629,7 @@ impl ArmProcessor {
         if !self.exception_active[number as usize] {
             self.deactivate(number);
             todo!();
-            return Ok(());
+            //return Ok(());
         }
         let frame_ptr = match exc_return & 0xf {
             0b0001 => {
@@ -856,3 +855,8 @@ impl Index<RegisterIndex> for ArmProcessor {
         &self.registers[index]
     }
 }
+
+/// Error returned when mapping an interface would intersect with an already mapping other
+/// interface.
+#[derive(Debug)]
+pub struct MapConflict;

@@ -27,10 +27,7 @@ impl Instruction for Msr {
         debug_assert_eq!(tn, 1);
         let rn = ins.reg4(16);
         let sysm = ins.imm8(0);
-        let good_sysm = match sysm {
-            0..=3 | 5..=9 | 16..=20 => true,
-            _ => false,
-        };
+        let good_sysm = matches!(sysm, 0..=3 | 5..=9 | 16..=20);
         unpredictable(rn.is_sp_or_pc() || !good_sysm)?;
         Ok(Self {
             sysm: RegisterIndex::new_sys(sysm),

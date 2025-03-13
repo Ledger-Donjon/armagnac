@@ -35,7 +35,7 @@ impl Instruction for Adr {
             2 | 3 => {
                 let rd = ins.reg4(8);
                 unpredictable(rd.is_sp_or_pc())?;
-                let imm12 = (ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0)) as i32;
+                let imm12 = ((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0)) as i32;
                 Self {
                     rd,
                     imm32: if tn == 2 { -imm12 } else { imm12 },

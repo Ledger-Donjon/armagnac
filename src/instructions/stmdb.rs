@@ -33,7 +33,7 @@ impl Instruction for Stmdb {
         debug_assert_eq!(tn, 1);
         let rn = ins.reg4(16);
         let registers = MainRegisterList::new((ins & 0x5fff) as u16);
-        let wback = ins >> 21 & 1 != 0;
+        let wback = (ins >> 21) & 1 != 0;
         other(wback && rn.is_sp())?; // PUSH
         unpredictable(rn.is_pc() || registers.len() < 2)?;
         unpredictable(wback && registers.contains(&rn))?;

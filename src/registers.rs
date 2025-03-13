@@ -440,12 +440,12 @@ impl ProgramStatusRegister {
     }
 
     pub fn ici_it(&self) -> u8 {
-        ((self.0 & 0x06000000) >> 19 | (self.0 >> 10 & 0x3f)) as u8
+        (((self.0 & 0x06000000) >> 19) | ((self.0 >> 10) & 0x3f)) as u8
     }
 
     pub fn set_ici_it(&mut self, value: u8) -> &mut Self {
         let value = value as u32;
-        self.0 = self.0 & 0xf9ff03ff | (value & 0xc0) << 19 | (value & 0x3f) << 10;
+        self.0 = self.0 & 0xf9ff03ff | ((value & 0xc0) << 19) | ((value & 0x3f) << 10);
         self
     }
 
@@ -501,12 +501,18 @@ impl ProgramStatusRegister {
 
     /// Returns an [`ItState`] from the EPSR register value.
     pub fn it_state(&self) -> ItState {
-        ItState(((self.0 >> 25 & 3) | (self.0 >> 10 & 0x3f) << 2) as u8)
+        ItState((((self.0 >> 25) & 3) | (((self.0 >> 10) & 0x3f) << 2)) as u8)
     }
 
     /// Sets IT state in the EPSR register from an [`ItState`] object.
     pub fn set_it_state(&mut self, it: ItState) {
-        self.0 = (self.0 & 0xf9ff03ff) | ((it.0 & 3) as u32) << 25 | ((it.0 >> 2) as u32) << 10;
+        self.0 = (self.0 & 0xf9ff03ff) | (((it.0 & 3) as u32) << 25) | (((it.0 >> 2) as u32) << 10);
+    }
+}
+
+impl Default for ProgramStatusRegister {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -537,6 +543,12 @@ impl MaskRegister {
     /// * `pm` - Priority mask bit value
     pub fn set_pm(&mut self, pm: bool) {
         self.0.set_bit(0, pm)
+    }
+}
+
+impl Default for MaskRegister {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -585,6 +597,12 @@ impl ControlRegister {
     /// * `value` - false to select MSP, true to select PSP (in thread mode).
     pub fn set_spsel(&mut self, value: bool) {
         self.0.set_bit(1, value)
+    }
+}
+
+impl Default for ControlRegister {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -730,6 +748,12 @@ impl CoreRegisters {
             RegisterIndex::FaultMask => self.faultmask.0 = value,
             RegisterIndex::Control => self.control.0 = value,
         }
+    }
+}
+
+impl Default for CoreRegisters {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

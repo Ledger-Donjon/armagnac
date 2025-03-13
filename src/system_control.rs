@@ -113,6 +113,7 @@ impl Stcsr {
     }
 }
 
+#[derive(Default)]
 pub struct Vtor(u32);
 
 impl Vtor {
@@ -134,12 +135,6 @@ impl Vtor {
     /// Returns vector table offset.
     pub fn offset(&self) -> u32 {
         self.0
-    }
-}
-
-impl Default for Vtor {
-    fn default() -> Self {
-        Self(0)
     }
 }
 
@@ -296,7 +291,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Aircr => self.aircr.0,
             SystemControlRegister::Scr => todo!(),
             SystemControlRegister::Ccr => self.ccr.0,
-            SystemControlRegister::Shpr(i) => self.shpr[i as usize].into(),
+            SystemControlRegister::Shpr(i) => self.shpr[i as usize],
             SystemControlRegister::Shcsr => self.shcsr.0,
             SystemControlRegister::Cfsr => todo!(),
             SystemControlRegister::Hfsr => todo!(),
@@ -309,9 +304,9 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::IdIsar3 => todo!(),
             SystemControlRegister::IdIsar4 => todo!(),
             SystemControlRegister::Cpacr => self.cpacr.0,
-            SystemControlRegister::NvicIser(i) => self.nvic_iser[i as usize].into(),
-            SystemControlRegister::NvicIcer(i) => self.nvic_icer[i as usize].into(),
-            SystemControlRegister::NvicIpr(i) => self.nvic_ipr[i as usize].into(),
+            SystemControlRegister::NvicIser(i) => self.nvic_iser[i as usize],
+            SystemControlRegister::NvicIcer(i) => self.nvic_icer[i as usize],
+            SystemControlRegister::NvicIpr(i) => self.nvic_ipr[i as usize],
         })
     }
 

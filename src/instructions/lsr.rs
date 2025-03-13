@@ -40,12 +40,12 @@ impl Instruction for LsrImm {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
-                let shift = Shift::from_bits(1, ins.imm3(12) << 2 | ins.imm2(6));
+                let shift = Shift::from_bits(1, (ins.imm3(12) << 2) | ins.imm2(6));
                 Self {
                     rd,
                     rm,
                     shift: shift.n as u8,
-                    set_flags: ins >> 20 & 1 != 0,
+                    set_flags: (ins >> 20) & 1 != 0,
                 }
             }
             _ => panic!(),
@@ -109,7 +109,7 @@ impl Instruction for LsrReg {
                     rd,
                     rn,
                     rm,
-                    set_flags: ins >> 20 & 1 != 0,
+                    set_flags: (ins >> 20) & 1 != 0,
                 }
             }
             _ => panic!(),

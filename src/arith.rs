@@ -17,16 +17,8 @@ pub fn add_with_carry(x: u32, y: u32, carry_in: bool) -> (u32, bool, bool) {
     let unsigned_sum = x as u64 + y as u64 + carry_in as u64;
     let signed_sum = x as i32 as i64 + y as i32 as i64 + carry_in as i64;
     let result = x.wrapping_add(y).wrapping_add(carry_in as u32);
-    let carry_out = if result as u64 == unsigned_sum {
-        false
-    } else {
-        true
-    };
-    let overflow = if result as i32 as i64 == signed_sum {
-        false
-    } else {
-        true
-    };
+    let carry_out = result as u64 != unsigned_sum;
+    let overflow = result as i32 as i64 != signed_sum;
     (result, carry_out, overflow)
 }
 
@@ -35,7 +27,7 @@ pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
     assert!((shift > 0) && (shift < 32));
     (
         ((value as i32) >> shift) as u32,
-        value & (1 << shift - 1) != 0,
+        value & (1 << (shift - 1)) != 0,
     )
 }
 
@@ -51,7 +43,7 @@ pub fn lsl_c(value: u32, shift: u32) -> (u32, bool) {
     // We cannot use wrapping_shl here since it does not conform to what ARM implements when
     // shift >= 32.
     let extended = (value as u64) << shift.min(63);
-    (extended as u32, extended & 1 << 32 != 0)
+    (extended as u32, extended & (1 << 32) != 0)
 }
 
 /// Returns right shifted value and carry out.
@@ -62,7 +54,7 @@ pub fn lsl_c(value: u32, shift: u32) -> (u32, bool) {
 /// * `shift` - Shift count. Must be > 0.
 pub fn lsr_c(value: u32, shift: u32) -> (u32, bool) {
     assert!(shift > 0);
-    (value >> shift, value & (1 << shift - 1) != 0)
+    (value >> shift, value & (1 << (shift - 1)) != 0)
 }
 
 /// Returns right rotated value and carry out.
@@ -76,7 +68,7 @@ pub fn ror_c(value: u32, shift: u32) -> (u32, bool) {
     assert!(shift > 0);
     let m = shift % N;
     let result = lsr_c(value, m).0 | lsl_c(value, N - m).0;
-    (result, result & (1 << N - 1) != 0)
+    (result, result & (1 << (N - 1)) != 0)
 }
 
 /// Returns `value` shifted to the right with most significant set from the input carry. The output
@@ -256,29 +248,29 @@ pub fn shift_c(value: u32, shift: Shift, carry_in: bool) -> (u32, bool) {
 /// If instruction is unpredictable, [ArithError::Unpredictable] is returned.
 pub fn thumb_expand_imm_optc(imm12: u32) -> Result<(u32, Option<bool>), ArithError> {
     debug_assert!(imm12 < 0x1000);
-    if imm12 >> 10 & 3 == 0 {
+    if (imm12 >> 10) & 3 == 0 {
         let imm8 = imm12 & 0xff;
-        match imm12 >> 8 & 3 {
+        match (imm12 >> 8) & 3 {
             0 => Ok((imm8, None)),
             1 => {
                 if imm8 == 0 {
                     Err(ArithError::Unpredictable)
                 } else {
-                    Ok((imm8 << 16 | imm8, None))
+                    Ok(((imm8 << 16) | imm8, None))
                 }
             }
             2 => {
                 if imm8 == 0 {
                     Err(ArithError::Unpredictable)
                 } else {
-                    Ok((imm8 << 24 | imm8 << 8, None))
+                    Ok(((imm8 << 24) | (imm8 << 8), None))
                 }
             }
             3 => {
                 if imm8 == 0 {
                     Err(ArithError::Unpredictable)
                 } else {
-                    Ok((imm8 << 24 | imm8 << 16 | imm8 << 8 | imm8, None))
+                    Ok(((imm8 << 24) | (imm8 << 16) | (imm8 << 8) | imm8, None))
                 }
             }
             _ => panic!(),
@@ -295,20 +287,6 @@ pub fn thumb_expand_imm_optc(imm12: u32) -> Result<(u32, Option<bool>), ArithErr
 /// If instruction is unpredictable, `Err(())` is returned.
 pub fn thumb_expand_imm(imm12: u32) -> Result<u32, ArithError> {
     thumb_expand_imm_optc(imm12).map(|x| x.0)
-}
-
-/// Returns immediate value expansion from thumb instruction encoding.
-///
-/// If instruction is unpredictable, `Err(())` is returned.
-pub fn thumb_expand_imm_c(imm12: u32, carry_in: bool) -> Result<(u32, bool), ArithError> {
-    let (result, carry_out) = thumb_expand_imm_optc(imm12)?;
-    Ok((
-        result,
-        match carry_out {
-            Some(c) => c,
-            None => carry_in,
-        },
-    ))
 }
 
 #[cfg(test)]

@@ -39,6 +39,12 @@ impl MpuV7M {
     }
 }
 
+impl Default for MpuV7M {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RegistersMemoryInterface for MpuV7M {
     type Register = Register;
 

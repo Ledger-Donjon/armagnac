@@ -27,10 +27,7 @@ impl Instruction for Mrs {
         debug_assert_eq!(tn, 1);
         let rd = ins.reg4(8);
         let sysm = ins & 0xff;
-        let good_sysm = match sysm {
-            0..=3 | 5..=9 | 16..=20 => true,
-            _ => false,
-        };
+        let good_sysm = matches!(sysm, 0..=3 | 5..=9 | 16..=20);
         unpredictable(rd.is_sp_or_pc() || !good_sysm)?;
         Ok(Self {
             rd,

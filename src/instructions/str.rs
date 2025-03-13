@@ -42,7 +42,7 @@ impl Instruction for StrImm {
             1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
-                imm32: (ins >> 6 & 0x1f) << 2,
+                imm32: ((ins >> 6) & 0x1f) << 2,
                 index: true,
                 add: true,
                 wback: false,
@@ -72,7 +72,7 @@ impl Instruction for StrImm {
             4 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
-                let puw = ins >> 8 & 7;
+                let puw = (ins >> 8) & 7;
                 let imm32 = ins & 0xff;
                 let wback = puw & 1 != 0;
                 other(puw == 6)?; // STRT

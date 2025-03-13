@@ -31,7 +31,7 @@ impl Instruction for LslImm {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let imm5 = ins >> 6 & 0x1f;
+                let imm5 = (ins >> 6) & 0x1f;
                 other(imm5 == 0)?; // MOV (register)
                 Self {
                     rd: ins.reg3(0),
@@ -43,14 +43,14 @@ impl Instruction for LslImm {
             2 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
-                let imm5 = ins.imm3(12) << 2 | ins.imm2(6);
+                let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
                 other(imm5 == 0)?; // MOV (register)
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
                 Self {
                     rd,
                     rm,
                     shift: imm5 as u8,
-                    set_flags: ins >> 20 & 1 != 0,
+                    set_flags: (ins >> 20) & 1 != 0,
                 }
             }
             _ => panic!(),
@@ -114,7 +114,7 @@ impl Instruction for LslReg {
                     rd,
                     rn,
                     rm,
-                    set_flags: ins >> 20 & 1 != 0,
+                    set_flags: (ins >> 20) & 1 != 0,
                 }
             }
             _ => panic!(),

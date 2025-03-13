@@ -125,8 +125,8 @@ impl<T: RegistersMemoryInterface> MemoryInterface for T {
         let value = self.read_u32le(address & 0xfffffffc, env)?;
         Ok(match address % 4 {
             0 => (value >> 24) as u8,
-            1 => (value >> 16 & 0xff) as u8,
-            2 => (value >> 8 & 0xff) as u8,
+            1 => ((value >> 16) & 0xff) as u8,
+            2 => ((value >> 8) & 0xff) as u8,
             3 => value as u8,
             _ => panic!(),
         })
@@ -136,9 +136,9 @@ impl<T: RegistersMemoryInterface> MemoryInterface for T {
         let address_aligned = address & 0xfffffffc;
         let read = self.read_u32le(address_aligned, env)?;
         let value = match address % 4 {
-            0 => read & 0x00ffffff | (value as u32) << 24,
-            1 => read & 0xff00ffff | (value as u32) << 16,
-            2 => read & 0xffff00ff | (value as u32) << 8,
+            0 => read & 0x00ffffff | ((value as u32) << 24),
+            1 => read & 0xff00ffff | ((value as u32) << 16),
+            2 => read & 0xffff00ff | ((value as u32) << 8),
             3 => read & 0xffffff00 | value as u32,
             _ => panic!(),
         };
@@ -166,10 +166,8 @@ pub struct RamMemory {
 impl RamMemory {
     /// Creates a new RAM memory with `size` capacity, all bytes initialized to zero.
     pub fn new_zero(size: usize) -> RamMemory {
-        let mut v = Vec::new();
-        v.resize(size, 0);
         RamMemory {
-            data: v,
+            data: vec![0; size],
             write: true,
         }
     }
@@ -235,7 +233,7 @@ impl MemoryInterface for RamMemory {
     }
 
     fn write_u16le(&mut self, address: u32, value: u16, env: &mut Env) -> MemoryWriteResult {
-        self.write_u8(address + 1, (value >> 8 & 0xff) as u8, env)?;
+        self.write_u8(address + 1, ((value >> 8) & 0xff) as u8, env)?;
         self.write_u8(address, (value & 0xff) as u8, env)?;
         Ok(())
     }
@@ -250,8 +248,8 @@ impl MemoryInterface for RamMemory {
 
     fn write_u32le(&mut self, address: u32, value: u32, env: &mut Env) -> MemoryWriteResult {
         self.write_u8(address + 3, (value >> 24) as u8, env)?;
-        self.write_u8(address + 2, (value >> 16 & 0xff) as u8, env)?;
-        self.write_u8(address + 1, (value >> 8 & 0xff) as u8, env)?;
+        self.write_u8(address + 2, ((value >> 16) & 0xff) as u8, env)?;
+        self.write_u8(address + 1, ((value >> 8) & 0xff) as u8, env)?;
         self.write_u8(address, (value & 0xff) as u8, env)?;
         Ok(())
     }

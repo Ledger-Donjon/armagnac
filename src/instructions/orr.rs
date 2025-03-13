@@ -38,7 +38,7 @@ impl Instruction for OrrImm {
         let rn = ins.reg4(16);
         other(rn.is_pc())?; // MOV (immediate)
         unpredictable(rd.is_sp_or_pc() || rn.is_sp())?;
-        let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
+        let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
         Ok(Self {
             rd,
@@ -103,14 +103,14 @@ impl Instruction for OrrReg {
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
                 other(rn.is_pc())?; // MOV (register)
-                let shift = Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6));
+                let shift = Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6));
                 unpredictable(rd.is_sp_or_pc() || rn.is_sp() || rm.is_sp_or_pc())?;
                 Self {
                     rd,
                     rn,
                     rm,
                     shift,
-                    set_flags: ins >> 20 & 1 != 0,
+                    set_flags: (ins >> 20) & 1 != 0,
                 }
             }
             _ => panic!(),

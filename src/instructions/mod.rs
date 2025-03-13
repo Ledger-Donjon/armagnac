@@ -260,43 +260,47 @@ pub trait DecodeHelper {
 
 impl DecodeHelper for u32 {
     fn reg3(&self, lsb_index: u8) -> RegisterIndex {
-        RegisterIndex::new_main(self >> lsb_index & 0x7)
+        RegisterIndex::new_main((self >> lsb_index) & 0x7)
     }
 
     fn reg4(&self, lsb_index: u8) -> RegisterIndex {
-        RegisterIndex::new_main(self >> lsb_index & 0xf)
+        RegisterIndex::new_main((self >> lsb_index) & 0xf)
     }
 
     fn imm1(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 1
+        (self >> lsb_index) & 1
     }
 
     fn imm2(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 3
+        (self >> lsb_index) & 3
     }
 
     fn imm3(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 7
+        (self >> lsb_index) & 7
     }
 
     fn imm4(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 0xf
+        (self >> lsb_index) & 0xf
     }
 
     fn imm5(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 0x1f
+        (self >> lsb_index) & 0x1f
     }
 
     fn imm8(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 0xff
+        (self >> lsb_index) & 0xff
     }
 
     fn imm12(&self, lsb_index: u8) -> u32 {
-        self >> lsb_index & 0xfff
+        (self >> lsb_index) & 0xfff
     }
 
     fn puw(&self) -> (bool, bool, bool) {
-        (self & 1 << 10 != 0, self & 1 << 9 != 0, self & 1 << 8 != 0)
+        (
+            self & (1 << 10) != 0,
+            self & (1 << 9) != 0,
+            self & (1 << 8) != 0,
+        )
     }
 }
 

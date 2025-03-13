@@ -29,7 +29,7 @@ impl Instruction for B {
         Ok(match tn {
             1 => {
                 // May match SVC if cond is 15
-                let cond = Condition::try_from(ins >> 8 & 0xf).map_err(|_| DecodeError::Other)?;
+                let cond = Condition::try_from((ins >> 8) & 0xf).map_err(|_| DecodeError::Other)?;
                 undefined(cond == Condition::Always)?;
                 Self {
                     cond: Some(cond),
@@ -44,17 +44,17 @@ impl Instruction for B {
                 }
             }
             3 => {
-                other(ins >> 23 & 7 == 7)?;
+                other((ins >> 23) & 7 == 7)?;
                 // cond cannot be 15 because of the previous test, so the following conversion
                 // cannot fail.
-                let cond = Condition::try_from(ins >> 22 & 0x0f).unwrap();
+                let cond = Condition::try_from((ins >> 22) & 0x0f).unwrap();
                 other(cond == Condition::Always)?; // Can be ISB for instance
                                                    // I think there is an error in ARM spec on J1 and J2, to be checked.
-                let imm21 = (ins >> 26 & 1) << 20
-                    | (ins >> 11 & 1) << 19
-                    | (ins >> 13 & 1) << 18
-                    | (ins >> 16 & 0x3f) << 12
-                    | (ins & 0x7ff) << 1;
+                let imm21 = (((ins >> 26) & 1) << 20)
+                    | (((ins >> 11) & 1) << 19)
+                    | (((ins >> 13) & 1) << 18)
+                    | (((ins >> 16) & 0x3f) << 12)
+                    | ((ins & 0x7ff) << 1);
                 let imm32 = sign_extend(imm21, 21);
                 unpredictable(state.in_it_block())?;
                 Self {
@@ -63,11 +63,14 @@ impl Instruction for B {
                 }
             }
             4 => {
-                let s = ins >> 26 & 1;
-                let i1 = 1 ^ (ins >> 13 & 1) ^ s;
-                let i2 = 1 ^ (ins >> 11 & 1) ^ s;
-                let imm25 =
-                    s << 24 | i1 << 23 | i2 << 22 | (ins >> 16 & 0x3ff) << 12 | (ins & 0x7ff) << 1;
+                let s = (ins >> 26) & 1;
+                let i1 = 1 ^ ((ins >> 13) & 1) ^ s;
+                let i2 = 1 ^ ((ins >> 11) & 1) ^ s;
+                let imm25 = (s << 24)
+                    | (i1 << 23)
+                    | (i2 << 22)
+                    | (((ins >> 16) & 0x3ff) << 12)
+                    | ((ins & 0x7ff) << 1);
                 let imm32 = sign_extend(imm25, 25);
                 unpredictable(state.in_it_block_not_last())?;
                 Self { cond: None, imm32 }

@@ -157,7 +157,7 @@ impl Instruction for LdrhLit {
     }
 
     fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
+        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
         format!("{}, 0x{:0x}", self.rt, address)
     }
 }
@@ -237,11 +237,11 @@ impl Instruction for Ldrht {
         &["111110000011xxxxxxxx1110xxxxxxxx"]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(_tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         todo!()
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
         todo!()
     }
 
@@ -249,7 +249,7 @@ impl Instruction for Ldrht {
         todo!()
     }
 
-    fn args(&self, pc: u32) -> String {
+    fn args(&self, _pc: u32) -> String {
         todo!()
     }
 }

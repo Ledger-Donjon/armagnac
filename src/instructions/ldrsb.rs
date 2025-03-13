@@ -146,7 +146,7 @@ impl Instruction for LdrsbLit {
     }
 
     fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
+        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
         format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
     }
 }
@@ -203,7 +203,7 @@ impl Instruction for LdrsbReg {
         let rn = proc.registers[self.rn];
         let address = rn.wrapping_add(offset);
         let data = ((proc.u8_at(address)? as i8) as i32) as u32;
-        proc.registers.set(self.rt, data as u32);
+        proc.registers.set(self.rt, data);
         Ok(false)
     }
 

@@ -72,6 +72,12 @@ impl BasicSymbolResolver {
     }
 }
 
+impl Default for BasicSymbolResolver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SymbolResolver for BasicSymbolResolver {
     fn resolve(&self, address: u64) -> Option<Symbol> {
         self.symbols.iter().find(|s| s.contains(address)).cloned()

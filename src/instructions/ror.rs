@@ -33,7 +33,7 @@ impl Instruction for RorImm {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let imm5 = ins.imm3(12) << 2 | ins.imm2(6);
+        let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
         other(imm5 == 0)?; // RRX
         let rd = ins.reg4(8);
         let rm = ins.reg4(0);

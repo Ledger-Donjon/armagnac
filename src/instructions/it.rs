@@ -46,7 +46,7 @@ impl Instruction for It {
 
     fn name(&self) -> String {
         let mut name: String = "it".into();
-        for x in &self.state.to_then_else() {
+        for x in &self.state.as_then_else() {
             name.push(match x {
                 ItThenElse::Then => 't',
                 ItThenElse::Else => 'e',

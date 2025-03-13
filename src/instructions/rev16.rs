@@ -42,7 +42,7 @@ impl Instruction for Rev16 {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rm = proc.registers[self.rm];
-        let result = (rm & 0x00ff00ff) << 8 | (rm & 0xff00ff00) >> 8;
+        let result = ((rm & 0x00ff00ff) << 8) | ((rm & 0xff00ff00) >> 8);
         proc.registers.set(self.rd, result);
         Ok(false)
     }

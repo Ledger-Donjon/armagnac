@@ -31,7 +31,7 @@ impl Instruction for Blx {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let target = proc.registers[self.rm];
-        proc.registers.lr = proc.pc() - 2 | 1;
+        proc.registers.lr = (proc.pc() - 2) | 1;
         proc.blx_write_pc(target);
         Ok(true)
     }

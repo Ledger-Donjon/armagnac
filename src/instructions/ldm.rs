@@ -38,7 +38,7 @@ impl Instruction for Ldm {
                 }
             }
             2 => {
-                let wback = ins >> 21 & 1 != 0;
+                let wback = (ins >> 21) & 1 != 0;
                 let rn = ins.reg4(16);
                 other(wback && rn.is_sp())?;
                 let registers = MainRegisterList::new((ins & 0xdfff) as u16);

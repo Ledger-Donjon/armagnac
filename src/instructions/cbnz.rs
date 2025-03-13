@@ -29,8 +29,8 @@ impl Instruction for Cbnz {
         unpredictable(state.in_it_block())?;
         Ok(Self {
             rn: ins.reg3(0),
-            imm32: (ins >> 9 & 1) << 6 | (ins >> 3 & 0x1f) << 1,
-            non_zero: ins >> 11 & 1 != 0,
+            imm32: (((ins >> 9) & 1) << 6) | (((ins >> 3) & 0x1f) << 1),
+            non_zero: (ins >> 11) & 1 != 0,
         })
     }
 

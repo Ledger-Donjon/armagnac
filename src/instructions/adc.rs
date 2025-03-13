@@ -36,7 +36,7 @@ impl Instruction for AdcImm {
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
-        let imm32 = thumb_expand_imm(ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0))?;
+        let imm32 = thumb_expand_imm((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0))?;
         Ok(Self {
             rd,
             rn,
@@ -108,7 +108,7 @@ impl Instruction for AdcReg {
                     rd,
                     rn,
                     rm,
-                    shift: Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6)),
+                    shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
                 }
             }

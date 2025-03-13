@@ -27,8 +27,9 @@ impl Instruction for Push {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let registers = MainRegisterList::new(((ins >> 8 & 1) << 14 | ins & 0xff) as u16);
-                unpredictable(registers.len() == 0)?;
+                let registers =
+                    MainRegisterList::new(((((ins >> 8) & 1) << 14) | ins & 0xff) as u16);
+                unpredictable(registers.is_empty())?;
                 Self { registers }
             }
             2 => {
@@ -37,7 +38,7 @@ impl Instruction for Push {
                 Self { registers }
             }
             3 => {
-                let rt = ins >> 12 & 0xf;
+                let rt = (ins >> 12) & 0xf;
                 let registers = MainRegisterList::new((1 << rt) as u16);
                 let rt = RegisterIndex::new_main(rt);
                 unpredictable(rt.is_sp_or_pc())?;

@@ -5,6 +5,7 @@ use crate::memory::{
 use num_enum::TryFromPrimitive;
 
 /// MPU Region Number Register.
+#[derive(Default)]
 struct RnrRegister(u32);
 
 impl RnrRegister {
@@ -22,19 +23,13 @@ impl RnrRegister {
     }
 }
 
-impl Default for RnrRegister {
-    fn default() -> Self {
-        Self(0)
-    }
-}
-
 /// MPU_RBAR register.
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 struct RbarRegister(u32);
 
 impl RbarRegister {
     fn write(&mut self, value: u32) -> MemoryWriteResult {
-        let sh = value >> 3 & 3;
+        let sh = (value >> 3) & 3;
         if sh == 1 {
             // Reserved value
             return Err(MemoryAccessError::InvalidValue);
@@ -44,32 +39,15 @@ impl RbarRegister {
     }
 }
 
-impl Default for RbarRegister {
-    fn default() -> Self {
-        Self(0)
-    }
-}
-
 /// MPU_RLAR register.
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 struct RlarRegister(u32);
 
-impl Default for RlarRegister {
-    fn default() -> Self {
-        Self(0)
-    }
-}
-
 /// MPU_MAIR0 or MPU_MAIR1 register.
+#[derive(Default)]
 struct MairRegister(u32);
 
 impl MairRegister {}
-
-impl Default for MairRegister {
-    fn default() -> Self {
-        Self(0)
-    }
-}
 
 #[derive(TryFromPrimitive)]
 #[repr(u32)]

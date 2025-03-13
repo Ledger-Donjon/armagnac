@@ -40,7 +40,7 @@ impl Instruction for Bfi {
         Ok(Self {
             rd,
             rn,
-            lsb: (ins.imm3(12) << 2 | ins.imm2(6)) as u8,
+            lsb: ((ins.imm3(12) << 2) | ins.imm2(6)) as u8,
             msb: ins.imm5(0) as u8,
         })
     }
@@ -50,7 +50,7 @@ impl Instruction for Bfi {
             let width = self.msb - self.lsb + 1;
             let mask = 0xffffffffu32 >> (32 - width);
             let value = (proc.registers[self.rd] & !(mask << self.lsb))
-                | (proc.registers[self.rn] & mask) << self.lsb;
+                | ((proc.registers[self.rn] & mask) << self.lsb);
             proc.registers.set(self.rd, value);
         } else {
             return Err(RunError::Unpredictable);

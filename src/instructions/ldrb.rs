@@ -207,7 +207,7 @@ impl Instruction for LdrbLit {
     }
 
     fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
+        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
         format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
     }
 }

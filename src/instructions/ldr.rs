@@ -44,7 +44,7 @@ impl Instruction for LdrImm {
             1 => Self {
                 rn: ins.reg3(3),
                 rt: ins.reg3(0),
-                imm32: (ins >> 6 & 0x1f) << 2,
+                imm32: ((ins >> 6) & 0x1f) << 2,
                 index: true,
                 add: true,
                 wback: false,
@@ -74,7 +74,7 @@ impl Instruction for LdrImm {
             4 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
-                let puw = ins >> 8 & 7;
+                let puw = (ins >> 8) & 7;
                 let imm8 = ins & 0xff;
                 let wback = puw & 1 != 0;
                 other(rn.is_pc())?; // LDR (literal)
@@ -164,7 +164,7 @@ impl Instruction for LdrLit {
                 Self {
                     rt,
                     imm32: ins & 0xfff,
-                    add: ins >> 23 & 1 != 0,
+                    add: (ins >> 23) & 1 != 0,
                 }
             }
             _ => panic!(),
@@ -192,7 +192,7 @@ impl Instruction for LdrLit {
     }
 
     fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32 as u32);
+        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
         format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
     }
 }
@@ -242,7 +242,7 @@ impl Instruction for LdrReg {
                     rt,
                     rn,
                     rm,
-                    shift: Shift::lsl(ins >> 4 & 3),
+                    shift: Shift::lsl((ins >> 4) & 3),
                     index: true,
                     add: true,
                     wback: false,

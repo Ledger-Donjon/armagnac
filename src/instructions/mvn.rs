@@ -31,7 +31,7 @@ impl Instruction for MvnImm {
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
-        let imm12 = ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0);
+        let imm12 = (ins.imm1(26) << 11) | ((ins.imm3(12)) << 8) | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
         Ok(Self {
             rd: ins.reg4(8),
@@ -91,7 +91,7 @@ impl Instruction for MvnReg {
                 Self {
                     rd,
                     rm,
-                    shift: Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6)),
+                    shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
                 }
             }

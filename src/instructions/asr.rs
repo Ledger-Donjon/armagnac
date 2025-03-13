@@ -40,7 +40,7 @@ impl Instruction for AsrImm {
                 let rm = ins.reg4(0);
                 let rd = ins.reg4(8);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
-                let imm5 = ins.imm3(12) << 2 | ins.imm2(6);
+                let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
                 Self {
                     rd,
                     rm,

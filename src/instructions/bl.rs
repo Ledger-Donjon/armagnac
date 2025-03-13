@@ -24,10 +24,14 @@ impl Instruction for Bl {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         unpredictable(state.in_it_block_not_last())?;
-        let s = ins >> 26 & 1;
-        let i1 = 1 ^ (ins >> 13 & 1) ^ s;
-        let i2 = 1 ^ (ins >> 11 & 1) ^ s;
-        let imm25 = s << 24 | i1 << 23 | i2 << 22 | (ins >> 16 & 0x3ff) << 12 | (ins & 0x7ff) << 1;
+        let s = (ins >> 26) & 1;
+        let i1 = 1 ^ ((ins >> 13) & 1) ^ s;
+        let i2 = 1 ^ ((ins >> 11) & 1) ^ s;
+        let imm25 = (s << 24)
+            | (i1 << 23)
+            | (i2 << 22)
+            | (((ins >> 16) & 0x3ff) << 12)
+            | ((ins & 0x7ff) << 1);
         Ok(Self {
             imm32: sign_extend(imm25, 25),
         })

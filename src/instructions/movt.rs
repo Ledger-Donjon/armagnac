@@ -30,14 +30,15 @@ impl Instruction for Movt {
         let rd = ins.reg4(8);
         unpredictable(rd.is_sp_or_pc())?;
         let imm16 =
-            (ins.imm4(16) << 12 | ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0)) as u16;
+            ((ins.imm4(16) << 12) | (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0))
+                as u16;
         Ok(Self { rd, imm16 })
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rd = proc.registers[self.rd];
         proc.registers
-            .set(self.rd, (self.imm16 as u32) << 16 | rd & 0x0000ffff);
+            .set(self.rd, ((self.imm16 as u32) << 16) | rd & 0x0000ffff);
         Ok(false)
     }
 

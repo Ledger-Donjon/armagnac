@@ -35,7 +35,7 @@ impl Instruction for Bfc {
         unpredictable(rd.is_sp_or_pc())?;
         Ok(Self {
             rd,
-            lsb: (ins.imm3(12) << 2 | ins.imm2(6)) as u8,
+            lsb: ((ins.imm3(12) << 2) | ins.imm2(6)) as u8,
             msb: (ins.imm5(0)) as u8,
         })
     }

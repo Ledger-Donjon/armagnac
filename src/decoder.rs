@@ -201,7 +201,7 @@ impl InstructionDecoder {
     ) -> Result<Box<dyn Instruction>, InstructionDecodeError> {
         for entry in &self.entries {
             for (i, pattern) in entry.patterns.iter().enumerate() {
-                if pattern.test(ins, size.clone())? {
+                if pattern.test(ins, size)? {
                     if let Ok(ins) = (entry.decoder)(i + 1, ins, state) {
                         return Ok(ins);
                     }
@@ -339,6 +339,12 @@ impl BasicInstructionDecoder {
         state: ItState,
     ) -> Result<Box<dyn Instruction>, InstructionDecodeError> {
         self.0.try_decode(ins, size, state)
+    }
+}
+
+impl Default for BasicInstructionDecoder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

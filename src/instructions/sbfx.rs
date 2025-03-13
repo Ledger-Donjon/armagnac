@@ -38,7 +38,7 @@ impl Instruction for Sbfx {
         Ok(Self {
             rd,
             rn,
-            lsb: (ins.imm3(12) << 2 | ins.imm2(6)) as u8,
+            lsb: ((ins.imm3(12) << 2) | ins.imm2(6)) as u8,
             widthm1: ins.imm5(0) as u8,
         })
     }
@@ -50,7 +50,7 @@ impl Instruction for Sbfx {
             proc.registers.set(self.rd, result as u32);
             Ok(false)
         } else {
-            return Err(RunError::InstructionUnpredictable);
+            Err(RunError::InstructionUnpredictable)
         }
     }
 

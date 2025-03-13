@@ -27,9 +27,9 @@ impl Instruction for Cps {
         debug_assert_eq!(tn, 1);
         unpredictable(state.in_it_block())?;
         Ok(Self {
-            enable: ins >> 4 & 1 == 0,
-            affect_pri: ins & 2 != 0,
-            affect_fault: ins & 1 != 0,
+            enable: (ins >> 4) & 1 == 0,
+            affect_pri: (ins & 2) != 0,
+            affect_fault: (ins & 1) != 0,
         })
     }
 

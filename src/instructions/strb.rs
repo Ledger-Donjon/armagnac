@@ -40,7 +40,7 @@ impl Instruction for StrbImm {
             1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
-                imm32: ins >> 6 & 0x1f,
+                imm32: (ins >> 6) & 0x1f,
                 index: true,
                 add: true,
                 wback: false,
@@ -60,7 +60,7 @@ impl Instruction for StrbImm {
                 }
             }
             3 => {
-                let puw = ins >> 8 & 7;
+                let puw = (ins >> 8) & 7;
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let wback = puw & 1 != 0;
@@ -73,7 +73,7 @@ impl Instruction for StrbImm {
                     imm32: ins & 0xff,
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
-                    wback: wback,
+                    wback,
                 }
             }
             _ => panic!(),
@@ -139,7 +139,7 @@ impl Instruction for StrbReg {
                     rt,
                     rn,
                     rm,
-                    shift: (ins >> 4 & 3) as u8,
+                    shift: ((ins >> 4) & 3) as u8,
                 }
             }
             _ => panic!(),

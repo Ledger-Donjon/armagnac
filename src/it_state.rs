@@ -43,12 +43,12 @@ impl ItState {
 
     /// Returns true if execution is currently in an IT block.
     pub fn in_it_block(&self) -> bool {
-        return self.0 & 0xf != 0;
+        self.0 & 0xf != 0
     }
 
     /// Returns true if execution is currently in an IT block, and on the last instruction.
     pub fn last_in_it_block(&self) -> bool {
-        return self.0 & 0xf == 8;
+        self.0 & 0xf == 8
     }
 
     /// Returns true if execution is currently in an IT block, and not in the last instruction.
@@ -68,11 +68,11 @@ impl ItState {
     }
 
     /// Translates the current IT state to a serie of [ItThenElse::Then] or [ItThenElse::Else].
-    pub fn to_then_else(&self) -> Vec<ItThenElse> {
+    pub fn as_then_else(&self) -> Vec<ItThenElse> {
         let mut result = Vec::new();
         let mut mask = self.0 & 0xf;
         while mask & 7 != 0 {
-            if mask >> 3 & 1 == self.0 >> 4 & 1 {
+            if (mask >> 3) & 1 == (self.0 >> 4) & 1 {
                 result.push(ItThenElse::Then)
             } else {
                 result.push(ItThenElse::Else)
@@ -80,6 +80,12 @@ impl ItState {
             mask = (mask << 1) & 0xf;
         }
         result
+    }
+}
+
+impl Default for ItState {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -169,7 +175,7 @@ mod tests {
     fn test_to_then_else() {
         let state = ItState::try_new(0b10101011).unwrap();
         assert_eq!(
-            state.to_then_else(),
+            state.as_then_else(),
             vec![ItThenElse::Else, ItThenElse::Then, ItThenElse::Else]
         );
     }

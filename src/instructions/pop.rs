@@ -27,8 +27,9 @@ impl Instruction for Pop {
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
         Ok(match tn {
             1 => {
-                let registers = MainRegisterList::new(((ins >> 8 & 1) << 15 | ins & 0xff) as u16);
-                unpredictable(registers.len() == 0)?;
+                let registers =
+                    MainRegisterList::new(((((ins >> 8) & 1) << 15) | ins & 0xff) as u16);
+                unpredictable(registers.is_empty())?;
                 Self { registers }
             }
             2 => {
@@ -38,7 +39,7 @@ impl Instruction for Pop {
                 Self { registers }
             }
             3 => {
-                let rt = ins >> 12 & 0xf;
+                let rt = (ins >> 12) & 0xf;
                 let registers = MainRegisterList::new((1 << rt) as u16);
                 let rt = RegisterIndex::new_main(rt);
                 unpredictable(rt.is_sp() || (rt.is_pc() && state.in_it_block_not_last()))?;

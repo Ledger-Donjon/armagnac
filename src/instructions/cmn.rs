@@ -31,8 +31,8 @@ impl Instruction for CmnImm {
         let rn = ins.reg4(16);
         unpredictable(rn.is_pc())?;
         Ok(Self {
-            rn: rn,
-            imm32: thumb_expand_imm(ins.imm1(26) << 11 | ins.imm3(12) << 8 | ins.imm8(0))?,
+            rn,
+            imm32: thumb_expand_imm((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0))?,
         })
     }
 
@@ -82,7 +82,7 @@ impl Instruction for CmnReg {
             2 => {
                 let rm = ins.reg4(0);
                 let rn = ins.reg4(16);
-                let shift = Shift::from_bits(ins.imm2(4), ins.imm3(12) << 2 | ins.imm2(6));
+                let shift = Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6));
                 unpredictable(rn.is_pc() || rm.is_sp_or_pc())?;
                 Self { rn, rm, shift }
             }
