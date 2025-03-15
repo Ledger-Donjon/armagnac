@@ -58,6 +58,7 @@ pub mod orr;
 pub mod pop;
 pub mod push;
 pub mod qadd;
+pub mod qadd8;
 pub mod qadd16;
 pub mod rbit;
 pub mod rev;
