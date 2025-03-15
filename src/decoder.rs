@@ -294,6 +294,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::sbc::SbcReg>();
         dec.insert::<instructions::sev::Sev>();
         dec.insert::<instructions::qadd::Qadd>();
+        dec.insert::<instructions::qadd16::Qadd16>();
         dec.insert::<instructions::rbit::Rbit>();
         dec.insert::<instructions::rev::Rev>();
         dec.insert::<instructions::rev16::Rev16>();
