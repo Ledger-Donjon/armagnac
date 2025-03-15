@@ -1,11 +1,13 @@
-use crate::{
-    instructions::{rdn_args_string, unpredictable, DecodeHelper},
-    registers::RegisterIndex,
-};
+//! Implements QADD (Saturating Add) instruction.
 
 use super::Instruction;
-
-/// Implements QADD (Saturating Add) instruction.
+use crate::{
+    arm::{ArmProcessor, RunError},
+    decoder::DecodeError,
+    instructions::{rdn_args_string, unpredictable, DecodeHelper},
+    it_state::ItState,
+    registers::RegisterIndex,
+};
 
 /// QADD instruction.
 ///
@@ -24,11 +26,7 @@ impl Instruction for Qadd {
         &["111110101000xxxx1111xxxx1000xxxx"]
     }
 
-    fn try_decode(
-        tn: usize,
-        ins: u32,
-        _state: crate::it_state::ItState,
-    ) -> Result<Self, crate::decoder::DecodeError> {
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let rd = ins.reg4(8);
         let rm = ins.reg4(0);
@@ -37,7 +35,7 @@ impl Instruction for Qadd {
         Ok(Self { rd, rm, rn })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rm = proc.registers[self.rm] as i32;
         let rn = proc.registers[self.rn] as i32;
         let non_saturated = rm.wrapping_add(rn);
