@@ -31,7 +31,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - PKHBT, PKHTB: Pack Halfword
 - PLD: Preload Data
 - PLI: Preload Instruction
-- QADD: Saturating Add
 - QADD16: Saturating Add 16
 - QADD8: Saturating Add 8
 - QASX: Saturating Add and Subtract with Exchange
