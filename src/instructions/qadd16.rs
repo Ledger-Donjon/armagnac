@@ -16,9 +16,9 @@ pub struct Qadd16 {
     /// Destination register.
     rd: RegisterIndex,
     /// First operand register.
-    rm: RegisterIndex,
-    /// Second operand register.
     rn: RegisterIndex,
+    /// Second operand register.
+    rm: RegisterIndex,
 }
 
 impl Instruction for Qadd16 {
@@ -29,15 +29,15 @@ impl Instruction for Qadd16 {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let rd = ins.reg4(8);
-        let rm = ins.reg4(0);
         let rn = ins.reg4(16);
-        unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc() || rn.is_sp_or_pc())?;
-        Ok(Self { rd, rm, rn })
+        let rm = ins.reg4(0);
+        unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc() || rm.is_sp_or_pc())?;
+        Ok(Self { rd, rn, rm })
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rm = proc.registers[self.rm];
         let rn = proc.registers[self.rn];
+        let rm = proc.registers[self.rm];
         let sum1 = (rn as i16).saturating_add(rm as i16);
         let sum2 = ((rn >> 16) as i16).saturating_add((rm >> 16) as i16);
         let result = ((sum2 as u32) << 16) | (sum1 as u16) as u32;
@@ -50,7 +50,7 @@ impl Instruction for Qadd16 {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rm), self.rn)
+        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
     }
 }
 
