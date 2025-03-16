@@ -67,9 +67,6 @@ mod tests {
     #[test]
     fn test_qdadd() {
         struct Test {
-            rd: RegisterIndex,
-            rm: RegisterIndex,
-            rn: RegisterIndex,
             initial_rm: u32,
             initial_rn: u32,
             initial_q: bool,
@@ -79,9 +76,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 initial_rm: 3,
                 initial_rn: 2,
                 initial_q: false,
@@ -89,9 +83,6 @@ mod tests {
                 expected_q: false,
             },
             Test {
-                rd: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
-                rn: RegisterIndex::R3,
                 initial_rm: 0,
                 initial_rn: 0x3fffffff,
                 initial_q: false,
@@ -99,9 +90,6 @@ mod tests {
                 expected_q: false,
             },
             Test {
-                rd: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
-                rn: RegisterIndex::R4,
                 initial_rm: 2,
                 initial_rn: 0x3fffffff,
                 initial_q: false,
@@ -109,9 +97,6 @@ mod tests {
                 expected_q: true,
             },
             Test {
-                rd: RegisterIndex::R3,
-                rm: RegisterIndex::R4,
-                rn: RegisterIndex::R5,
                 initial_rm: 0,
                 initial_rn: 0x40000000,
                 initial_q: false,
@@ -119,9 +104,6 @@ mod tests {
                 expected_q: true,
             },
             Test {
-                rd: RegisterIndex::R4,
-                rm: RegisterIndex::R5,
-                rn: RegisterIndex::R6,
                 initial_rm: 0xfffffffe,
                 initial_rn: 0xc0000001,
                 initial_q: false,
@@ -129,9 +111,6 @@ mod tests {
                 expected_q: false,
             },
             Test {
-                rd: RegisterIndex::R5,
-                rm: RegisterIndex::R6,
-                rn: RegisterIndex::R7,
                 initial_rm: 0xfffffffd,
                 initial_rn: 0xc0000001,
                 initial_q: false,
@@ -140,9 +119,6 @@ mod tests {
             },
             // Check Q remains untouched when no saturation occurs.
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 initial_rm: 3,
                 initial_rn: 2,
                 initial_q: true,
@@ -153,19 +129,15 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(V7M, 0);
-            proc.registers.set(v.rm, v.initial_rm);
-            proc.registers.set(v.rn, v.initial_rn);
+            let rd = RegisterIndex::new_general_random();
+            let (rm, rn) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rm, v.initial_rm);
+            proc.registers.set(rn, v.initial_rn);
             proc.registers.xpsr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
-            expected.set(v.rd, v.expected_rd);
+            expected.set(rd, v.expected_rd);
             expected.xpsr.set_q(v.expected_q);
-            Qdadd {
-                rd: v.rd,
-                rm: v.rm,
-                rn: v.rn,
-            }
-            .execute(&mut proc)
-            .unwrap();
+            Qdadd { rd, rm, rn }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);
         }
     }

@@ -68,6 +68,30 @@ impl RegisterIndex {
         }
     }
 
+    /// Generates a random register index from R0 to R12 (general purpose registers).
+    /// This is used by tests only.
+    #[cfg(test)]
+    pub fn new_general_random() -> Self {
+        use rand::Rng;
+        let mut rng = rand::rng();
+        Self::new_main(rng.random_range(..=12))
+    }
+
+    /// Generate two distinct random register indexes from R0 to R12 (general purpose registers).
+    /// This is used by tests only.
+    #[cfg(test)]
+    pub fn pick_two_general_distinct() -> (Self, Self) {
+        use rand::Rng;
+        let mut rng = rand::rng();
+        let range = 0..=12;
+        let first = rng.random_range(range.clone());
+        let mut second = rng.random_range(range.clone());
+        while second == first {
+            second = rng.random_range(range.clone());
+        }
+        (Self::new_main(first), Self::new_main(second))
+    }
+
     pub fn new_sys(index: u32) -> Self {
         match index {
             0 => Self::Apsr,

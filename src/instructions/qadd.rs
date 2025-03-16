@@ -67,9 +67,6 @@ mod tests {
     #[test]
     fn test_qadd() {
         struct Test {
-            rd: RegisterIndex,
-            rm: RegisterIndex,
-            rn: RegisterIndex,
             initial_rm: u32,
             initial_rn: u32,
             initial_q: bool,
@@ -79,9 +76,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 initial_rm: 0x7ffffffe,
                 initial_rn: 1,
                 initial_q: false,
@@ -89,9 +83,6 @@ mod tests {
                 expected_q: false,
             },
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 initial_rm: 0x7ffffffe,
                 initial_rn: 2,
                 initial_q: false,
@@ -99,9 +90,6 @@ mod tests {
                 expected_q: true,
             },
             Test {
-                rd: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
-                rn: RegisterIndex::R3,
                 initial_rm: 0x80000001,
                 initial_rn: 0xffffffff,
                 initial_q: false,
@@ -109,9 +97,6 @@ mod tests {
                 expected_q: false,
             },
             Test {
-                rd: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
-                rn: RegisterIndex::R4,
                 initial_rm: 0x80000001,
                 initial_rn: 0xfffffffe,
                 initial_q: false,
@@ -119,9 +104,6 @@ mod tests {
                 expected_q: true,
             },
             Test {
-                rd: RegisterIndex::R3,
-                rm: RegisterIndex::R4,
-                rn: RegisterIndex::R5,
                 initial_rm: 0x80000001,
                 initial_rn: 0xffffffff,
                 initial_q: true,
@@ -129,9 +111,6 @@ mod tests {
                 expected_q: true,
             },
             Test {
-                rd: RegisterIndex::R4,
-                rm: RegisterIndex::R5,
-                rn: RegisterIndex::R6,
                 initial_rm: 0x7fffffff,
                 initial_rn: 0xffffffff,
                 initial_q: false,
@@ -142,19 +121,15 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(V7M, 0);
-            proc.registers.set(v.rm, v.initial_rm);
-            proc.registers.set(v.rn, v.initial_rn);
+            let rd = RegisterIndex::new_general_random();
+            let (rm, rn) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rm, v.initial_rm);
+            proc.registers.set(rn, v.initial_rn);
             proc.registers.xpsr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
             expected.xpsr.set_q(v.expected_q);
-            expected.set(v.rd, v.expected_rd);
-            Qadd {
-                rd: v.rd,
-                rm: v.rm,
-                rn: v.rn,
-            }
-            .execute(&mut proc)
-            .unwrap();
+            expected.set(rd, v.expected_rd);
+            Qadd { rd, rm, rn }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);
         }
     }

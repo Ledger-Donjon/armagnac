@@ -110,7 +110,6 @@ mod tests {
     #[test]
     fn test_teq_imm() {
         struct Test {
-            rn: RegisterIndex,
             imm32: u32,
             carry: Option<bool>,
             initial_c: bool,
@@ -119,28 +118,24 @@ mod tests {
 
         let vectors = [
             Test {
-                rn: RegisterIndex::R0,
                 imm32: 0x12345678,
                 carry: None,
                 initial_c: false,
                 expected_nzcv: (false, true, false, false),
             },
             Test {
-                rn: RegisterIndex::R1,
                 imm32: 0x12345678,
                 carry: None,
                 initial_c: true,
                 expected_nzcv: (false, true, true, false),
             },
             Test {
-                rn: RegisterIndex::R2,
                 imm32: 0x80000000,
                 carry: Some(true),
                 initial_c: false,
                 expected_nzcv: (true, false, true, false),
             },
             Test {
-                rn: RegisterIndex::R3,
                 imm32: 0x00000000,
                 carry: Some(false),
                 initial_c: false,
@@ -150,7 +145,8 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-            proc.registers.set(v.rn, 0x12345678);
+            let rn = RegisterIndex::new_general_random();
+            proc.registers.set(rn, 0x12345678);
             proc.registers.xpsr.set_c(v.initial_c);
             let mut expected = proc.registers.clone();
             expected.xpsr.set_n(v.expected_nzcv.0);
@@ -158,7 +154,7 @@ mod tests {
             expected.xpsr.set_c(v.expected_nzcv.2);
             expected.xpsr.set_v(v.expected_nzcv.3);
             TeqImm {
-                rn: v.rn,
+                rn,
                 imm32: v.imm32,
                 carry: v.carry,
             }
@@ -171,8 +167,6 @@ mod tests {
     #[test]
     fn test_teq_reg() {
         struct Test {
-            rn: RegisterIndex,
-            rm: RegisterIndex,
             shift: Shift,
             initial_rm: u32,
             expected_nzcv: (bool, bool, bool, bool),
@@ -180,29 +174,21 @@ mod tests {
 
         let vectors = [
             Test {
-                rn: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
                 shift: Shift::lsl(0),
                 initial_rm: 0x12345678,
                 expected_nzcv: (false, true, false, false),
             },
             Test {
-                rn: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
                 shift: Shift::lsl(1),
                 initial_rm: 0x91a2b3c,
                 expected_nzcv: (false, true, false, false),
             },
             Test {
-                rn: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
                 shift: Shift::lsl(2),
                 initial_rm: 0x20000000,
                 expected_nzcv: (true, false, false, false),
             },
             Test {
-                rn: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
                 shift: Shift::ror(2),
                 initial_rm: 2,
                 expected_nzcv: (true, false, true, false),
@@ -211,16 +197,17 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-            proc.registers.set(v.rn, 0x12345678);
-            proc.registers.set(v.rm, v.initial_rm);
+            let (rn, rm) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rn, 0x12345678);
+            proc.registers.set(rm, v.initial_rm);
             let mut expected = proc.registers.clone();
             expected.xpsr.set_n(v.expected_nzcv.0);
             expected.xpsr.set_z(v.expected_nzcv.1);
             expected.xpsr.set_c(v.expected_nzcv.2);
             expected.xpsr.set_v(v.expected_nzcv.3);
             TeqReg {
-                rn: v.rn,
-                rm: v.rm,
+                rn,
+                rm,
                 shift: v.shift,
             }
             .execute(&mut proc)

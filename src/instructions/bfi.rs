@@ -88,27 +88,30 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-            proc.registers.r0 = 0x12b456f8;
-            proc.registers.r1 = 0x87654321;
+            let (rd, rn) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rd, 0x12b456f8);
+            proc.registers.set(rn, 0x87654321);
             let mut expected_registers = proc.registers.clone();
             Bfi {
-                rd: RegisterIndex::R0,
-                rn: RegisterIndex::R1,
+                rd,
+                rn,
                 lsb: v.0,
                 msb: v.1,
             }
             .execute(&mut proc)
             .unwrap();
-            expected_registers.r0 = v.2;
+            expected_registers.set(rd, v.2);
             assert_eq!(proc.registers, expected_registers);
         }
 
         // Check that msb < lsb leads to error.
         let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let rd = RegisterIndex::new_general_random();
+        let rn = RegisterIndex::new_general_random();
         assert_eq!(
             Bfi {
-                rd: RegisterIndex::R0,
-                rn: RegisterIndex::R1,
+                rd,
+                rn,
                 lsb: 10,
                 msb: 9
             }

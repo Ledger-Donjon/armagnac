@@ -413,8 +413,6 @@ mod tests {
     #[test]
     fn test_add_imm() {
         struct Test {
-            rd: RegisterIndex,
-            rn: RegisterIndex,
             rn_value: u32,
             imm32: u32,
             set_flags: bool,
@@ -424,8 +422,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rn: RegisterIndex::R1,
                 rn_value: 10,
                 imm32: 20,
                 set_flags: false,
@@ -433,8 +429,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R1,
                 rn_value: 10,
                 imm32: 20,
                 set_flags: false,
@@ -442,8 +436,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 rn_value: 0xfffffffe,
                 imm32: 3,
                 set_flags: false,
@@ -451,8 +443,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 rn_value: 0xfffffffe,
                 imm32: 1,
                 set_flags: true,
@@ -460,8 +450,6 @@ mod tests {
                 expected_nzcv: (true, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 rn_value: 0xfffffffe,
                 imm32: 2,
                 set_flags: true,
@@ -469,8 +457,6 @@ mod tests {
                 expected_nzcv: (false, true, true, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 rn_value: 0xfffffffe,
                 imm32: 3,
                 set_flags: true,
@@ -478,8 +464,6 @@ mod tests {
                 expected_nzcv: (false, false, true, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 rn_value: 0x7fffffff,
                 imm32: 1,
                 set_flags: true,
@@ -490,17 +474,19 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-            proc.registers.set(v.rn, v.rn_value);
+            let rn = RegisterIndex::new_general_random();
+            let rd = RegisterIndex::new_general_random();
+            proc.registers.set(rn, v.rn_value);
             let mut expected_registers = proc.registers.clone();
             AddImm {
-                rd: v.rd,
-                rn: v.rn,
+                rd,
+                rn,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
             }
             .execute(&mut proc)
             .unwrap();
-            expected_registers.set(v.rd, v.expected_rd_value);
+            expected_registers.set(rd, v.expected_rd_value);
             expected_registers.xpsr.set_n(v.expected_nzcv.0);
             expected_registers.xpsr.set_z(v.expected_nzcv.1);
             expected_registers.xpsr.set_c(v.expected_nzcv.2);
@@ -512,9 +498,6 @@ mod tests {
     #[test]
     fn test_add_reg() {
         struct Test {
-            rd: RegisterIndex,
-            rn: RegisterIndex,
-            rm: RegisterIndex,
             rn_value: u32,
             rm_value: u32,
             shift: Shift,
@@ -525,9 +508,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rn: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
                 rn_value: 10,
                 rm_value: 20,
                 shift: Shift::lsl(0),
@@ -536,9 +516,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R1,
-                rm: RegisterIndex::R1,
                 rn_value: 10,
                 rm_value: 10,
                 shift: Shift::lsl(2),
@@ -547,9 +524,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
                 rn_value: 0xfffffffe,
                 rm_value: 12,
                 shift: Shift::lsr(2),
@@ -558,9 +532,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
-                rm: RegisterIndex::R1,
                 rn_value: 0xfffffffe,
                 rm_value: 16,
                 shift: Shift::lsr(4),
@@ -569,9 +540,6 @@ mod tests {
                 expected_nzcv: (true, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R3,
-                rn: RegisterIndex::R3,
-                rm: RegisterIndex::R2,
                 rn_value: 0xfffffffe,
                 rm_value: 8,
                 shift: Shift::ror(2),
@@ -580,9 +548,6 @@ mod tests {
                 expected_nzcv: (false, true, true, false),
             },
             Test {
-                rd: RegisterIndex::R2,
-                rn: RegisterIndex::R3,
-                rm: RegisterIndex::R4,
                 rn_value: 0xfffffffe,
                 rm_value: 768,
                 shift: Shift::lsr(8),
@@ -591,9 +556,6 @@ mod tests {
                 expected_nzcv: (false, false, true, false),
             },
             Test {
-                rd: RegisterIndex::R3,
-                rn: RegisterIndex::R4,
-                rm: RegisterIndex::R5,
                 rn_value: 0x7fffffff,
                 rm_value: 1,
                 shift: Shift::lsl(0),
@@ -605,20 +567,22 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-            proc.registers.set(v.rd, 0);
-            proc.registers.set(v.rn, v.rn_value);
-            proc.registers.set(v.rm, v.rm_value);
+            let rd = RegisterIndex::new_general_random();
+            let (rn, rm) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rd, 0);
+            proc.registers.set(rn, v.rn_value);
+            proc.registers.set(rm, v.rm_value);
             let mut expected_registers = proc.registers.clone();
             AddReg {
-                rd: v.rd,
-                rn: v.rn,
-                rm: v.rm,
+                rd,
+                rn,
+                rm,
                 set_flags: v.set_flags,
                 shift: v.shift,
             }
             .execute(&mut proc)
             .unwrap();
-            expected_registers.set(v.rd, v.expected_rd_value);
+            expected_registers.set(rd, v.expected_rd_value);
             expected_registers.xpsr.set_n(v.expected_nzcv.0);
             expected_registers.xpsr.set_z(v.expected_nzcv.1);
             expected_registers.xpsr.set_c(v.expected_nzcv.2);
@@ -630,7 +594,6 @@ mod tests {
     #[test]
     fn test_add_sp_plus_imm() {
         struct Test {
-            rd: RegisterIndex,
             imm32: u32,
             set_flags: bool,
             sp_value: u32,
@@ -640,7 +603,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
                 imm32: 20,
                 set_flags: false,
                 sp_value: 1000,
@@ -648,7 +610,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
                 imm32: 1000,
                 set_flags: false,
                 sp_value: 0xfffffc18,
@@ -656,7 +617,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R2,
                 imm32: 1000,
                 set_flags: true,
                 sp_value: 0xfffffc18,
@@ -664,7 +624,6 @@ mod tests {
                 expected_nzcv: (false, true, true, false),
             },
             Test {
-                rd: RegisterIndex::R3,
                 imm32: 1000,
                 set_flags: true,
                 sp_value: 0xfffffc17,
@@ -672,7 +631,6 @@ mod tests {
                 expected_nzcv: (true, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R4,
                 imm32: 2,
                 set_flags: true,
                 sp_value: 0x7fffffff,
@@ -683,16 +641,17 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let rd = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;
             let mut expected_registers = proc.registers.clone();
             AddSpPlusImm {
-                rd: v.rd,
+                rd,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
             }
             .execute(&mut proc)
             .unwrap();
-            expected_registers.set(v.rd, v.expected_rd_value);
+            expected_registers.set(rd, v.expected_rd_value);
             expected_registers.xpsr.set_n(v.expected_nzcv.0);
             expected_registers.xpsr.set_z(v.expected_nzcv.1);
             expected_registers.xpsr.set_c(v.expected_nzcv.2);
@@ -704,8 +663,6 @@ mod tests {
     #[test]
     fn test_add_sp_plus_reg() {
         struct Test {
-            rd: RegisterIndex,
-            rm: RegisterIndex,
             shift: Shift,
             set_flags: bool,
             sp_value: u32,
@@ -716,8 +673,6 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
                 shift: Shift::lsl(0),
                 set_flags: false,
                 sp_value: 1000,
@@ -726,8 +681,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
                 shift: Shift::lsl(0),
                 set_flags: false,
                 sp_value: 0xfffffc18,
@@ -736,8 +689,6 @@ mod tests {
                 expected_nzcv: (false, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
                 shift: Shift::lsl(2),
                 set_flags: true,
                 sp_value: 0xfffffc18,
@@ -746,8 +697,6 @@ mod tests {
                 expected_nzcv: (false, true, true, false),
             },
             Test {
-                rd: RegisterIndex::R3,
-                rm: RegisterIndex::R4,
                 shift: Shift::lsr(2),
                 set_flags: true,
                 sp_value: 0xfffffc17,
@@ -756,8 +705,6 @@ mod tests {
                 expected_nzcv: (true, false, false, false),
             },
             Test {
-                rd: RegisterIndex::R4,
-                rm: RegisterIndex::R5,
                 shift: Shift::lsl(1),
                 set_flags: true,
                 sp_value: 0x7fffffff,
@@ -769,18 +716,20 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let rd = RegisterIndex::new_general_random();
+            let rm = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;
-            proc.registers.set(v.rm, v.rm_value);
+            proc.registers.set(rm, v.rm_value);
             let mut expected_registers = proc.registers.clone();
             AddSpPlusReg {
-                rd: v.rd,
-                rm: v.rm,
+                rd,
+                rm,
                 shift: v.shift,
                 set_flags: v.set_flags,
             }
             .execute(&mut proc)
             .unwrap();
-            expected_registers.set(v.rd, v.expected_rd_value);
+            expected_registers.set(rd, v.expected_rd_value);
             expected_registers.xpsr.set_n(v.expected_nzcv.0);
             expected_registers.xpsr.set_z(v.expected_nzcv.1);
             expected_registers.xpsr.set_c(v.expected_nzcv.2);

@@ -65,9 +65,6 @@ mod tests {
     #[test]
     fn test_qadd16() {
         struct Test {
-            rd: RegisterIndex,
-            rm: RegisterIndex,
-            rn: RegisterIndex,
             initial_rm: u32,
             initial_rn: u32,
             expected_rd: u32,
@@ -75,41 +72,26 @@ mod tests {
 
         let vectors = [
             Test {
-                rd: RegisterIndex::R0,
-                rm: RegisterIndex::R1,
-                rn: RegisterIndex::R2,
                 initial_rm: 0x7ffe7ffe,
                 initial_rn: 0x00010001,
                 expected_rd: 0x7fff7fff,
             },
             Test {
-                rd: RegisterIndex::R1,
-                rm: RegisterIndex::R2,
-                rn: RegisterIndex::R3,
                 initial_rm: 0x7ffe7ffe,
                 initial_rn: 0x00020002,
                 expected_rd: 0x7fff7fff,
             },
             Test {
-                rd: RegisterIndex::R2,
-                rm: RegisterIndex::R3,
-                rn: RegisterIndex::R4,
                 initial_rm: 0x80018001,
                 initial_rn: 0xffffffff,
                 expected_rd: 0x80008000,
             },
             Test {
-                rd: RegisterIndex::R3,
-                rm: RegisterIndex::R4,
-                rn: RegisterIndex::R5,
                 initial_rm: 0x80018001,
                 initial_rn: 0xfff0fff0,
                 expected_rd: 0x80008000,
             },
             Test {
-                rd: RegisterIndex::R4,
-                rm: RegisterIndex::R5,
-                rn: RegisterIndex::R6,
                 initial_rm: 0x11112222,
                 initial_rn: 0x33334444,
                 expected_rd: 0x44446666,
@@ -118,17 +100,13 @@ mod tests {
 
         for v in vectors {
             let mut proc = ArmProcessor::new(V7M, 0);
-            proc.registers.set(v.rm, v.initial_rm);
-            proc.registers.set(v.rn, v.initial_rn);
+            let rd = RegisterIndex::new_general_random();
+            let (rm, rn) = RegisterIndex::pick_two_general_distinct();
+            proc.registers.set(rm, v.initial_rm);
+            proc.registers.set(rn, v.initial_rn);
             let mut expected = proc.registers.clone();
-            expected.set(v.rd, v.expected_rd);
-            Qadd16 {
-                rd: v.rd,
-                rm: v.rm,
-                rn: v.rn,
-            }
-            .execute(&mut proc)
-            .unwrap();
+            expected.set(rd, v.expected_rd);
+            Qadd16 { rd, rm, rn }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);
         }
     }
