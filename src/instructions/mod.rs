@@ -60,6 +60,7 @@ pub mod push;
 pub mod qadd;
 pub mod qadd16;
 pub mod qadd8;
+pub mod qdadd;
 pub mod rbit;
 pub mod rev;
 pub mod rev16;

@@ -36,6 +36,10 @@ cff6ff70 movt   r0, #65535
 cff6ff71 movt   r1, #65535
 c0f61e04 movt   r4, #2078
 c7f6ff76 movt   r6, #32767
+42e15100 qdadd  r0, r1, r2
+43e15210 qdadd  r1, r2, r3
+4ce15ba0 qdadd  r10, r11, r12
+44e15220 qdadd  r2, r4
 4fea3101 rrx    r1, r1
 5fea3100 rrxs   r0, r1
 92ea030f teq    r2, r3

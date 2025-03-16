@@ -22,6 +22,21 @@ pub fn add_with_carry(x: u32, y: u32, carry_in: bool) -> (u32, bool, bool) {
     (result, carry_out, overflow)
 }
 
+/// Returns `i` as a `n` bit integer value with saturating casting instead of wrapping.
+///
+/// Corresponds to `SignedSatQ()` specified in the ARM Technical Reference Manual.
+pub fn signed_sat_q(i: i64, n: u8) -> (i64, bool) {
+    debug_assert!((n <= 32) && (n > 0));
+    let x = 1i64 << (n - 1);
+    if i >= x {
+        (x - 1, true)
+    } else if i < -x {
+        (-x, true)
+    } else {
+        (i, false)
+    }
+}
+
 /// Returns the arithmetic shift right of `value` and the carry output.
 pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
     assert!((shift > 0) && (shift < 32));
@@ -292,7 +307,7 @@ pub fn thumb_expand_imm(imm12: u32) -> Result<u32, ArithError> {
 #[cfg(test)]
 mod tests {
     use crate::arith::{
-        add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, rrx_c, sign_extend, Shift,
+        add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, rrx_c, sign_extend, signed_sat_q, Shift,
     };
 
     use super::{shift_c, ShiftType};
@@ -310,6 +325,33 @@ mod tests {
             add_with_carry(0x7fffffff, 0, true),
             (0x80000000, false, true)
         );
+    }
+
+    #[test]
+    fn test_signed_sat_q() {
+        let vectors = [
+            (126, 8, 126, false),
+            (127, 8, 127, false),
+            (128, 8, 127, true),
+            (129, 8, 127, true),
+            (-127, 8, -127, false),
+            (-128, 8, -128, false),
+            (-129, 8, -128, true),
+            (-130, 8, -128, true),
+            (32767, 16, 32767, false),
+            (32768, 16, 32767, true),
+            (-32768, 16, -32768, false),
+            (-32769, 16, -32768, true),
+            (2147483647, 32, 2147483647, false),
+            (2147483648, 32, 2147483647, true),
+            (-2147483648, 32, -2147483648, false),
+            (-2147483649, 32, -2147483648, true),
+            (i64::MAX, 32, 0x7fffffff, true),
+            (-i64::MAX, 32, -0x80000000, true),
+        ];
+        for v in vectors {
+            assert_eq!(signed_sat_q(v.0, v.1), (v.2, v.3));
+        }
     }
 
     #[test]
