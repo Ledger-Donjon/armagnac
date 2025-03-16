@@ -44,6 +44,10 @@ c7f6ff76 movt   r6, #32767
 83fa92f1 qdadd  r1, r2, r3
 8cfa9bfa qdadd  r10, r11, r12
 84fa92f2 qdadd  r2, r4
+82faa1f0 qsub   r0, r1, r2
+83faa2f1 qsub   r1, r2, r3
+8cfaabfa qsub   r10, r11, r12
+84faa2f2 qsub   r2, r4
 82fab1f0 qdsub  r0, r1, r2
 83fab2f1 qdsub  r1, r2, r3
 8cfabbfa qdsub  r10, r11, r12
