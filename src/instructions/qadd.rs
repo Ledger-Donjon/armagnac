@@ -2,6 +2,7 @@
 
 use super::Instruction;
 use crate::{
+    arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{rdn_args_string, unpredictable, DecodeHelper},
@@ -36,12 +37,11 @@ impl Instruction for Qadd {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rm = proc.registers[self.rm] as i32;
-        let rn = proc.registers[self.rn] as i32;
-        let non_saturated = rm.wrapping_add(rn);
-        let result = rm.saturating_add(rn);
+        let rm = proc.registers[self.rm] as i32 as i64;
+        let rn = proc.registers[self.rn] as i32 as i64;
+        let (result, sat) = signed_sat_q(rm + rn, 32);
         proc.registers.set(self.rd, result as u32);
-        if result != non_saturated {
+        if sat {
             proc.registers.xpsr.set_q(true);
         }
         Ok(false)
