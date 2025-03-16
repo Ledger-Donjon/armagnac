@@ -32,7 +32,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - PLD: Preload Data
 - PLI: Preload Instruction
 - QASX: Saturating Add and Subtract with Exchange
-- QDSUB: Saturating Double and Subtract
 - QSAX: Saturating Subtract and Add with Exchange
 - QSUB: Saturating Subtract
 - QSUB16: Saturating Subtract 16
