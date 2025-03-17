@@ -52,6 +52,10 @@ d1fa12f0 qsub16 r0, r1, r2
 d2fa13f1 qsub16 r1, r2, r3
 dbfa1cfa qsub16 r10, r11, r12
 d2fa14f2 qsub16 r2, r4
+c1fa12f0 qsub8  r0, r1, r2
+c2fa13f1 qsub8  r1, r2, r3
+cbfa1cfa qsub8  r10, r11, r12
+c2fa14f2 qsub8  r2, r4
 82fab1f0 qdsub  r0, r1, r2
 83fab2f1 qdsub  r1, r2, r3
 8cfabbfa qdsub  r10, r11, r12
