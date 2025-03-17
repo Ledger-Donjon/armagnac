@@ -73,12 +73,7 @@ mod tests {
         proc.set_pc(0x1000);
         proc.registers.r0 = 0;
         let rd = RegisterIndex::new_general_random();
-        Adr {
-            rd,
-            imm32: offset,
-        }
-        .execute(proc)
-        .unwrap();
+        Adr { rd, imm32: offset }.execute(proc).unwrap();
         assert_eq!(proc.registers[rd], (0x1000 as i32 + offset) as u32);
     }
 

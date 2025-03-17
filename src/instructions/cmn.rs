@@ -135,10 +135,7 @@ mod tests {
 
     fn cmm_imm_vec(proc: &mut ArmProcessor, inital_rn: i32, z: bool, c: bool, v: bool) {
         let rn = RegisterIndex::new_general_random();
-        let ins = CmnImm {
-            rn,
-            imm32: 5,
-        };
+        let ins = CmnImm { rn, imm32: 5 };
         proc.registers.xpsr.set(0);
         proc.registers.set(rn, inital_rn as u32);
         ins.execute(proc).unwrap();
@@ -175,13 +172,7 @@ mod tests {
         proc.registers.xpsr.set(0);
         proc.registers.set(rn, r0 as u32);
         proc.registers.set(rm, r1);
-        CmnReg {
-            rn,
-            rm,
-            shift,
-        }
-        .execute(proc)
-        .unwrap();
+        CmnReg { rn, rm, shift }.execute(proc).unwrap();
         assert_eq!(proc.registers.xpsr.z(), z);
         assert_eq!(proc.registers.xpsr.c(), c);
         assert_eq!(proc.registers.xpsr.v(), v);

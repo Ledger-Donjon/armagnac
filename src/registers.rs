@@ -1,12 +1,11 @@
 //! Defines ARM processor core registers.
 
+use crate::{condition::Condition, helpers::BitAccess, it_state::ItState};
 use core::panic;
 use std::{
     fmt::{self, Debug, Display},
     ops::Index,
 };
-
-use crate::{condition::Condition, helpers::BitAccess, it_state::ItState};
 
 /// Enumeration to identify a CPU core register
 ///
