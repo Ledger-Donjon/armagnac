@@ -1,5 +1,7 @@
 //! Armagnac is an experimental ARMv7-M processor emulator designed for embedded systems emulation.
 //! It is slow, incomplete and unoptimized. However, it is fully written in Rust!
+//!
+//! Check [arm::ArmProcessor] to know how to quickly emulate an ARM binary.
 
 mod align;
 mod arith;

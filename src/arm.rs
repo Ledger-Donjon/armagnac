@@ -1,4 +1,7 @@
 //! Implements ARM processor core functions and execution.
+//!
+//! [ArmProcessor] structure shall be used to define a system and emulate its processor and
+//! attached peripherals.
 
 use core::panic;
 use std::{
@@ -123,7 +126,31 @@ pub enum ArmVersion {
     V8M,
 }
 
-/// ARMv7-M processor state.
+/// ARM processor state and attached peripherals.
+///
+/// This is the main struct of Armagnac. Once instanciated, memories and peripherals can be mapped
+/// in the memory space used by the processor. The processor can then be executed, inspected and
+/// eventually modified on the fly.
+///
+/// The following example will execute a tiny assembly program:
+///
+/// ```
+/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+///
+/// // Load a tiny assembly program at address 0x1000.
+/// // This creates a RAM memory of 6 bytes.
+/// // mov r0, #5
+/// // mov r1, #2
+/// // sub r2, r0, r1
+/// proc.map(0x1000, &[0x05, 0x20, 0x02, 0x21, 0x42, 0x1a]);
+///
+/// proc.set_pc(0x1000);
+/// for i in 0..3 {
+///     proc.stepi().unwrap();
+/// }
+/// assert_eq!(proc.registers.r2, 3);
+/// ```
 pub struct ArmProcessor {
     /// ARM emutaled version.
     pub version: ArmVersion,

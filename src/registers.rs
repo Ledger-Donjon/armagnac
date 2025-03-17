@@ -644,32 +644,114 @@ pub enum Mode {
     Handler,
 }
 
+/// Core registers of the ARM processor.
+///
+/// Registers can be accessed directly, e.g.:
+///
+/// ```
+/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// proc.registers.r0 = 0x1234;
+/// ```
+///
+/// Or using indexing (read-only):
+///
+/// ```
+/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # use armagnac::registers::RegisterIndex;
+/// # let proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// let index = RegisterIndex::R0;
+/// let value = proc.registers[index];
+/// // Or shorter form:
+/// let value = proc[index];
+/// ```
+///
+/// It is not possible to get a mutable reference to a register using indexing because some
+/// registers share bits. For instance `APSR`, `IPSR` and `EPSR` are sub-registers of the `PSR`
+/// register. Therefore, modifying a register using an index is done by calling
+/// [CoreRegisters::set]:
+///
+/// ```
+/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # use armagnac::registers::RegisterIndex;
+/// # let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// let index = RegisterIndex::R0;
+/// proc.registers.set(index, 0x1234);
+/// // Or shorter form:
+/// proc.set(index, 0x1234);
+/// ```
+///
+/// Some registers have their bits and fields accessible with methods. This is the case for instance
+/// of the program status register (or flags registers):
+///
+/// ```
+/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// if proc.registers.xpsr.c() {
+///     println!("Carry flag is set!")
+/// }
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CoreRegisters {
+    /// Argument, result or scratch register 1.
     pub r0: u32,
+    /// Argument, result or scratch register 2.
     pub r1: u32,
+    /// Argument, result or scratch register 3.
     pub r2: u32,
+    /// Argument, result or scratch register 4.
     pub r3: u32,
+    /// Variable register 1.
+    /// Also known as `v1`.
     pub r4: u32,
+    /// Variable register 2.
+    /// Also known as `v2`.
     pub r5: u32,
+    /// Variable register 3.
+    /// Also known as `v3`.
     pub r6: u32,
+    /// Variable register 4.
+    /// Also known as `v4`.
     pub r7: u32,
+    /// ARM-state variable register 5.
+    /// Also known as `v5`.
     pub r8: u32,
+    /// ARM-state variable register 6.
+    /// Static base in RWPI variants.
+    /// Also known as `v6` and `sb`.
     pub r9: u32,
+    /// ARM-state variable register 7.
+    /// Stack limit pointer in stack-checked variants.
+    /// Also known as `v7` and `sl`.
     pub r10: u32,
+    /// ARM-state variable register 8.
+    /// Also known as `v8`.
     pub r11: u32,
+    /// Intra-procedure-call scratch register.
+    /// Also known as `ip`.
     pub r12: u32,
+    /// Link register.
+    /// Also known as r14.
     pub lr: u32,
+    /// Program counter.
+    /// Also known as r15.
     pub pc: u32,
+    /// Main stack pointer.
+    /// Also known as `r13`.
     pub msp: u32,
+    /// Process stack pointer.
+    /// Also known as `r13`.
     pub psp: u32,
     /// Groups APSR, IPSR and EPSR registers.
     pub xpsr: ProgramStatusRegister,
+    /// Exception mask register.
     pub primask: MaskRegister,
+    /// Fault mask register.
     pub faultmask: MaskRegister,
+    /// Special purpose control register.
     pub control: ControlRegister,
-    /// Current execution mode
-    /// Used in particular to return MSP or PSP when SP is requested
+    /// Current execution mode.
+    /// Used in particular to return MSP or PSP when SP is requested.
     pub mode: Mode,
 }
 

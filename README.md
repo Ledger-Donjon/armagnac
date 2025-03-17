@@ -2,9 +2,29 @@
 
 Armagnac is a simple ARM Thumb emulation library written in Rust which can be used to emulate simple embedded systems. The library gives high control on the processor execution, allowing to run instruction by instruction, create hooks, inspect or modify the system state on the fly. Integration of custom peripherals in the memory space is made easy, allowing custom platforms emulation. This library has little dependencies.
 
-The library is in development and is highly experimental. Is it not complete as not all instructions have been implemented yet. Only ARMv7M is implemented at the moment. Expect bugs, rage and frustration.
+The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet. Only ARMv7M is implemented at the moment. Expect bugs, rage and frustration.
 
 Currently, emulation is relatively slow, typically 1 million instruction per second. There is no virtualization or translation to native code whatsoever. Also, there is no "unsafe" code.
+
+## Basic example
+
+The following basic example runs a tiny assembly program and reads the processor R2 register value at the end.
+
+```
+use armagnac::arm::{ArmProcessor, ArmVersion};
+let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+
+// mov r0, #5
+// mov r1, #2
+// sub r2, r0, r1
+proc.map(0x1000, &[0x05, 0x20, 0x02, 0x21, 0x42, 0x1a]);
+
+proc.set_pc(0x1000);
+for i in 0..3 {
+    proc.stepi().unwrap();
+}
+assert_eq!(proc.registers.r2, 3);
+```
 
 ## Unimplemented instructions
 
