@@ -89,8 +89,8 @@ mod tests {
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             let (rd, rn) = RegisterIndex::pick_two_general_distinct();
-            proc.registers.set(rd, 0x12b456f8);
-            proc.registers.set(rn, 0x87654321);
+            proc.set(rd, 0x12b456f8);
+            proc.set(rn, 0x87654321);
             let mut expected_registers = proc.registers.clone();
             Bfi {
                 rd,

@@ -74,13 +74,13 @@ impl Instruction for LdrbImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.0.rn];
+        let rn = proc[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
         let data = proc.u8_at(addr)?;
-        proc.registers.set(self.0.rt, data as u32);
+        proc.set(self.0.rt, data as u32);
         if self.0.wback {
-            proc.registers.set(self.0.rn, offset_addr);
+            proc.set(self.0.rn, offset_addr);
         }
         Ok(false)
     }
@@ -142,11 +142,10 @@ impl Instruction for LdrbReg {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
-        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
-        let base = proc.registers[self.rn];
-        let addr = base.wrapping_add(offset);
+        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.xpsr.c());
+        let addr = proc[self.rn].wrapping_add(offset);
         let data = proc.u8_at(addr)?;
-        proc.registers.set(self.rt, data as u32);
+        proc.set(self.rt, data as u32);
         Ok(false)
     }
 
@@ -198,7 +197,7 @@ impl Instruction for LdrbLit {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.u8_at(address)?;
-        proc.registers.set(self.rt, data as u32);
+        proc.set(self.rt, data as u32);
         Ok(false)
     }
 

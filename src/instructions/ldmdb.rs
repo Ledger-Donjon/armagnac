@@ -47,7 +47,7 @@ impl Instruction for Ldmdb {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
-        let wback_address = proc.registers[self.rn].wrapping_sub(4 * self.registers.len() as u32);
+        let wback_address = proc[self.rn].wrapping_sub(4 * self.registers.len() as u32);
         let mut address = wback_address;
         let mut jump = false;
         for reg in self.registers.iter() {
@@ -56,12 +56,12 @@ impl Instruction for Ldmdb {
                 proc.bx_write_pc(value)?;
                 jump = true;
             } else {
-                proc.registers.set(reg, value);
+                proc.set(reg, value);
             }
             address = address.wrapping_add(4);
         }
         if self.wback && !self.registers.contains(&self.rn) {
-            proc.registers.set(self.rn, wback_address);
+            proc.set(self.rn, wback_address);
         }
         Ok(jump)
     }

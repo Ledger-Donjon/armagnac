@@ -42,9 +42,8 @@ impl Instruction for Mls {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let result =
-            proc.registers[self.ra] - proc.registers[self.rn].wrapping_mul(proc.registers[self.rm]);
-        proc.registers.set(self.rd, result);
+        let result = proc[self.ra] - proc[self.rn].wrapping_mul(proc[self.rm]);
+        proc.set(self.rd, result);
         Ok(false)
     }
 

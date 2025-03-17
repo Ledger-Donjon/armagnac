@@ -71,7 +71,7 @@ impl Instruction for Mrs {
             },
             _ => panic!(),
         }
-        proc.registers.set(self.rd, rd);
+        proc.set(self.rd, rd);
         Ok(false)
     }
 

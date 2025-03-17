@@ -44,8 +44,8 @@ impl Instruction for Bfc {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = !((0xffffffffu32 >> (32 - width)) << self.lsb);
-            let value = proc.registers[self.rd] & mask;
-            proc.registers.set(self.rd, value);
+            let value = proc[self.rd] & mask;
+            proc.set(self.rd, value);
         } else {
             return Err(RunError::Unpredictable);
         }
@@ -89,7 +89,7 @@ mod tests {
         for v in vectors {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             let rd = RegisterIndex::new_general_random();
-            proc.registers.set(rd, 0xffffffff);
+            proc.set(rd, 0xffffffff);
             Bfc {
                 rd,
                 lsb: v.0,
@@ -97,7 +97,7 @@ mod tests {
             }
             .execute(&mut proc)
             .unwrap();
-            assert_eq!(proc.registers[rd], v.2);
+            assert_eq!(proc[rd], v.2);
         }
 
         // Check that msb < lsb leads to error.

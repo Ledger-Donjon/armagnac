@@ -90,8 +90,8 @@ impl Instruction for AddImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let (r, c, v) = add_with_carry(proc.registers[self.rn], self.imm32, false);
-        proc.registers.set(self.rd, r);
+        let (r, c, v) = add_with_carry(proc[self.rn], self.imm32, false);
+        proc.set(self.rd, r);
         if self.set_flags {
             proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
         }
@@ -189,13 +189,13 @@ impl Instruction for AddReg {
 
     fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
-        let (r, c, v) = add_with_carry(proc.registers[self.rn], shifted, false);
+        let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
+        let (r, c, v) = add_with_carry(proc[self.rn], shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(r);
             Ok(true)
         } else {
-            proc.registers.set(self.rd, r);
+            proc.set(self.rd, r);
             if self.set_flags {
                 proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
             }
@@ -279,7 +279,7 @@ impl Instruction for AddSpPlusImm {
 
     fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
                 .xpsr
@@ -365,13 +365,13 @@ impl Instruction for AddSpPlusReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
+        let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
             Ok(true)
         } else {
-            proc.registers.set(self.rd, result);
+            proc.set(self.rd, result);
             if self.set_flags {
                 proc.registers
                     .xpsr
@@ -407,7 +407,7 @@ mod tests {
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Instruction,
         },
-        registers::{CoreRegisters, RegisterIndex},
+        registers::RegisterIndex,
     };
 
     #[test]
@@ -476,7 +476,7 @@ mod tests {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             let rn = RegisterIndex::new_general_random();
             let rd = RegisterIndex::new_general_random();
-            proc.registers.set(rn, v.rn_value);
+            proc.set(rn, v.rn_value);
             let mut expected_registers = proc.registers.clone();
             AddImm {
                 rd,
@@ -569,9 +569,9 @@ mod tests {
             let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
-            proc.registers.set(rd, 0);
-            proc.registers.set(rn, v.rn_value);
-            proc.registers.set(rm, v.rm_value);
+            proc.set(rd, 0);
+            proc.set(rn, v.rn_value);
+            proc.set(rm, v.rm_value);
             let mut expected_registers = proc.registers.clone();
             AddReg {
                 rd,
@@ -719,7 +719,7 @@ mod tests {
             let rd = RegisterIndex::new_general_random();
             let rm = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;
-            proc.registers.set(rm, v.rm_value);
+            proc.set(rm, v.rm_value);
             let mut expected_registers = proc.registers.clone();
             AddSpPlusReg {
                 rd,

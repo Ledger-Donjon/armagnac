@@ -41,10 +41,10 @@ impl Instruction for Rev {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rm = proc.registers[self.rm];
+        let rm = proc[self.rm];
         let result =
             ((rm & 0xff) << 24) | ((rm & 0xff00) << 8) | ((rm & 0xff0000) >> 8) | (rm >> 24);
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         Ok(false)
     }
 

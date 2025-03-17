@@ -93,12 +93,12 @@ impl Instruction for StrImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u32le_at(address, proc.registers[self.rt])?;
+        proc.set_u32le_at(address, proc[self.rt])?;
         if self.wback {
-            proc.registers.set(self.rn, offset_addr)
+            proc.set(self.rn, offset_addr)
         }
         Ok(false)
     }
@@ -235,7 +235,7 @@ impl Instruction for StrdImm {
         proc.set_u32le_at(address, rt)?;
         proc.set_u32le_at(address.wrapping_add(4), rt2)?;
         if self.wback {
-            proc.registers.set(self.rn, offset_addr);
+            proc.set(self.rn, offset_addr);
         }
         Ok(false)
     }

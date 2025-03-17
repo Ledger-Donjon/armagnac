@@ -58,15 +58,15 @@ impl Instruction for LdrdImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
         let value = proc.u32le_at(address)?;
-        proc.registers.set(self.rt, value);
+        proc.set(self.rt, value);
         let value = proc.u32le_at(address.wrapping_add(4))?;
-        proc.registers.set(self.rt2, value);
+        proc.set(self.rt2, value);
         if self.wback {
-            proc.registers.set(self.rn, offset_addr);
+            proc.set(self.rn, offset_addr);
         }
         Ok(false)
     }
@@ -126,9 +126,9 @@ impl Instruction for LdrdLit {
         }
         let address = proc.pc().wrapping_add_or_sub(self.imm32, self.add);
         let value = proc.u32le_at(address)?;
-        proc.registers.set(self.rt, value);
+        proc.set(self.rt, value);
         let value = proc.u32le_at(address.wrapping_add(4))?;
-        proc.registers.set(self.rt2, value);
+        proc.set(self.rt2, value);
         Ok(false)
     }
 

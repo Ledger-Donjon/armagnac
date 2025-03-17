@@ -82,12 +82,12 @@ impl Instruction for StrhImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u16le_at(address, proc.registers[self.rt] as u16)?;
+        proc.set_u16le_at(address, proc[self.rt] as u16)?;
         if self.wback {
-            proc.registers.set(self.rn, offset_addr)
+            proc.set(self.rn, offset_addr)
         }
         Ok(false)
     }
@@ -151,14 +151,9 @@ impl Instruction for StrhReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let offset = shift_c(
-            proc.registers[self.rm],
-            Shift::lsl(self.shift as u32),
-            carry_in,
-        )
-        .0;
-        let address = proc.registers[self.rn].wrapping_add(offset);
-        proc.set_u16le_at(address, proc.registers[self.rt] as u16)?;
+        let offset = shift_c(proc[self.rm], Shift::lsl(self.shift as u32), carry_in).0;
+        let address = proc[self.rn].wrapping_add(offset);
+        proc.set_u16le_at(address, proc[self.rt] as u16)?;
         Ok(false)
     }
 

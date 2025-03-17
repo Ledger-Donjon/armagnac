@@ -80,14 +80,14 @@ impl Instruction for LdrshImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
         let data = proc.u16le_at(address)?;
         if self.wback {
-            proc.registers.set(self.rn, offset_addr);
+            proc.set(self.rn, offset_addr);
         }
-        proc.registers.set(self.rt, ((data as i16) as i32) as u32);
+        proc.set(self.rt, ((data as i16) as i32) as u32);
         Ok(false)
     }
 
@@ -137,7 +137,7 @@ impl Instruction for LdrshLit {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.u32le_at(address)?;
-        proc.registers.set(self.rt, ((data as i16) as i32) as u32);
+        proc.set(self.rt, ((data as i16) as i32) as u32);
         Ok(false)
     }
 
@@ -199,11 +199,11 @@ impl Instruction for LdrshReg {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
-        let (offset, _) = shift_c(proc.registers[self.rm], self.shift, proc.registers.xpsr.c());
-        let rn = proc.registers[self.rn];
+        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.xpsr.c());
+        let rn = proc[self.rn];
         let address = rn.wrapping_add(offset);
         let data = ((proc.u16le_at(address)? as i16) as i32) as u32;
-        proc.registers.set(self.rt, data);
+        proc.set(self.rt, data);
         Ok(false)
     }
 

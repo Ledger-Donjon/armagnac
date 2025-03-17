@@ -37,10 +37,10 @@ impl Instruction for Qadd {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rm = proc.registers[self.rm] as i32 as i64;
-        let rn = proc.registers[self.rn] as i32 as i64;
+        let rm = proc[self.rm] as i32 as i64;
+        let rn = proc[self.rn] as i32 as i64;
         let (result, sat) = signed_sat_q(rm + rn, 32);
-        proc.registers.set(self.rd, result as u32);
+        proc.set(self.rd, result as u32);
         if sat {
             proc.registers.xpsr.set_q(true);
         }
@@ -123,8 +123,8 @@ mod tests {
             let mut proc = ArmProcessor::new(V7M, 0);
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
-            proc.registers.set(rm, v.initial_rm);
-            proc.registers.set(rn, v.initial_rn);
+            proc.set(rm, v.initial_rm);
+            proc.set(rn, v.initial_rn);
             proc.registers.xpsr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
             expected.xpsr.set_q(v.expected_q);

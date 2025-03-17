@@ -48,13 +48,13 @@ impl Instruction for Stmdb {
         // SP and PC cannot be pushed.
         // Instruction decoder should prevent this to happen
         debug_assert!(!self.registers.has_sp() && !self.registers.has_pc());
-        let mut addr = proc.registers[self.rn];
+        let mut addr = proc[self.rn];
         for reg in self.registers.iter().rev() {
             addr = addr.wrapping_sub(4);
-            proc.set_u32le_at(addr, proc.registers[reg])?;
+            proc.set_u32le_at(addr, proc[reg])?;
         }
         if self.wback {
-            proc.registers.set(self.rn, addr);
+            proc.set(self.rn, addr);
         }
         Ok(false)
     }

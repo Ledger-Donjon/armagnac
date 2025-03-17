@@ -450,6 +450,13 @@ impl ArmProcessor {
         self.registers[13]
     }
 
+    /// Sets the value of a register.
+    ///
+    /// This is a shorcut to `self.registers.set(r, value)`.
+    pub fn set(&mut self, index: RegisterIndex, value: u32) {
+        self.registers.set(index, value)
+    }
+
     /// Sets value of the Stack Pointer (r13)
     ///
     /// # Arguments

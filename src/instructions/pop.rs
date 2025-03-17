@@ -65,7 +65,7 @@ impl Instruction for Pop {
                 jump = true;
                 proc.load_write_pc(val)?
             } else {
-                proc.registers.set(reg, val);
+                proc.set(reg, val);
             }
             addr = addr.wrapping_add(4);
         }

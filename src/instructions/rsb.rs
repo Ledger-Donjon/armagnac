@@ -54,9 +54,8 @@ impl Instruction for RsbImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
-        let (result, carry, overflow) = add_with_carry(!rn, self.imm32, true);
-        proc.registers.set(self.rd, result);
+        let (result, carry, overflow) = add_with_carry(!proc[self.rn], self.imm32, true);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
                 .xpsr
@@ -111,10 +110,10 @@ impl Instruction for RsbReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let (shifted, _) = shift_c(proc.registers[self.rm], self.shift, carry_in);
-        let rn = proc.registers[self.rn];
+        let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
+        let rn = proc[self.rn];
         let (result, carry, overflow) = add_with_carry(!rn, shifted, true);
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
                 .xpsr

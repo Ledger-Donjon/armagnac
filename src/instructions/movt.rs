@@ -36,9 +36,8 @@ impl Instruction for Movt {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rd = proc.registers[self.rd];
-        proc.registers
-            .set(self.rd, ((self.imm16 as u32) << 16) | rd & 0x0000ffff);
+        let rd = proc[self.rd];
+        proc.set(self.rd, ((self.imm16 as u32) << 16) | rd & 0x0000ffff);
         Ok(false)
     }
 
@@ -68,7 +67,7 @@ mod tests {
         ];
         for v in vectors {
             let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-            proc.registers.set(v.0, 0x87654321);
+            proc.set(v.0, 0x87654321);
             let mut expected = proc.registers.clone();
             Movt {
                 rd: v.0,

@@ -45,12 +45,10 @@ impl Instruction for Umlal {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let result = (proc.registers[self.rn] as u64 * proc.registers[self.rm] as u64)
-            .wrapping_add(
-                ((proc.registers[self.rdhi] as u64) << 32) | proc.registers[self.rdlo] as u64,
-            );
-        proc.registers.set(self.rdhi, (result >> 32) as u32);
-        proc.registers.set(self.rdlo, result as u32);
+        let result = (proc[self.rn] as u64 * proc[self.rm] as u64)
+            .wrapping_add(((proc[self.rdhi] as u64) << 32) | proc[self.rdlo] as u64);
+        proc.set(self.rdhi, (result >> 32) as u32);
+        proc.set(self.rdlo, result as u32);
         Ok(false)
     }
 

@@ -38,10 +38,10 @@ impl Instruction for Tbb {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let halfwords = if self.is_tbh {
-            let address = proc.registers[self.rn] + (proc.registers[self.rm] << 1);
+            let address = proc[self.rn] + (proc[self.rm] << 1);
             proc.u16le_at(address)? as u32
         } else {
-            let address = proc.registers[self.rn] + proc.registers[self.rm];
+            let address = proc[self.rn] + proc[self.rm];
             proc.u8_at(address)? as u32
         };
         let address = proc.pc() + 2 * halfwords;

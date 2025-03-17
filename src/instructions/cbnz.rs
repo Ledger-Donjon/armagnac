@@ -35,7 +35,7 @@ impl Instruction for Cbnz {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        if (proc.registers[self.rn] == 0) ^ self.non_zero {
+        if (proc[self.rn] == 0) ^ self.non_zero {
             proc.set_pc(proc.pc() + self.imm32);
             Ok(true)
         } else {

@@ -49,8 +49,8 @@ impl Instruction for Sxtb {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rotated = ror(proc.registers[self.rm], self.rotation as u32);
-        proc.registers.set(self.rd, ((rotated as i8) as i32) as u32);
+        let rotated = ror(proc[self.rm], self.rotation as u32);
+        proc.set(self.rd, ((rotated as i8) as i32) as u32);
         Ok(false)
     }
 

@@ -38,8 +38,7 @@ impl Instruction for CmpImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
-        let (result, carry, overflow) = add_with_carry(rn, !self.imm32, true);
+        let (result, carry, overflow) = add_with_carry(proc[self.rn], !self.imm32, true);
         proc.registers
             .xpsr
             .set_nz(result)
@@ -112,8 +111,8 @@ impl Instruction for CmpReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
-        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], !shifted, true);
+        let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
+        let (result, carry, overflow) = add_with_carry(proc[self.rn], !shifted, true);
         proc.registers
             .xpsr
             .set_nz(result)

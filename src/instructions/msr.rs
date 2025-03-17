@@ -36,7 +36,7 @@ impl Instruction for Msr {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let val = proc.registers[self.rn];
+        let val = proc[self.rn];
         match self.sysm {
             RegisterIndex::Apsr => todo!(),
             RegisterIndex::Iapsr => todo!(),

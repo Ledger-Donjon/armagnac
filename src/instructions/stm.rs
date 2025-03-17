@@ -56,20 +56,20 @@ impl Instruction for Stm {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // The ordering of register stores must respect the ARM specification, because memory
         // operations may not be commutative if address targets a peripheral.
-        let mut address = proc.registers[self.rn];
+        let mut address = proc[self.rn];
         let lowest = self.registers.lowest();
         for reg in self.registers.iter() {
             // lowest.unwrap is possible here: if we are iterating, there is at least one register
             // in the list.
             if !(self.wback && reg == self.rn && reg != lowest.unwrap()) {
-                proc.set_u32le_at(address, proc.registers[reg])?
+                proc.set_u32le_at(address, proc[reg])?
             }
             address = address.wrapping_add(4);
         }
         if self.wback {
-            let mut rn = proc.registers[self.rn];
+            let mut rn = proc[self.rn];
             rn = rn.wrapping_add(4 * (self.registers.len() as u32));
-            proc.registers.set(self.rn, rn);
+            proc.set(self.rn, rn);
         }
         Ok(false)
     }

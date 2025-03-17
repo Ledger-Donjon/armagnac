@@ -46,8 +46,8 @@ impl Instruction for Sbfx {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let msbit = self.lsb + self.widthm1;
         if msbit <= 31 {
-            let result = sign_extend(proc.registers[self.rn] >> self.lsb, self.widthm1 + 1);
-            proc.registers.set(self.rd, result as u32);
+            let result = sign_extend(proc[self.rn] >> self.lsb, self.widthm1 + 1);
+            proc.set(self.rd, result as u32);
             Ok(false)
         } else {
             Err(RunError::InstructionUnpredictable)

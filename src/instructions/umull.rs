@@ -43,9 +43,9 @@ impl Instruction for Umull {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let result = proc.registers[self.rn] as u64 * proc.registers[self.rm] as u64;
-        proc.registers.set(self.rdhi, (result >> 32) as u32);
-        proc.registers.set(self.rdlo, result as u32);
+        let result = proc[self.rn] as u64 * proc[self.rm] as u64;
+        proc.set(self.rdhi, (result >> 32) as u32);
+        proc.set(self.rdlo, result as u32);
         Ok(false)
     }
 

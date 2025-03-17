@@ -81,12 +81,12 @@ impl Instruction for StrbImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
+        let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u8_at(address, (proc.registers[self.rt] & 0xff) as u8)?;
+        proc.set_u8_at(address, (proc[self.rt] & 0xff) as u8)?;
         if self.wback {
-            proc.registers.set(self.rn, offset_addr)
+            proc.set(self.rn, offset_addr)
         }
         Ok(false)
     }
@@ -149,9 +149,9 @@ impl Instruction for StrbReg {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
         let shift = Shift::lsl(self.shift as u32);
-        let (offset, _) = shift_c(proc.registers[self.rm], shift, carry_in);
-        let address = proc.registers[self.rn].wrapping_add(offset);
-        proc.set_u8_at(address, (proc.registers[self.rt] & 0xff) as u8)?;
+        let (offset, _) = shift_c(proc[self.rm], shift, carry_in);
+        let address = proc[self.rn].wrapping_add(offset);
+        proc.set_u8_at(address, (proc[self.rt] & 0xff) as u8)?;
         Ok(false)
     }
 

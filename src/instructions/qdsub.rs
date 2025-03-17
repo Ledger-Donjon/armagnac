@@ -38,9 +38,9 @@ impl Instruction for Qdsub {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let (doubled, sat1) = signed_sat_q(2 * (proc.registers[self.rn] as i32 as i64), 32);
-        let (result, sat2) = signed_sat_q(proc.registers[self.rm] as i32 as i64 - doubled, 32);
-        proc.registers.set(self.rd, result as u32);
+        let (doubled, sat1) = signed_sat_q(2 * (proc[self.rn] as i32 as i64), 32);
+        let (result, sat2) = signed_sat_q(proc[self.rm] as i32 as i64 - doubled, 32);
+        proc.set(self.rd, result as u32);
         if sat1 || sat2 {
             proc.registers.xpsr.set_q(true);
         }
@@ -131,8 +131,8 @@ mod tests {
             let mut proc = ArmProcessor::new(V7M, 0);
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
-            proc.registers.set(rm, v.initial_rm);
-            proc.registers.set(rn, v.initial_rn);
+            proc.set(rm, v.initial_rm);
+            proc.set(rn, v.initial_rn);
             proc.registers.xpsr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.expected_rd);

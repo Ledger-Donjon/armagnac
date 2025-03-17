@@ -47,9 +47,8 @@ impl Instruction for SbcImm {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let (result, carry, overflow) =
-            add_with_carry(proc.registers[self.rn], !self.imm32, carry_in);
-        proc.registers.set(self.rd, result);
+        let (result, carry, overflow) = add_with_carry(proc[self.rn], !self.imm32, carry_in);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
                 .xpsr
@@ -121,9 +120,9 @@ impl Instruction for SbcReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
-        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], !shifted, carry_in);
-        proc.registers.set(self.rd, result);
+        let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
+        let (result, carry, overflow) = add_with_carry(proc[self.rn], !shifted, carry_in);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
                 .xpsr

@@ -48,7 +48,7 @@ impl Instruction for Uxtb {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let rotated = ror(proc[self.rm], self.rotation as u32);
-        proc.registers.set(self.rd, rotated & 0xff);
+        proc.set(self.rd, rotated & 0xff);
         Ok(false)
     }
 

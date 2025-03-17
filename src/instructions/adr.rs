@@ -47,7 +47,7 @@ impl Instruction for Adr {
 
     fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
         let result = proc.pc().align(4).wrapping_add(self.imm32 as u32);
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         Ok(false)
     }
 
@@ -74,7 +74,7 @@ mod tests {
         proc.registers.r0 = 0;
         let rd = RegisterIndex::new_general_random();
         Adr { rd, imm32: offset }.execute(proc).unwrap();
-        assert_eq!(proc.registers[rd], (0x1000 as i32 + offset) as u32);
+        assert_eq!(proc[rd], (0x1000 as i32 + offset) as u32);
     }
 
     #[test]

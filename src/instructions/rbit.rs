@@ -33,13 +33,13 @@ impl Instruction for Rbit {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let mut a = proc.registers[self.rm];
+        let mut a = proc[self.rm];
         let mut b = 0;
         for _ in 0..32 {
             b = (b << 1) | a & 1;
             a >>= 1;
         }
-        proc.registers.set(self.rd, b);
+        proc.set(self.rd, b);
         Ok(false)
     }
 

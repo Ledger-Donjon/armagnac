@@ -92,8 +92,8 @@ impl Instruction for CmnReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let carry_in = proc.registers.xpsr.c();
-        let shifted = shift_c(proc.registers[self.rm], self.shift, carry_in).0;
-        let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], shifted, false);
+        let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
+        let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, false);
         proc.registers
             .xpsr
             .set_nz(result)
@@ -137,7 +137,7 @@ mod tests {
         let rn = RegisterIndex::new_general_random();
         let ins = CmnImm { rn, imm32: 5 };
         proc.registers.xpsr.set(0);
-        proc.registers.set(rn, inital_rn as u32);
+        proc.set(rn, inital_rn as u32);
         ins.execute(proc).unwrap();
         assert_eq!(proc.registers.xpsr.z(), z);
         assert_eq!(proc.registers.xpsr.c(), c);
@@ -170,8 +170,8 @@ mod tests {
     ) {
         let (rn, rm) = RegisterIndex::pick_two_general_distinct();
         proc.registers.xpsr.set(0);
-        proc.registers.set(rn, r0 as u32);
-        proc.registers.set(rm, r1);
+        proc.set(rn, r0 as u32);
+        proc.set(rm, r1);
         CmnReg { rn, rm, shift }.execute(proc).unwrap();
         assert_eq!(proc.registers.xpsr.z(), z);
         assert_eq!(proc.registers.xpsr.c(), c);

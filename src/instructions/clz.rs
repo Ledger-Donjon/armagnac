@@ -34,13 +34,13 @@ impl Instruction for Clz {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let mut x = proc.registers[self.rm];
+        let mut x = proc[self.rm];
         let mut count = 0;
         while x & (1 << 31) == 0 {
             count += 1;
             x = (x << 1) | 1;
         }
-        proc.registers.set(self.rd, count);
+        proc.set(self.rd, count);
         Ok(false)
     }
 

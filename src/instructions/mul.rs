@@ -58,7 +58,7 @@ impl Instruction for Mul {
         let op1 = proc[self.rn] as i32;
         let op2 = proc[self.rm] as i32;
         let result = op1.wrapping_mul(op2) as u32;
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         if self.set_flags {
             proc.registers.xpsr.set_nz(result);
         }

@@ -34,13 +34,13 @@ impl Instruction for Sdiv {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rm = proc.registers[self.rm];
+        let rm = proc[self.rm];
         let result = if rm == 0 {
             todo!()
         } else {
-            (proc.registers[self.rn] as i32 / rm as i32) as u32
+            (proc[self.rn] as i32 / rm as i32) as u32
         };
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         Ok(false)
     }
 

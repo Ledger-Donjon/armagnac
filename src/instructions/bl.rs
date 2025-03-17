@@ -40,7 +40,7 @@ impl Instruction for Bl {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let pc = proc.pc();
         let address = (pc as i32 + self.imm32) as u32;
-        proc.registers.lr = pc | 1;
+        proc.set_lr(pc | 1);
         proc.set_pc(address);
         Ok(true)
     }

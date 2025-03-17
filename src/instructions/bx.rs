@@ -28,7 +28,7 @@ impl Instruction for Bx {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let target = proc.registers[self.rm];
+        let target = proc[self.rm];
         proc.bx_write_pc(target)?;
         Ok(true)
     }

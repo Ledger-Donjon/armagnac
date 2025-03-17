@@ -36,8 +36,8 @@ impl Instruction for Qadd8 {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let rn = proc.registers[self.rn];
-        let rm = proc.registers[self.rm];
+        let rn = proc[self.rn];
+        let rm = proc[self.rm];
         let sum1 = (rn as i8).saturating_add(rm as i8);
         let sum2 = ((rn >> 8) as i8).saturating_add((rm >> 8) as i8);
         let sum3 = ((rn >> 16) as i8).saturating_add((rm >> 16) as i8);
@@ -46,7 +46,7 @@ impl Instruction for Qadd8 {
             | (((sum3 as u8) as u32) << 16)
             | (((sum2 as u8) as u32) << 8)
             | (sum1 as u8) as u32;
-        proc.registers.set(self.rd, result);
+        proc.set(self.rd, result);
         Ok(false)
     }
 
@@ -107,8 +107,8 @@ mod tests {
             let mut proc = ArmProcessor::new(V7M, 0);
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
-            proc.registers.set(rm, v.initial_rm);
-            proc.registers.set(rn, v.initial_rn);
+            proc.set(rm, v.initial_rm);
+            proc.set(rn, v.initial_rn);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.expected_rd);
             Qadd8 { rd, rm, rn }.execute(&mut proc).unwrap();
