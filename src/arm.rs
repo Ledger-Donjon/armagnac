@@ -157,21 +157,6 @@ pub struct ArmProcessor {
 
 type InstructionBox = Box<dyn Instruction>;
 
-pub trait Mnemonic {
-    fn mnemonic(&self, pc: u32) -> String;
-}
-
-impl Mnemonic for Box<dyn Instruction> {
-    fn mnemonic(&self, pc: u32) -> String {
-        let args = self.args(pc);
-        if args.len() > 0 {
-            format!("{:<6} {}", self.name(), self.args(pc))
-        } else {
-            self.name()
-        }
-    }
-}
-
 impl ArmProcessor {
     /// Creates a new ARMv7 processor
     ///

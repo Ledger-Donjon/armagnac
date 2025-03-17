@@ -360,7 +360,7 @@ impl Default for BasicInstructionDecoder {
 #[cfg(test)]
 mod tests {
     use super::BasicInstructionDecoder;
-    use crate::{arm::Mnemonic, instructions::InstructionSize, it_state::ItState};
+    use crate::{instructions::{InstructionSize, Mnemonic}, it_state::ItState};
     use std::{
         fs::File,
         io::{BufRead, BufReader},

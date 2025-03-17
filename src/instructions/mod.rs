@@ -386,6 +386,21 @@ impl AddOrSub for u32 {
     }
 }
 
+pub trait Mnemonic {
+    fn mnemonic(&self, pc: u32) -> String;
+}
+
+impl Mnemonic for Box<dyn Instruction> {
+    fn mnemonic(&self, pc: u32) -> String {
+        let args = self.args(pc);
+        if args.len() > 0 {
+            format!("{:<6} {}", self.name(), self.args(pc))
+        } else {
+            self.name()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
