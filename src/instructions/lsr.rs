@@ -53,12 +53,12 @@ impl Instruction for LsrImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let shift = Shift::lsr(self.shift as u32);
         let (result, c) = shift_c(proc[self.rm], shift, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(c);
+            proc.registers.psr.set_nz(result).set_c(c);
         }
         Ok(false)
     }
@@ -118,12 +118,12 @@ impl Instruction for LsrReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc[self.rm] & 0xff;
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let shift = Shift::lsr(shift_n);
         let (result, c) = shift_c(proc[self.rn], shift, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(c);
+            proc.registers.psr.set_nz(result).set_c(c);
         }
         Ok(false)
     }

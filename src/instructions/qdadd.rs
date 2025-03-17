@@ -42,7 +42,7 @@ impl Instruction for Qdadd {
         let (result, sat2) = signed_sat_q(proc[self.rm] as i32 as i64 + doubled, 32);
         proc.set(self.rd, result as u32);
         if sat1 || sat2 {
-            proc.registers.xpsr.set_q(true);
+            proc.registers.psr.set_q(true);
         }
         Ok(false)
     }
@@ -133,10 +133,10 @@ mod tests {
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);
             proc.set(rn, v.initial_rn);
-            proc.registers.xpsr.set_q(v.initial_q);
+            proc.registers.psr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.expected_rd);
-            expected.xpsr.set_q(v.expected_q);
+            expected.psr.set_q(v.expected_q);
             Qdadd { rd, rm, rn }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);
         }

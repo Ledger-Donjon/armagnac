@@ -199,7 +199,7 @@ impl Instruction for LdrsbReg {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
-        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.xpsr.c());
+        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let rn = proc[self.rn];
         let address = rn.wrapping_add(offset);
         let data = ((proc.u8_at(address)? as i8) as i32) as u32;

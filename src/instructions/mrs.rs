@@ -41,10 +41,10 @@ impl Instruction for Mrs {
         match sysm >> 3 {
             0b00000 => {
                 if sysm & 1 == 1 {
-                    rd |= proc.registers.xpsr.ipsr();
+                    rd |= proc.registers.psr.ipsr();
                 }
                 if sysm & 4 == 0 {
-                    rd |= proc.registers.xpsr.apsr() & 0xf8000000;
+                    rd |= proc.registers.psr.apsr() & 0xf8000000;
                     // TODO DSP extension
                 }
             }

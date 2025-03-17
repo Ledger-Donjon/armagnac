@@ -53,7 +53,7 @@ impl Instruction for EorImm {
         let result = proc[self.rn] ^ self.imm32;
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c_opt(self.carry);
+            proc.registers.psr.set_nz(result).set_c_opt(self.carry);
         }
         Ok(false)
     }
@@ -116,12 +116,12 @@ impl Instruction for EorReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] ^ shifted;
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }

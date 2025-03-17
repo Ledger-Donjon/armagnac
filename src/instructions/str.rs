@@ -159,7 +159,7 @@ impl Instruction for StrReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
         let data = proc[self.rt];

@@ -40,7 +40,7 @@ impl Instruction for It {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        proc.registers.xpsr.set_it_state(self.state);
+        proc.registers.psr.set_it_state(self.state);
         Ok(false)
     }
 

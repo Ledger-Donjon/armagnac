@@ -39,7 +39,7 @@ impl Instruction for CmnImm {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], self.imm32, false);
         proc.registers
-            .xpsr
+            .psr
             .set_nz(result)
             .set_c(carry)
             .set_v(overflow);
@@ -91,11 +91,11 @@ impl Instruction for CmnReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, false);
         proc.registers
-            .xpsr
+            .psr
             .set_nz(result)
             .set_c(carry)
             .set_v(overflow);
@@ -136,12 +136,12 @@ mod tests {
     fn cmm_imm_vec(proc: &mut ArmProcessor, inital_rn: i32, z: bool, c: bool, v: bool) {
         let rn = RegisterIndex::new_general_random();
         let ins = CmnImm { rn, imm32: 5 };
-        proc.registers.xpsr.set(0);
+        proc.registers.psr.set(0);
         proc.set(rn, inital_rn as u32);
         ins.execute(proc).unwrap();
-        assert_eq!(proc.registers.xpsr.z(), z);
-        assert_eq!(proc.registers.xpsr.c(), c);
-        assert_eq!(proc.registers.xpsr.v(), v);
+        assert_eq!(proc.registers.psr.z(), z);
+        assert_eq!(proc.registers.psr.c(), c);
+        assert_eq!(proc.registers.psr.v(), v);
     }
 
     #[test]
@@ -169,12 +169,12 @@ mod tests {
         v: bool,
     ) {
         let (rn, rm) = RegisterIndex::pick_two_general_distinct();
-        proc.registers.xpsr.set(0);
+        proc.registers.psr.set(0);
         proc.set(rn, r0 as u32);
         proc.set(rm, r1);
         CmnReg { rn, rm, shift }.execute(proc).unwrap();
-        assert_eq!(proc.registers.xpsr.z(), z);
-        assert_eq!(proc.registers.xpsr.c(), c);
-        assert_eq!(proc.registers.xpsr.v(), v);
+        assert_eq!(proc.registers.psr.z(), z);
+        assert_eq!(proc.registers.psr.c(), c);
+        assert_eq!(proc.registers.psr.v(), v);
     }
 }

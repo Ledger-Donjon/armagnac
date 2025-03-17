@@ -687,7 +687,7 @@ pub enum Mode {
 /// ```
 /// # use armagnac::arm::{ArmProcessor, ArmVersion};
 /// # let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-/// if proc.registers.xpsr.c() {
+/// if proc.registers.psr.c() {
 ///     println!("Carry flag is set!")
 /// }
 /// ```
@@ -743,7 +743,7 @@ pub struct CoreRegisters {
     /// Also known as `r13`.
     pub psp: u32,
     /// Groups APSR, IPSR and EPSR registers.
-    pub xpsr: ProgramStatusRegister,
+    pub psr: ProgramStatusRegister,
     /// Exception mask register.
     pub primask: MaskRegister,
     /// Fault mask register.
@@ -775,7 +775,7 @@ impl CoreRegisters {
             pc: 0,
             msp: 0,
             psp: 0,
-            xpsr: ProgramStatusRegister::new(),
+            psr: ProgramStatusRegister::new(),
             primask: MaskRegister::new(),
             faultmask: MaskRegister::new(),
             control: ControlRegister::new(),
@@ -838,12 +838,12 @@ impl CoreRegisters {
             },
             RegisterIndex::Lr => self.lr = value,
             RegisterIndex::Pc => self.pc = value,
-            RegisterIndex::Apsr => self.xpsr.set_apsr(value),
+            RegisterIndex::Apsr => self.psr.set_apsr(value),
             RegisterIndex::Iapsr => todo!(),
             RegisterIndex::Eapsr => todo!(),
-            RegisterIndex::Xpsr => self.xpsr.set(value),
-            RegisterIndex::Ipsr => self.xpsr.set_ipsr(value),
-            RegisterIndex::Epsr => self.xpsr.set_epsr(value),
+            RegisterIndex::Xpsr => self.psr.set(value),
+            RegisterIndex::Ipsr => self.psr.set_ipsr(value),
+            RegisterIndex::Epsr => self.psr.set_epsr(value),
             RegisterIndex::Iepsr => todo!(),
             RegisterIndex::Msp => self.msp = value,
             RegisterIndex::Psp => self.psp = value,
@@ -895,7 +895,7 @@ impl Index<RegisterIndex> for CoreRegisters {
             },
             RegisterIndex::Lr => &self.lr,
             RegisterIndex::Pc => &self.pc,
-            RegisterIndex::Apsr => &self.xpsr.0,
+            RegisterIndex::Apsr => &self.psr.0,
             RegisterIndex::Iapsr => todo!(),
             RegisterIndex::Eapsr => todo!(),
             RegisterIndex::Xpsr => todo!(),

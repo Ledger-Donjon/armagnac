@@ -252,7 +252,7 @@ impl Instruction for LdrReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.xpsr.c());
+        let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(offset, self.add);
         let address = if self.index { offset_addr } else { rn };

@@ -42,7 +42,7 @@ impl Instruction for Qsub {
         let (result, sat) = signed_sat_q(rm - rn, 32);
         proc.set(self.rd, result as u32);
         if sat {
-            proc.registers.xpsr.set_q(true);
+            proc.registers.psr.set_q(true);
         }
         Ok(false)
     }
@@ -126,9 +126,9 @@ mod tests {
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);
             proc.set(rn, v.initial_rn);
-            proc.registers.xpsr.set_q(v.initial_q);
+            proc.registers.psr.set_q(v.initial_q);
             let mut expected = proc.registers.clone();
-            expected.xpsr.set_q(v.expected_q);
+            expected.psr.set_q(v.expected_q);
             expected.set(rd, v.expected_rd);
             Qsub { rd, rm, rn }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);

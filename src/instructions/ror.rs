@@ -48,11 +48,11 @@ impl Instruction for RorImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }
@@ -114,11 +114,11 @@ impl Instruction for RorReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc[self.rm] & 0xff;
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rn], Shift::ror(shift_n), carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }
@@ -156,13 +156,13 @@ mod tests {
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x091a2b3c);
-        assert_eq!(proc.registers.xpsr.c(), false);
-        assert_eq!(proc.registers.xpsr.n(), false);
+        assert_eq!(proc.registers.psr.c(), false);
+        assert_eq!(proc.registers.psr.n(), false);
         ins.shift.n = 4;
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x81234567);
-        assert_eq!(proc.registers.xpsr.c(), true);
-        assert_eq!(proc.registers.xpsr.n(), true);
+        assert_eq!(proc.registers.psr.c(), true);
+        assert_eq!(proc.registers.psr.n(), true);
     }
 
     #[test]
@@ -178,12 +178,12 @@ mod tests {
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x091a2b3c);
-        assert_eq!(proc.registers.xpsr.c(), false);
-        assert_eq!(proc.registers.xpsr.n(), false);
+        assert_eq!(proc.registers.psr.c(), false);
+        assert_eq!(proc.registers.psr.n(), false);
         proc.registers.r2 = 4;
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x81234567);
-        assert_eq!(proc.registers.xpsr.c(), true);
-        assert_eq!(proc.registers.xpsr.n(), true);
+        assert_eq!(proc.registers.psr.c(), true);
+        assert_eq!(proc.registers.psr.n(), true);
     }
 }

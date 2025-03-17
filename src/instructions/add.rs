@@ -93,7 +93,7 @@ impl Instruction for AddImm {
         let (r, c, v) = add_with_carry(proc[self.rn], self.imm32, false);
         proc.set(self.rd, r);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
+            proc.registers.psr.set_nz(r).set_c(c).set_v(v);
         }
         Ok(false)
     }
@@ -188,7 +188,7 @@ impl Instruction for AddReg {
     }
 
     fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc[self.rn], shifted, false);
         if self.rd.is_pc() {
@@ -197,7 +197,7 @@ impl Instruction for AddReg {
         } else {
             proc.set(self.rd, r);
             if self.set_flags {
-                proc.registers.xpsr.set_nz(r).set_c(c).set_v(v);
+                proc.registers.psr.set_nz(r).set_c(c).set_v(v);
             }
             Ok(false)
         }
@@ -282,7 +282,7 @@ impl Instruction for AddSpPlusImm {
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
-                .xpsr
+                .psr
                 .set_nz(result)
                 .set_c(carry)
                 .set_v(overflow);
@@ -364,7 +364,7 @@ impl Instruction for AddSpPlusReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
         if self.rd.is_pc() {
@@ -374,7 +374,7 @@ impl Instruction for AddSpPlusReg {
             proc.set(self.rd, result);
             if self.set_flags {
                 proc.registers
-                    .xpsr
+                    .psr
                     .set_nz(result)
                     .set_c(carry)
                     .set_v(overflow);
@@ -487,10 +487,10 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.xpsr.set_n(v.expected_nzcv.0);
-            expected_registers.xpsr.set_z(v.expected_nzcv.1);
-            expected_registers.xpsr.set_c(v.expected_nzcv.2);
-            expected_registers.xpsr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_n(v.expected_nzcv.0);
+            expected_registers.psr.set_z(v.expected_nzcv.1);
+            expected_registers.psr.set_c(v.expected_nzcv.2);
+            expected_registers.psr.set_v(v.expected_nzcv.3);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -583,10 +583,10 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.xpsr.set_n(v.expected_nzcv.0);
-            expected_registers.xpsr.set_z(v.expected_nzcv.1);
-            expected_registers.xpsr.set_c(v.expected_nzcv.2);
-            expected_registers.xpsr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_n(v.expected_nzcv.0);
+            expected_registers.psr.set_z(v.expected_nzcv.1);
+            expected_registers.psr.set_c(v.expected_nzcv.2);
+            expected_registers.psr.set_v(v.expected_nzcv.3);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -652,10 +652,10 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.xpsr.set_n(v.expected_nzcv.0);
-            expected_registers.xpsr.set_z(v.expected_nzcv.1);
-            expected_registers.xpsr.set_c(v.expected_nzcv.2);
-            expected_registers.xpsr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_n(v.expected_nzcv.0);
+            expected_registers.psr.set_z(v.expected_nzcv.1);
+            expected_registers.psr.set_c(v.expected_nzcv.2);
+            expected_registers.psr.set_v(v.expected_nzcv.3);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -730,10 +730,10 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.xpsr.set_n(v.expected_nzcv.0);
-            expected_registers.xpsr.set_z(v.expected_nzcv.1);
-            expected_registers.xpsr.set_c(v.expected_nzcv.2);
-            expected_registers.xpsr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_n(v.expected_nzcv.0);
+            expected_registers.psr.set_z(v.expected_nzcv.1);
+            expected_registers.psr.set_c(v.expected_nzcv.2);
+            expected_registers.psr.set_v(v.expected_nzcv.3);
             assert_eq!(proc.registers, expected_registers);
         }
     }

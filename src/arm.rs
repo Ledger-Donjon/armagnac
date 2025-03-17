@@ -526,7 +526,7 @@ impl ArmProcessor {
         address: u32,
     ) -> Result<(InstructionBox, InstructionSize), RunError> {
         let hw = self.u16le_at(address)?;
-        let it_state = self.registers.xpsr.it_state();
+        let it_state = self.registers.psr.it_state();
         let size = InstructionSize::from_halfword(hw);
         let ins = match size {
             InstructionSize::Ins16 => {
@@ -581,7 +581,7 @@ impl ArmProcessor {
             // Conditional execution testing.
             // Condition is usually defined by the current IT state, excepted for conditional
             // branch B instruction which can override it by implementing [Instruction::condition].
-            let mut it_state = self.registers.xpsr.it_state();
+            let mut it_state = self.registers.psr.it_state();
             let condition = ins
                 .condition()
                 .or(it_state.current_condition())
@@ -589,10 +589,10 @@ impl ArmProcessor {
             // Advance IT block state. This must be done before executing the instruction,
             // because if the current instruction is IT, it will load a new state.
             it_state.advance();
-            self.registers.xpsr.set_it_state(it_state);
+            self.registers.psr.set_it_state(it_state);
 
             let mut jump = false;
-            if self.registers.xpsr.test(condition) {
+            if self.registers.psr.test(condition) {
                 jump = ins.execute(self)?;
             }
             if !jump && size == InstructionSize::Ins16 {
@@ -648,7 +648,7 @@ impl ArmProcessor {
     fn exception_return(&mut self, exc_return: u32) -> Result<(), RunError> {
         assert_eq!(self.registers.mode, Mode::Handler);
         ////unpredictable(address & 0xf0000000 != 0xf0000000)?;
-        let number = self.registers.xpsr.exception_number();
+        let number = self.registers.psr.exception_number();
         let nested_activation = false; // TODO
         if !self.exception_active[number as usize] {
             self.deactivate(number);
@@ -690,11 +690,11 @@ impl ArmProcessor {
         self.deactivate(number);
         self.pop_stack(frame_ptr, exc_return)?;
 
-        if self.registers.mode == Mode::Handler && self.registers.xpsr.ipsr() == 0 {
+        if self.registers.mode == Mode::Handler && self.registers.psr.ipsr() == 0 {
             todo!();
         }
 
-        if self.registers.mode == Mode::Thread && self.registers.xpsr.ipsr() != 0 {
+        if self.registers.mode == Mode::Thread && self.registers.psr.ipsr() != 0 {
             todo!();
         }
 
@@ -706,7 +706,7 @@ impl ArmProcessor {
     /// Deactivates an exception
     fn deactivate(&mut self, number: u16) {
         self.exception_active[number as usize] = false;
-        if self.registers.xpsr.exception_number() != 2 {
+        if self.registers.psr.exception_number() != 2 {
             // 2 is NMI
             self.registers.faultmask.set_pm(false);
         }
@@ -732,7 +732,7 @@ impl ArmProcessor {
         self.set_u32le_at(frame_ptr + 0x10, self.registers.r12)?;
         self.set_u32le_at(frame_ptr + 0x14, self.registers.lr)?;
         self.set_u32le_at(frame_ptr + 0x18, return_address)?;
-        let mut xpsr = self.registers.xpsr.get();
+        let mut xpsr = self.registers.psr.get();
         xpsr.set_bit(9, frame_ptr_align);
         self.set_u32le_at(frame_ptr + 0x1c, xpsr)?;
 
@@ -778,7 +778,7 @@ impl ArmProcessor {
 
         let psr = self.u32le_at(frame_ptr + 0x1c)?;
         let sp_mask = ((psr.bit(9) && force_align) as u32) << 2;
-        self.registers.xpsr.set(psr); // Note: this does not copy bit 9
+        self.registers.psr.set(psr); // Note: this does not copy bit 9
 
         match exc_return & 0xf {
             0b0001 | 0b1001 | 0b1101 => {
@@ -788,7 +788,7 @@ impl ArmProcessor {
             _ => {}
         }
 
-        self.registers.xpsr.set(psr & 0xfff0ffff); // TODO remove mask if FP extension
+        self.registers.psr.set(psr & 0xfff0ffff); // TODO remove mask if FP extension
         Ok(())
     }
 
@@ -799,7 +799,7 @@ impl ArmProcessor {
         self.set_pc(jump_address & 0xfffffffe);
         self.registers.mode = Mode::Handler;
         self.registers
-            .xpsr
+            .psr
             .set_exception_number(number.number())
             .set_t(jump_address & 1 != 0)
             .set_ici_it(0);
@@ -843,7 +843,7 @@ impl ArmProcessor {
 
     /// Write value to PC, with interworking
     pub fn blx_write_pc(&mut self, address: u32) {
-        self.registers.xpsr.set_t(address & 1 == 1);
+        self.registers.psr.set_t(address & 1 == 1);
         self.set_pc(address & 0xfffffffe)
     }
 
@@ -863,8 +863,8 @@ impl ArmProcessor {
     }
 
     pub fn condition_passed(&self) -> bool {
-        if let Some(condition) = self.registers.xpsr.it_state().current_condition() {
-            self.registers.xpsr.test(condition)
+        if let Some(condition) = self.registers.psr.it_state().current_condition() {
+            self.registers.psr.test(condition)
         } else {
             true
         }

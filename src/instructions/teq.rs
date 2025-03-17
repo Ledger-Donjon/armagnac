@@ -38,7 +38,7 @@ impl Instruction for TeqImm {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let result = proc[self.rn] ^ self.imm32;
-        proc.registers.xpsr.set_nz(result).set_c_opt(self.carry);
+        proc.registers.psr.set_nz(result).set_c_opt(self.carry);
         Ok(false)
     }
 
@@ -81,10 +81,10 @@ impl Instruction for TeqReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] ^ shifted;
-        proc.registers.xpsr.set_nz(result).set_c(carry);
+        proc.registers.psr.set_nz(result).set_c(carry);
         Ok(false)
     }
 
@@ -147,12 +147,12 @@ mod tests {
             let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, 0x12345678);
-            proc.registers.xpsr.set_c(v.initial_c);
+            proc.registers.psr.set_c(v.initial_c);
             let mut expected = proc.registers.clone();
-            expected.xpsr.set_n(v.expected_nzcv.0);
-            expected.xpsr.set_z(v.expected_nzcv.1);
-            expected.xpsr.set_c(v.expected_nzcv.2);
-            expected.xpsr.set_v(v.expected_nzcv.3);
+            expected.psr.set_n(v.expected_nzcv.0);
+            expected.psr.set_z(v.expected_nzcv.1);
+            expected.psr.set_c(v.expected_nzcv.2);
+            expected.psr.set_v(v.expected_nzcv.3);
             TeqImm {
                 rn,
                 imm32: v.imm32,
@@ -201,10 +201,10 @@ mod tests {
             proc.set(rn, 0x12345678);
             proc.set(rm, v.initial_rm);
             let mut expected = proc.registers.clone();
-            expected.xpsr.set_n(v.expected_nzcv.0);
-            expected.xpsr.set_z(v.expected_nzcv.1);
-            expected.xpsr.set_c(v.expected_nzcv.2);
-            expected.xpsr.set_v(v.expected_nzcv.3);
+            expected.psr.set_n(v.expected_nzcv.0);
+            expected.psr.set_z(v.expected_nzcv.1);
+            expected.psr.set_c(v.expected_nzcv.2);
+            expected.psr.set_v(v.expected_nzcv.3);
             TeqReg {
                 rn,
                 rm,

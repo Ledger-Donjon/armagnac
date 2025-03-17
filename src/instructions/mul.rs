@@ -60,7 +60,7 @@ impl Instruction for Mul {
         let result = op1.wrapping_mul(op2) as u32;
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result);
+            proc.registers.psr.set_nz(result);
         }
         Ok(false)
     }

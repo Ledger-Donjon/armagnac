@@ -73,7 +73,7 @@ impl Instruction for MovImm {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         proc.set(self.rd, self.imm32);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(self.imm32).set_c_opt(self.carry);
+            proc.registers.psr.set_nz(self.imm32).set_c_opt(self.carry);
         }
         Ok(false)
     }
@@ -147,7 +147,7 @@ impl Instruction for MovReg {
         } else {
             proc.set(self.rd, result);
             if self.set_flags {
-                proc.registers.xpsr.set_nz(result);
+                proc.registers.psr.set_nz(result);
             }
             Ok(false)
         }

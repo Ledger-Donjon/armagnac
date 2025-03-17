@@ -46,12 +46,12 @@ impl Instruction for AdcImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry, overflow) = add_with_carry(proc[self.rn], self.imm32, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
-                .xpsr
+                .psr
                 .set_nz(result)
                 .set_c(carry)
                 .set_v(overflow);
@@ -116,13 +116,13 @@ impl Instruction for AdcReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers
-                .xpsr
+                .psr
                 .set_nz(result)
                 .set_c(carry)
                 .set_v(overflow);
@@ -164,8 +164,8 @@ mod tests {
     ) {
         proc.registers.r0 = 0;
         proc.registers.r1 = 100;
-        proc.registers.xpsr.set(0);
-        proc.registers.xpsr.set_c(carry_in);
+        proc.registers.psr.set(0);
+        proc.registers.psr.set_c(carry_in);
         AdcImm {
             rd: RegisterIndex::R0,
             rn: RegisterIndex::R1,
@@ -175,7 +175,7 @@ mod tests {
         .execute(proc)
         .unwrap();
         assert_eq!(proc.registers.r0, expected_r0);
-        assert_eq!(proc.registers.xpsr.c(), expected_carry);
+        assert_eq!(proc.registers.psr.c(), expected_carry);
     }
 
     #[test]
@@ -199,8 +199,8 @@ mod tests {
         proc.registers.r0 = 0;
         proc.registers.r1 = 100;
         proc.registers.r2 = r2;
-        proc.registers.xpsr.set(0);
-        proc.registers.xpsr.set_c(carry_in);
+        proc.registers.psr.set(0);
+        proc.registers.psr.set_c(carry_in);
         AdcReg {
             rd: RegisterIndex::R0,
             rn: RegisterIndex::R1,
@@ -211,7 +211,7 @@ mod tests {
         .execute(proc)
         .unwrap();
         assert_eq!(proc.registers.r0, expected_r0);
-        assert_eq!(proc.registers.xpsr.c(), expected_carry);
+        assert_eq!(proc.registers.psr.c(), expected_carry);
     }
 
     #[test]

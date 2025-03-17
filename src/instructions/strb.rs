@@ -147,7 +147,7 @@ impl Instruction for StrbReg {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let shift = Shift::lsl(self.shift as u32);
         let (offset, _) = shift_c(proc[self.rm], shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);

@@ -42,11 +42,11 @@ impl Instruction for Rrx {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], Shift::rrx(), carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }
@@ -114,12 +114,12 @@ mod tests {
             let rd = RegisterIndex::new_general_random();
             let rm = RegisterIndex::new_general_random();
             proc.set(rm, v.initial_rm);
-            proc.registers.xpsr.set_c(v.carry_in);
+            proc.registers.psr.set_c(v.carry_in);
             let mut expected = proc.registers.clone();
-            expected.xpsr.set_n(v.expected_nzcv.0);
-            expected.xpsr.set_z(v.expected_nzcv.1);
-            expected.xpsr.set_c(v.expected_nzcv.2);
-            expected.xpsr.set_v(v.expected_nzcv.3);
+            expected.psr.set_n(v.expected_nzcv.0);
+            expected.psr.set_z(v.expected_nzcv.1);
+            expected.psr.set_c(v.expected_nzcv.2);
+            expected.psr.set_v(v.expected_nzcv.3);
             expected.set(rd, v.expected_rd);
             Rrx {
                 rd,

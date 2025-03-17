@@ -53,11 +53,11 @@ impl Instruction for AsrImm {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], Shift::asr(self.shift as u32), carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }
@@ -117,11 +117,11 @@ impl Instruction for AsrReg {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let shift_n = proc[self.rm] & 0xff;
-        let carry_in = proc.registers.xpsr.c();
+        let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rn], Shift::asr(shift_n), carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
-            proc.registers.xpsr.set_nz(result).set_c(carry);
+            proc.registers.psr.set_nz(result).set_c(carry);
         }
         Ok(false)
     }
