@@ -163,7 +163,12 @@ pub trait Mnemonic {
 
 impl Mnemonic for Box<dyn Instruction> {
     fn mnemonic(&self, pc: u32) -> String {
-        format!("{:<6} {}", self.name(), self.args(pc))
+        let args = self.args(pc);
+        if args.len() > 0 {
+            format!("{:<6} {}", self.name(), self.args(pc))
+        } else {
+            self.name()
+        }
     }
 }
 
