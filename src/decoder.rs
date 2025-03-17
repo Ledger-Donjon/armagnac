@@ -299,6 +299,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::qdadd::Qdadd>();
         dec.insert::<instructions::qdsub::Qdsub>();
         dec.insert::<instructions::qsub::Qsub>();
+        dec.insert::<instructions::qsub16::Qsub16>();
         dec.insert::<instructions::rbit::Rbit>();
         dec.insert::<instructions::rev::Rev>();
         dec.insert::<instructions::rev16::Rev16>();

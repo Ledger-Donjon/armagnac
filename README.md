@@ -33,7 +33,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - PLI: Preload Instruction
 - QASX: Saturating Add and Subtract with Exchange
 - QSAX: Saturating Subtract and Add with Exchange
-- QSUB16: Saturating Subtract 16
 - QSUB8: Saturating Subtract 8
 - REVSH: Byte-Reverse Signed Halfword
 - SADD16: Signed Add 16
