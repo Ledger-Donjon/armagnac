@@ -149,78 +149,194 @@ mod tests {
     use super::AdcImm;
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{
+            ArmProcessor,
+            ArmVersion::{V7M, V8M},
+        },
         instructions::{adc::AdcReg, Instruction},
         registers::RegisterIndex,
     };
 
-    fn test_adc_imm_vec(
-        proc: &mut ArmProcessor,
-        carry_in: bool,
-        imm: u32,
-        set_flags: bool,
-        expected_r0: u32,
-        expected_carry: bool,
-    ) {
-        proc.registers.r0 = 0;
-        proc.registers.r1 = 100;
-        proc.registers.psr.set(0);
-        proc.registers.psr.set_c(carry_in);
-        AdcImm {
-            rd: RegisterIndex::R0,
-            rn: RegisterIndex::R1,
-            imm32: imm,
-            set_flags: set_flags,
-        }
-        .execute(proc)
-        .unwrap();
-        assert_eq!(proc.registers.r0, expected_r0);
-        assert_eq!(proc.registers.psr.c(), expected_carry);
-    }
-
     #[test]
     fn test_adc_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-        test_adc_imm_vec(&mut proc, false, 10, true, 110, false);
-        test_adc_imm_vec(&mut proc, true, 10, true, 111, false);
-        test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, true, 0, true);
-        test_adc_imm_vec(&mut proc, true, 0xffffffff - 99, true, 1, true);
-        test_adc_imm_vec(&mut proc, false, 0xffffffff - 99, false, 0, false);
-    }
-
-    fn test_adc_reg_vec(
-        proc: &mut ArmProcessor,
-        carry_in: bool,
-        r2: u32,
-        shift: Shift,
-        expected_r0: u32,
-        expected_carry: bool,
-    ) {
-        proc.registers.r0 = 0;
-        proc.registers.r1 = 100;
-        proc.registers.r2 = r2;
-        proc.registers.psr.set(0);
-        proc.registers.psr.set_c(carry_in);
-        AdcReg {
-            rd: RegisterIndex::R0,
-            rn: RegisterIndex::R1,
-            rm: RegisterIndex::R2,
-            shift,
-            set_flags: true,
+        struct Test {
+            carry_in: bool,
+            imm: u32,
+            set_flags: bool,
+            expected_r0: u32,
+            expected_nzcv: (bool, bool, bool, bool),
         }
-        .execute(proc)
-        .unwrap();
-        assert_eq!(proc.registers.r0, expected_r0);
-        assert_eq!(proc.registers.psr.c(), expected_carry);
+
+        let vectors = [
+            // Test basic addition
+            Test {
+                carry_in: false,
+                imm: 10,
+                set_flags: true,
+                expected_r0: 110,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test input carry is added
+            Test {
+                carry_in: true,
+                imm: 10,
+                set_flags: true,
+                expected_r0: 111,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test Z and C are set
+            Test {
+                carry_in: false,
+                imm: 0xffffffff - 99,
+                set_flags: true,
+                expected_r0: 0,
+                expected_nzcv: (false, true, true, false),
+            },
+            // Test only C is set
+            Test {
+                carry_in: true,
+                imm: 0xffffffff - 99,
+                set_flags: true,
+                expected_r0: 1,
+                expected_nzcv: (false, false, true, false),
+            },
+            // Test flags are not updated
+            Test {
+                carry_in: false,
+                imm: 0xffffffff - 99,
+                set_flags: false,
+                expected_r0: 0,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test overflow bit
+            Test {
+                carry_in: true,
+                imm: 0x7fffffff - 99,
+                set_flags: true,
+                expected_r0: 0x80000001,
+                expected_nzcv: (true, false, false, true),
+            },
+        ];
+
+        for v in vectors {
+            let mut proc = ArmProcessor::new(V7M, 0);
+            let rd = RegisterIndex::new_general_random();
+            let rn = RegisterIndex::new_general_random();
+            proc.registers.psr.set_c(v.carry_in);
+            proc.set(rn, 100);
+            let mut expected = proc.registers.clone();
+            expected.set(rd, v.expected_r0);
+            expected
+                .psr
+                .set_n(v.expected_nzcv.0)
+                .set_z(v.expected_nzcv.1)
+                .set_c(v.expected_nzcv.2)
+                .set_v(v.expected_nzcv.3);
+            AdcImm {
+                rd,
+                rn,
+                imm32: v.imm,
+                set_flags: v.set_flags,
+            }
+            .execute(&mut proc)
+            .unwrap();
+            assert_eq!(proc.registers, expected);
+        }
     }
 
     #[test]
     fn test_adc_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
-        test_adc_reg_vec(&mut proc, false, 10, Shift::lsl(0), 110, false);
-        test_adc_reg_vec(&mut proc, true, 10, Shift::lsl(0), 111, false);
-        test_adc_reg_vec(&mut proc, false, 0xffffffff - 99, Shift::lsl(0), 0, true);
-        test_adc_reg_vec(&mut proc, true, 0xffffffff - 99, Shift::lsl(0), 1, true);
-        test_adc_reg_vec(&mut proc, true, 10, Shift::lsl(2), 141, false);
+        struct Test {
+            carry_in: bool,
+            initial_r2: u32,
+            shift: Shift,
+            set_flags: bool,
+            expected_r0: u32,
+            expected_nzcv: (bool, bool, bool, bool),
+        }
+
+        let vectors = [
+            // Test basic addition
+            Test {
+                carry_in: false,
+                initial_r2: 10,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_r0: 110,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test input carry is added
+            Test {
+                carry_in: true,
+                initial_r2: 10,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_r0: 111,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test Z and C flags are set
+            Test {
+                carry_in: false,
+                initial_r2: 0xffffffff - 99,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_r0: 0,
+                expected_nzcv: (false, true, true, false),
+            },
+            // Test shift is applied
+            Test {
+                carry_in: true,
+                initial_r2: 10,
+                shift: Shift::lsl(2),
+                set_flags: true,
+                expected_r0: 141,
+                expected_nzcv: (false, false, false, false),
+            },
+            // Test overflow flag is set
+            Test {
+                carry_in: false,
+                initial_r2: 0x7fffffff - 99,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_r0: 0x80000000,
+                expected_nzcv: (true, false, false, true),
+            },
+            // Test flags are NOT updated
+            Test {
+                carry_in: false,
+                initial_r2: 0xffffffff - 99,
+                shift: Shift::lsl(0),
+                set_flags: false,
+                expected_r0: 0,
+                expected_nzcv: (false, false, false, false),
+            },
+        ];
+
+        for v in vectors {
+            let mut proc = ArmProcessor::new(V8M, 0);
+            let rd = RegisterIndex::new_general_random();
+            let (rn, rm) = RegisterIndex::pick_two_general_distinct();
+            proc.set(rn, 100);
+            proc.set(rm, v.initial_r2);
+            proc.registers.psr.set_c(v.carry_in);
+            let mut expected = proc.registers.clone();
+            expected.set(rd, v.expected_r0);
+            expected
+                .psr
+                .set_n(v.expected_nzcv.0)
+                .set_z(v.expected_nzcv.1)
+                .set_c(v.expected_nzcv.2)
+                .set_v(v.expected_nzcv.3);
+            AdcReg {
+                rd,
+                rn,
+                rm,
+                shift: v.shift,
+                set_flags: v.set_flags,
+            }
+            .execute(&mut proc)
+            .unwrap();
+            assert_eq!(proc.registers, expected);
+        }
     }
 }
