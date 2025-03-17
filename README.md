@@ -14,7 +14,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
 - DBG: Debug Hint
-- DMB: Data Memory Barrier
 - LDC, LDC2: Load Coprossessor
 - LDRBT: Load Register Byte Unprivileged
 - LDREX: Load Register Exclusive

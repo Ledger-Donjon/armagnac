@@ -31,6 +31,7 @@ c800 lsls   r0, r1, #3
 2090 str    r0, [sp, #128]
 0194 str    r4, [sp, #4]
 80b2 uxth   r0, r0
+bff35f8f dmb
 5fea4121 lsls   r1, r1, #9
 cff6ff70 movt   r0, #65535
 cff6ff71 movt   r1, #65535

@@ -30,6 +30,7 @@ pub mod clz;
 pub mod cmn;
 pub mod cmp;
 pub mod cps;
+pub mod dmb;
 pub mod dsb;
 pub mod eor;
 pub mod isb;

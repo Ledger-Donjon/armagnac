@@ -243,6 +243,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::cmp::CmpImm>();
         dec.insert::<instructions::cmp::CmpReg>();
         dec.insert::<instructions::cps::Cps>();
+        dec.insert::<instructions::dmb::Dmb>();
         dec.insert::<instructions::dsb::Dsb>();
         dec.insert::<instructions::eor::EorImm>();
         dec.insert::<instructions::eor::EorReg>();
