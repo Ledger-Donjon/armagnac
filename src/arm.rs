@@ -13,7 +13,7 @@ use std::{
 
 use crate::{
     condition::Condition,
-    decoder::{BasicInstructionDecoder, InstructionDecodeError},
+    decoder::{InstructionDecode, InstructionDecodeError, BasicInstructionDecoder},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
     irq::Irq,
@@ -160,7 +160,10 @@ pub struct ArmProcessor {
     /// Indicates which exceptions are currently active.
     exception_active: Vec<bool>,
     memory_mappings: MemoryMappings,
-    instruction_decoder: BasicInstructionDecoder,
+    /// Parses word or double-word values to decode them as executable ARM instructions.
+    /// Since this is a performance critical task of the emulator, different implementation with
+    /// different optimisation strategies, which may depend on the context, may be selected.
+    instruction_decoder: Box<dyn InstructionDecode>,
     pub cycles: u64,
     code_hooks: Vec<CodeHook>,
     pub event_on_instruction: bool,
@@ -199,7 +202,7 @@ impl ArmProcessor {
             memory_mappings: MemoryMappings::new(),
             execution_priority: 0,
             exception_active: (0..exception_count).map(|_| false).collect(),
-            instruction_decoder: BasicInstructionDecoder::new(),
+            instruction_decoder: Box::new(BasicInstructionDecoder::new()),
             cycles: 0,
             code_hooks: Vec::new(),
             event_on_instruction: false,

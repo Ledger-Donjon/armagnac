@@ -6,6 +6,15 @@ use crate::{
     it_state::ItState,
 };
 
+pub trait InstructionDecode {
+    fn try_decode(
+        &self,
+        ins: u32,
+        size: InstructionSize,
+        state: ItState,
+    ) -> Result<Box<dyn Instruction>, InstructionDecodeError>;
+}
+
 #[derive(Debug)]
 pub enum InstructionDecodeError {
     /// Instruction is unknown.
@@ -149,7 +158,8 @@ struct DecoderEntry {
     decoder: InstructionDecodingFunction,
 }
 
-struct InstructionDecoder {
+/// A very simple and unoptimized instruction decoder.
+pub struct BasicInstructionDecoder {
     entries: Vec<DecoderEntry>,
 }
 
@@ -164,59 +174,11 @@ fn box_decoder<T: 'static + Instruction>(
     }
 }
 
-impl InstructionDecoder {
-    pub fn new() -> Self {
-        Self {
-            entries: Vec::new(),
-        }
-    }
-
-    /// Registers a new instruction type to the decoder.
-    ///
-    /// The decoder will fetch the corresponding instruction patterns and the decoding function to
-    /// be called when a pattern matches.
-    pub fn insert<T: 'static + Instruction>(&mut self) {
-        self.entries.push(DecoderEntry {
-            patterns: T::patterns()
-                .iter()
-                .map(|p| InstructionPattern::new(p))
-                .collect(),
-            decoder: box_decoder::<T>,
-        });
-    }
-
-    /// Try to decode an [u32] into an [Instruction].
-    ///
-    /// # Arguments
-    ///
-    /// * `ins` - Opcode
-    /// * `size` - Instruction size (16 bits or 32 bits)
-    /// * `state` - Current processor IT block state, required for correct instruction decoding
-    ///     (some encoding may lead to UNPREDICTABLE depending on the IT state).
-    pub fn try_decode(
-        &self,
-        ins: u32,
-        size: InstructionSize,
-        state: ItState,
-    ) -> Result<Box<dyn Instruction>, InstructionDecodeError> {
-        for entry in &self.entries {
-            for (i, pattern) in entry.patterns.iter().enumerate() {
-                if pattern.test(ins, size)? {
-                    if let Ok(ins) = (entry.decoder)(i + 1, ins, state) {
-                        return Ok(ins);
-                    }
-                }
-            }
-        }
-        Err(InstructionDecodeError::Unknown)
-    }
-}
-
-pub struct BasicInstructionDecoder(InstructionDecoder);
-
 impl BasicInstructionDecoder {
     pub fn new() -> Self {
-        let mut dec = InstructionDecoder::new();
+        let mut dec = Self {
+            entries: Vec::new(),
+        };
         dec.insert::<instructions::adc::AdcImm>();
         dec.insert::<instructions::adc::AdcReg>();
         dec.insert::<instructions::add::AddImm>();
@@ -338,29 +300,50 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::umull::Umull>();
         dec.insert::<instructions::uxtb::Uxtb>();
         dec.insert::<instructions::uxth::Uxth>();
-        Self(dec)
+        dec
     }
 
-    pub fn try_decode(
+    /// Registers a new instruction type to the decoder.
+    ///
+    /// The decoder will fetch the corresponding instruction patterns and the decoding function to
+    /// be called when a pattern matches.
+    pub fn insert<T: 'static + Instruction>(&mut self) {
+        self.entries.push(DecoderEntry {
+            patterns: T::patterns()
+                .iter()
+                .map(|p| InstructionPattern::new(p))
+                .collect(),
+            decoder: box_decoder::<T>,
+        });
+    }
+}
+
+impl InstructionDecode for BasicInstructionDecoder {
+    fn try_decode(
         &self,
         ins: u32,
         size: InstructionSize,
         state: ItState,
     ) -> Result<Box<dyn Instruction>, InstructionDecodeError> {
-        self.0.try_decode(ins, size, state)
-    }
-}
-
-impl Default for BasicInstructionDecoder {
-    fn default() -> Self {
-        Self::new()
+        for entry in &self.entries {
+            for (i, pattern) in entry.patterns.iter().enumerate() {
+                if pattern.test(ins, size)? {
+                    if let Ok(ins) = (entry.decoder)(i + 1, ins, state) {
+                        return Ok(ins);
+                    }
+                }
+            }
+        }
+        Err(InstructionDecodeError::Unknown)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::BasicInstructionDecoder;
-    use crate::{instructions::{InstructionSize, Mnemonic}, it_state::ItState};
+    use crate::{
+        decoder::InstructionDecode, instructions::{InstructionSize, Mnemonic}, it_state::ItState
+    };
     use std::{
         fs::File,
         io::{BufRead, BufReader},
