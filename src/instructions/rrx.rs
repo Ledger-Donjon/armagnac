@@ -75,7 +75,7 @@ mod tests {
             carry_in: bool,
             initial_rm: u32,
             expected_rd: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -84,28 +84,28 @@ mod tests {
                 initial_rm: 4,
                 carry_in: true,
                 expected_rd: 0x80000002,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 set_flags: true,
                 initial_rm: 1,
                 carry_in: false,
                 expected_rd: 0x00000000,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 set_flags: false,
                 initial_rm: 1,
                 carry_in: false,
                 expected_rd: 0x00000000,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 set_flags: true,
                 initial_rm: 0x87654321,
                 carry_in: true,
                 expected_rd: 0xc3b2a190,
-                expected_nzcv: (true, false, true, false),
+                expected_flags: 0b10100,
             },
         ];
 
@@ -116,10 +116,7 @@ mod tests {
             proc.set(rm, v.initial_rm);
             proc.registers.psr.set_c(v.carry_in);
             let mut expected = proc.registers.clone();
-            expected.psr.set_n(v.expected_nzcv.0);
-            expected.psr.set_z(v.expected_nzcv.1);
-            expected.psr.set_c(v.expected_nzcv.2);
-            expected.psr.set_v(v.expected_nzcv.3);
+            expected.psr.set_flags(v.expected_flags);
             expected.set(rd, v.expected_rd);
             Rrx {
                 rd,

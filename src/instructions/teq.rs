@@ -113,7 +113,7 @@ mod tests {
             imm32: u32,
             carry: Option<bool>,
             initial_c: bool,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -121,25 +121,25 @@ mod tests {
                 imm32: 0x12345678,
                 carry: None,
                 initial_c: false,
-                expected_nzcv: (false, true, false, false),
+                expected_flags: 0b01000,
             },
             Test {
                 imm32: 0x12345678,
                 carry: None,
                 initial_c: true,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 imm32: 0x80000000,
                 carry: Some(true),
                 initial_c: false,
-                expected_nzcv: (true, false, true, false),
+                expected_flags: 0b10100,
             },
             Test {
                 imm32: 0x00000000,
                 carry: Some(false),
                 initial_c: false,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
         ];
 
@@ -149,10 +149,7 @@ mod tests {
             proc.set(rn, 0x12345678);
             proc.registers.psr.set_c(v.initial_c);
             let mut expected = proc.registers.clone();
-            expected.psr.set_n(v.expected_nzcv.0);
-            expected.psr.set_z(v.expected_nzcv.1);
-            expected.psr.set_c(v.expected_nzcv.2);
-            expected.psr.set_v(v.expected_nzcv.3);
+            expected.psr.set_flags(v.expected_flags);
             TeqImm {
                 rn,
                 imm32: v.imm32,
@@ -169,29 +166,29 @@ mod tests {
         struct Test {
             shift: Shift,
             initial_rm: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
             Test {
                 shift: Shift::lsl(0),
                 initial_rm: 0x12345678,
-                expected_nzcv: (false, true, false, false),
+                expected_flags: 0b01000,
             },
             Test {
                 shift: Shift::lsl(1),
                 initial_rm: 0x91a2b3c,
-                expected_nzcv: (false, true, false, false),
+                expected_flags: 0b01000,
             },
             Test {
                 shift: Shift::lsl(2),
                 initial_rm: 0x20000000,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 shift: Shift::ror(2),
                 initial_rm: 2,
-                expected_nzcv: (true, false, true, false),
+                expected_flags: 0b10100,
             },
         ];
 
@@ -201,10 +198,7 @@ mod tests {
             proc.set(rn, 0x12345678);
             proc.set(rm, v.initial_rm);
             let mut expected = proc.registers.clone();
-            expected.psr.set_n(v.expected_nzcv.0);
-            expected.psr.set_z(v.expected_nzcv.1);
-            expected.psr.set_c(v.expected_nzcv.2);
-            expected.psr.set_v(v.expected_nzcv.3);
+            expected.psr.set_flags(v.expected_flags);
             TeqReg {
                 rn,
                 rm,

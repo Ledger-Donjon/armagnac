@@ -164,7 +164,7 @@ mod tests {
             imm: u32,
             set_flags: bool,
             expected_r0: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -174,7 +174,7 @@ mod tests {
                 imm: 10,
                 set_flags: true,
                 expected_r0: 110,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test input carry is added
             Test {
@@ -182,7 +182,7 @@ mod tests {
                 imm: 10,
                 set_flags: true,
                 expected_r0: 111,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test Z and C are set
             Test {
@@ -190,7 +190,7 @@ mod tests {
                 imm: 0xffffffff - 99,
                 set_flags: true,
                 expected_r0: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             // Test only C is set
             Test {
@@ -198,7 +198,7 @@ mod tests {
                 imm: 0xffffffff - 99,
                 set_flags: true,
                 expected_r0: 1,
-                expected_nzcv: (false, false, true, false),
+                expected_flags: 0b00100,
             },
             // Test flags are not updated
             Test {
@@ -206,7 +206,7 @@ mod tests {
                 imm: 0xffffffff - 99,
                 set_flags: false,
                 expected_r0: 0,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test overflow bit
             Test {
@@ -214,7 +214,7 @@ mod tests {
                 imm: 0x7fffffff - 99,
                 set_flags: true,
                 expected_r0: 0x80000001,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
         ];
 
@@ -226,12 +226,7 @@ mod tests {
             proc.set(rn, 100);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.expected_r0);
-            expected
-                .psr
-                .set_n(v.expected_nzcv.0)
-                .set_z(v.expected_nzcv.1)
-                .set_c(v.expected_nzcv.2)
-                .set_v(v.expected_nzcv.3);
+            expected.psr.set_flags(v.expected_flags);
             AdcImm {
                 rd,
                 rn,
@@ -252,7 +247,7 @@ mod tests {
             shift: Shift,
             set_flags: bool,
             expected_r0: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -263,7 +258,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: true,
                 expected_r0: 110,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test input carry is added
             Test {
@@ -272,7 +267,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: true,
                 expected_r0: 111,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test Z and C flags are set
             Test {
@@ -281,7 +276,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: true,
                 expected_r0: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             // Test shift is applied
             Test {
@@ -290,7 +285,7 @@ mod tests {
                 shift: Shift::lsl(2),
                 set_flags: true,
                 expected_r0: 141,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             // Test overflow flag is set
             Test {
@@ -299,7 +294,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: true,
                 expected_r0: 0x80000000,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
             // Test flags are NOT updated
             Test {
@@ -308,7 +303,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: false,
                 expected_r0: 0,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
         ];
 
@@ -321,12 +316,7 @@ mod tests {
             proc.registers.psr.set_c(v.carry_in);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.expected_r0);
-            expected
-                .psr
-                .set_n(v.expected_nzcv.0)
-                .set_z(v.expected_nzcv.1)
-                .set_c(v.expected_nzcv.2)
-                .set_v(v.expected_nzcv.3);
+            expected.psr.set_flags(v.expected_flags);
             AdcReg {
                 rd,
                 rn,

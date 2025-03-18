@@ -417,7 +417,7 @@ mod tests {
             imm32: u32,
             set_flags: bool,
             expected_rd_value: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -426,49 +426,49 @@ mod tests {
                 imm32: 20,
                 set_flags: false,
                 expected_rd_value: 30,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 10,
                 imm32: 20,
                 set_flags: false,
                 expected_rd_value: 30,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 0xfffffffe,
                 imm32: 3,
                 set_flags: false,
                 expected_rd_value: 1,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 0xfffffffe,
                 imm32: 1,
                 set_flags: true,
                 expected_rd_value: 0xffffffff,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 rn_value: 0xfffffffe,
                 imm32: 2,
                 set_flags: true,
                 expected_rd_value: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 rn_value: 0xfffffffe,
                 imm32: 3,
                 set_flags: true,
                 expected_rd_value: 1,
-                expected_nzcv: (false, false, true, false),
+                expected_flags: 0b00100,
             },
             Test {
                 rn_value: 0x7fffffff,
                 imm32: 1,
                 set_flags: true,
                 expected_rd_value: 0x80000000,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
         ];
 
@@ -487,10 +487,7 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.psr.set_n(v.expected_nzcv.0);
-            expected_registers.psr.set_z(v.expected_nzcv.1);
-            expected_registers.psr.set_c(v.expected_nzcv.2);
-            expected_registers.psr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_flags(v.expected_flags);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -503,7 +500,7 @@ mod tests {
             shift: Shift,
             set_flags: bool,
             expected_rd_value: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -513,7 +510,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: false,
                 expected_rd_value: 30,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 10,
@@ -521,7 +518,7 @@ mod tests {
                 shift: Shift::lsl(2),
                 set_flags: false,
                 expected_rd_value: 50,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 0xfffffffe,
@@ -529,7 +526,7 @@ mod tests {
                 shift: Shift::lsr(2),
                 set_flags: false,
                 expected_rd_value: 1,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 rn_value: 0xfffffffe,
@@ -537,7 +534,7 @@ mod tests {
                 shift: Shift::lsr(4),
                 set_flags: true,
                 expected_rd_value: 0xffffffff,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 rn_value: 0xfffffffe,
@@ -545,7 +542,7 @@ mod tests {
                 shift: Shift::ror(2),
                 set_flags: true,
                 expected_rd_value: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 rn_value: 0xfffffffe,
@@ -553,7 +550,7 @@ mod tests {
                 shift: Shift::lsr(8),
                 set_flags: true,
                 expected_rd_value: 1,
-                expected_nzcv: (false, false, true, false),
+                expected_flags: 0b00100,
             },
             Test {
                 rn_value: 0x7fffffff,
@@ -561,7 +558,7 @@ mod tests {
                 shift: Shift::lsl(0),
                 set_flags: true,
                 expected_rd_value: 0x80000000,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
         ];
 
@@ -583,10 +580,7 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.psr.set_n(v.expected_nzcv.0);
-            expected_registers.psr.set_z(v.expected_nzcv.1);
-            expected_registers.psr.set_c(v.expected_nzcv.2);
-            expected_registers.psr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_flags(v.expected_flags);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -598,7 +592,7 @@ mod tests {
             set_flags: bool,
             sp_value: u32,
             expected_rd_value: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -607,35 +601,35 @@ mod tests {
                 set_flags: false,
                 sp_value: 1000,
                 expected_rd_value: 1020,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 imm32: 1000,
                 set_flags: false,
                 sp_value: 0xfffffc18,
                 expected_rd_value: 0,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 imm32: 1000,
                 set_flags: true,
                 sp_value: 0xfffffc18,
                 expected_rd_value: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 imm32: 1000,
                 set_flags: true,
                 sp_value: 0xfffffc17,
                 expected_rd_value: 0xffffffff,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 imm32: 2,
                 set_flags: true,
                 sp_value: 0x7fffffff,
                 expected_rd_value: 0x80000001,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
         ];
 
@@ -652,10 +646,7 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.psr.set_n(v.expected_nzcv.0);
-            expected_registers.psr.set_z(v.expected_nzcv.1);
-            expected_registers.psr.set_c(v.expected_nzcv.2);
-            expected_registers.psr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_flags(v.expected_flags);
             assert_eq!(proc.registers, expected_registers);
         }
     }
@@ -668,7 +659,7 @@ mod tests {
             sp_value: u32,
             rm_value: u32,
             expected_rd_value: u32,
-            expected_nzcv: (bool, bool, bool, bool),
+            expected_flags: u8,
         }
 
         let vectors = [
@@ -678,7 +669,7 @@ mod tests {
                 sp_value: 1000,
                 rm_value: 20,
                 expected_rd_value: 1020,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 shift: Shift::lsl(0),
@@ -686,7 +677,7 @@ mod tests {
                 sp_value: 0xfffffc18,
                 rm_value: 1000,
                 expected_rd_value: 0,
-                expected_nzcv: (false, false, false, false),
+                expected_flags: 0,
             },
             Test {
                 shift: Shift::lsl(2),
@@ -694,7 +685,7 @@ mod tests {
                 sp_value: 0xfffffc18,
                 rm_value: 250,
                 expected_rd_value: 0,
-                expected_nzcv: (false, true, true, false),
+                expected_flags: 0b01100,
             },
             Test {
                 shift: Shift::lsr(2),
@@ -702,7 +693,7 @@ mod tests {
                 sp_value: 0xfffffc17,
                 rm_value: 4000,
                 expected_rd_value: 0xffffffff,
-                expected_nzcv: (true, false, false, false),
+                expected_flags: 0b10000,
             },
             Test {
                 shift: Shift::lsl(1),
@@ -710,7 +701,7 @@ mod tests {
                 sp_value: 0x7fffffff,
                 rm_value: 1,
                 expected_rd_value: 0x80000001,
-                expected_nzcv: (true, false, false, true),
+                expected_flags: 0b10010,
             },
         ];
 
@@ -730,10 +721,7 @@ mod tests {
             .execute(&mut proc)
             .unwrap();
             expected_registers.set(rd, v.expected_rd_value);
-            expected_registers.psr.set_n(v.expected_nzcv.0);
-            expected_registers.psr.set_z(v.expected_nzcv.1);
-            expected_registers.psr.set_c(v.expected_nzcv.2);
-            expected_registers.psr.set_v(v.expected_nzcv.3);
+            expected_registers.psr.set_flags(v.expected_flags);
             assert_eq!(proc.registers, expected_registers);
         }
     }

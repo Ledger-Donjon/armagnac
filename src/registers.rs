@@ -343,7 +343,7 @@ impl DoubleEndedIterator for MainRegisterListIterator {
     }
 }
 
-/// Program Status Register.
+/// Program Status Register (PSR).
 ///
 /// Regroups APSR, IPSR and EPSR together.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -450,7 +450,7 @@ impl ProgramStatusRegister {
     }
 
     pub fn q(&self) -> bool {
-        self.0.bit(28)
+        self.0.bit(27)
     }
 
     pub fn set_q(&mut self, q: bool) -> &mut Self {
@@ -458,8 +458,44 @@ impl ProgramStatusRegister {
         self
     }
 
+    /// Sets N (negative) and Z (zero) flags from a value.
+    ///
+    /// ```
+    /// # use armagnac::registers::ProgramStatusRegister;
+    /// let mut psr = ProgramStatusRegister::new();
+    /// psr.set_nz(0x80000000);
+    /// assert!(psr.n() && !psr.z());
+    /// psr.set_nz(0);
+    /// assert!(!psr.n() && psr.z());
+    /// ```
     pub fn set_nz(&mut self, v: u32) -> &mut Self {
         self.set_n(v >> 31 != 0).set_z(v == 0)
+    }
+
+    /// Returns all flags field from the APSR register at once (N, Z, C, V and Q).
+    ///
+    /// ```
+    /// # use armagnac::registers::ProgramStatusRegister;
+    /// let mut psr = ProgramStatusRegister::new();
+    /// psr.set_n(true).set_c(true);
+    /// assert_eq!(psr.flags(), 0b10100);
+    /// ```
+    pub fn flags(&self) -> u8 {
+        (self.0 >> 27) as u8
+    }
+
+    /// Set all flags at once (N, Z, C, V and Q bits).
+    ///
+    /// ```
+    /// # use armagnac::registers::ProgramStatusRegister;
+    /// let mut psr = ProgramStatusRegister::new();
+    /// // Set N and C flags, clear Z, V and Q.
+    /// psr.set_flags(0b10100);
+    /// assert!(psr.n() && psr.c());
+    /// ```
+    pub fn set_flags(&mut self, flags: u8) {
+        debug_assert!(flags < 32);
+        self.0 = self.0 & 0x07ffffff | ((flags as u32) << 27);
     }
 
     pub fn ici_it(&self) -> u8 {
@@ -917,7 +953,7 @@ impl Index<RegisterIndex> for CoreRegisters {
 mod tests {
     use crate::registers::RegisterIndex;
 
-    use super::MainRegisterList;
+    use super::{MainRegisterList, ProgramStatusRegister};
 
     #[test]
     fn test_main_register_list_iterator() {
@@ -951,5 +987,27 @@ mod tests {
             .iter()
             .rev()
             .eq((0..8).rev().map(|i| RegisterIndex::new_main(i))));
+    }
+
+    #[test]
+    fn test_program_status_register_flags() {
+        // Test flags and set_flags
+        let mut psr = ProgramStatusRegister::new();
+        for i in 0..32 {
+            psr.set_flags(i);
+            assert_eq!(psr.flags(), i);
+            assert_eq!(psr.n(), i & 0b10000 != 0);
+            assert_eq!(psr.z(), i & 0b01000 != 0);
+            assert_eq!(psr.c(), i & 0b00100 != 0);
+            assert_eq!(psr.v(), i & 0b00010 != 0);
+            assert_eq!(psr.q(), i & 0b00001 != 0);
+            psr.set_flags(0);
+            psr.set_n(i & 0b10000 != 0);
+            psr.set_z(i & 0b01000 != 0);
+            psr.set_c(i & 0b00100 != 0);
+            psr.set_v(i & 0b00010 != 0);
+            psr.set_q(i & 0b00001 != 0);
+            assert_eq!(psr.flags(), i);
+        }
     }
 }
