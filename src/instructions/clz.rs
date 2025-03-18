@@ -1,5 +1,6 @@
 //! Implements CLZ (Count Leading Zeros) instruction.
 
+use super::Instruction;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -8,9 +9,9 @@ use crate::{
     registers::RegisterIndex,
 };
 
-use super::Instruction;
-
 /// CLZ instruction.
+///
+/// Count Leading Zeros.
 pub struct Clz {
     /// Destination register
     rd: RegisterIndex,
@@ -34,13 +35,7 @@ impl Instruction for Clz {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let mut x = proc[self.rm];
-        let mut count = 0;
-        while x & (1 << 31) == 0 {
-            count += 1;
-            x = (x << 1) | 1;
-        }
-        proc.set(self.rd, count);
+        proc.set(self.rd, proc[self.rm].leading_zeros());
         Ok(false)
     }
 
@@ -50,5 +45,41 @@ impl Instruction for Clz {
 
     fn args(&self, _pc: u32) -> String {
         format!("{}, {}", self.rd, self.rm)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        arm::{ArmProcessor, ArmVersion},
+        instructions::Instruction,
+        registers::RegisterIndex,
+    };
+
+    use super::Clz;
+
+    #[test]
+    fn test_clz() {
+        let vectors = [
+            (0xffffffff, 0),
+            (0x40000000, 1),
+            (0x20000000, 2),
+            (0x008aaaaa, 8),
+            (0x00008aaa, 16),
+            (0x0000008a, 24),
+            (0x00000002, 30),
+            (0x00000001, 31),
+            (0x00000000, 32),
+        ];
+        for v in vectors {
+            let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+            let rm = RegisterIndex::new_general_random();
+            let rd = RegisterIndex::new_general_random();
+            proc.set(rm, v.0);
+            let mut expected = proc.registers.clone();
+            expected.set(rd, v.1);
+            Clz { rd, rm }.execute(&mut proc).unwrap();
+            assert_eq!(proc.registers, expected);
+        }
     }
 }
