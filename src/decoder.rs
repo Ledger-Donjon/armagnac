@@ -32,7 +32,7 @@ pub trait InstructionDecode {
 }
 
 /// Possible instruction decoding errors returned by [InstructionDecode] implementations.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InstructionDecodeError {
     /// Instruction is unknown or not yet supported.
     Unknown,
@@ -608,13 +608,18 @@ impl InstructionDecode for Lut16AndGrouped32InstructionDecoder {
 
 #[cfg(test)]
 mod tests {
-    use super::BasicInstructionDecoder;
+    use super::{
+        BasicInstructionDecoder, GroupedInstructionDecoder, Lut16AndGrouped32InstructionDecoder,
+        Lut16InstructionDecoder,
+    };
     use crate::{
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
         it_state::ItState,
     };
+    use rand::Rng;
     use std::{
+        any::Any,
         fs::File,
         io::{BufRead, BufReader},
     };
@@ -652,6 +657,49 @@ mod tests {
             let state = ItState::new();
             let ins = decoder.try_decode(ins, size, state).unwrap();
             assert_eq!(ins.mnemonic(0x1000), mnemonic);
+        }
+    }
+
+    fn test_decoder(
+        a: &dyn InstructionDecode,
+        b: &dyn InstructionDecode,
+        ins: u32,
+        size: InstructionSize,
+        it: ItState,
+    ) {
+        let ins_a = a.try_decode(ins, size, it);
+        let ins_b = b.try_decode(ins, size, it);
+        match (ins_a, ins_b) {
+            (Ok(ins_a), Ok(ins_b)) => {
+                assert_eq!(ins_a.type_id(), ins_b.type_id())
+            }
+            (Err(err_a), Err(err_b)) => {
+                assert_eq!(err_a, err_b)
+            }
+            _ => panic!(),
+        }
+    }
+
+    /// Checks that [Lut16InstructionDecoder] always decodes the same as [BasicInstructionDecoder].
+    #[test]
+    fn test_instruction_decoders() {
+        let dec_a = BasicInstructionDecoder::new();
+        let dec_b = Lut16InstructionDecoder::new();
+        let dec_c = Lut16AndGrouped32InstructionDecoder::new();
+        let it = ItState::new();
+
+        for i in 0..=u16::MAX {
+            test_decoder(&dec_a, &dec_b, i as u32, InstructionSize::Ins16, it);
+            test_decoder(&dec_a, &dec_c, i as u32, InstructionSize::Ins16, it);
+        }
+
+        // For 32 bit encodings we cannot test the whole space, so pick a high number of random
+        // tests.
+        let mut rng = rand::rng();
+        for _ in 0..=100000 {
+            let ins = rng.random();
+            test_decoder(&dec_a, &dec_b, ins, InstructionSize::Ins32, it);
+            test_decoder(&dec_a, &dec_c, ins, InstructionSize::Ins32, it);
         }
     }
 }
