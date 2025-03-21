@@ -40,9 +40,7 @@ impl Instruction for LdrhImm {
             2 => {
                 let rt = ins.reg4(12);
                 let rn = ins.reg4(16);
-                if rt.is_pc() {
-                    todo!();
-                }
+                other(rt.is_pc())?; // Unallocated memory hints
                 other(rn.is_pc())?; // LDRH (literal)
                 unpredictable(rt.is_sp())?;
                 Self(LdrImm {
@@ -59,11 +57,9 @@ impl Instruction for LdrhImm {
                 let rt = ins.reg4(12);
                 let (p, u, w) = ins.puw();
                 other(rn.is_pc())?; // LDRH (literal)
-                if rt.is_pc() && p {
-                    todo!();
-                }
+                other(rt.is_pc() && p && !u && !w)?; // Unallocated memory hints
                 other(p && u && !w)?; // LDRHT
-                undefined(p && w)?;
+                undefined(!p && !w)?;
                 unpredictable(rt.is_sp_or_pc() || (w && rn == rt))?;
                 Self(LdrImm {
                     rn,
@@ -125,9 +121,7 @@ impl Instruction for LdrhLit {
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(tn, 1);
         let rt = ins.reg4(12);
-        if rt.is_pc() {
-            todo!()
-        }
+        other(rt.is_pc())?; // Unallocated memory hints
         unpredictable(rt.is_sp())?;
         Ok(Self {
             rt,
@@ -234,7 +228,8 @@ pub struct Ldrht {}
 
 impl Instruction for Ldrht {
     fn patterns() -> &'static [&'static str] {
-        &["111110000011xxxxxxxx1110xxxxxxxx"]
+        &[]
+        //&["111110000011xxxxxxxx1110xxxxxxxx"]
     }
 
     fn try_decode(_tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
