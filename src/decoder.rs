@@ -5,27 +5,51 @@ use crate::{
     instructions::{self, Instruction, InstructionSize},
     it_state::ItState,
 };
+use std::{fmt::Display, rc::Rc};
 
+/// Any struct which implement this trait can be used by the emulator to decode instructions.
+///
+/// Depending on the emulation requirements, different decoding strategies may be implemened.
 pub trait InstructionDecode {
+    /// Tries to decode the given `ins` instruction raw code, which can be 16 bit or 32 bit wide
+    /// depending on the `size` argument.
+    ///
+    /// If the processor is currently in an IT (If-Then) block, decoding may be different
+    /// (typically an instruction may not set condition flags in the APSR register during an IT
+    /// block). This can be decided from the `state` argument.
+    ///
+    /// When decoding is successful, an object which implements the [Instruction] trait is
+    /// returned and can be applied to a processor state using [Instruction::execute] method.
+    ///
+    /// Note: currently this method cannot mutate the decoder, preventing cache or heuristics based
+    /// optimisations.
     fn try_decode(
         &self,
         ins: u32,
         size: InstructionSize,
         state: ItState,
-    ) -> Result<Box<dyn Instruction>, InstructionDecodeError>;
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError>;
 }
 
-#[derive(Debug)]
+/// Possible instruction decoding errors returned by [InstructionDecode] implementations.
+#[derive(Debug, Clone, Copy)]
 pub enum InstructionDecodeError {
-    /// Instruction is unknown.
+    /// Instruction is unknown or not yet supported.
     Unknown,
     /// Instruction is undefined, which should trigger a Usage Fault.
+    /// This concerns instructions explicitely described as "undefined" by the Arm Architecture
+    /// Reference Manual.
     Undefined,
     /// Instruction has been matched but some bits don't have the correct value, making the
-    /// instruction effect unpredictable as indicated in the ARM specification.
+    /// instruction effect unpredictable as indicated in the Arm Architecture Reference Manual.
     Unpredictable,
 }
 
+/// Indicates how one bit of an instruction code must be tested during instruction decoding.
+/// Corresponds to the possible values in instruction patterns as can be seen in the Arm
+/// Architecture Reference Manual: "0", "1", "(0)", "(1)" and "x" for bits of instruction
+/// arguments.
+#[derive(Clone, Copy)]
 pub enum InstructionPatternBit {
     /// Tested bit must be zero to match instruction code.
     OpcodeZero,
@@ -55,15 +79,58 @@ impl From<ArithError> for DecodeError {
 }
 
 type InstructionDecodingFunction =
-    fn(usize, u32, ItState) -> Result<Box<dyn Instruction>, DecodeError>;
+    fn(usize, u32, ItState) -> Result<Rc<dyn Instruction>, DecodeError>;
 
-struct InstructionPattern(Vec<InstructionPatternBit>);
+/// An instruction pattern which can be used to test if an opcode matches a
+/// given instruction.
+#[derive(Clone)]
+pub struct InstructionPattern {
+    /// Indicates how each bit of an instruction code must be tested during pattern matching.
+    bits: Vec<InstructionPatternBit>,
+    /// Bit mask for testing opcode value.
+    test_mask: u32,
+    /// Expected opcode value after masking.
+    test_value: u32,
+    /// Bit mask for testing if an instruction is unpredictable.
+    unp_mask: u32,
+    /// Expected arguments value after masking. If not matched, the instruction is unpredictable.
+    unp_value: u32,
+}
 
 impl InstructionPattern {
+    /// Create a new pattern matcher from a string expression.
+    ///
+    /// Expression string follows the syntax used in the Arm Architecture Reference manual: each
+    /// bit can be defined as:
+    /// - "0": instruction bit must be 0,
+    /// - "1": instruction bit must be 1,
+    /// - "x": instruction bit is part of an instruction argument.
+    /// - "(0)": instruction bit is part of an instruction argument, but is expected to be 0,
+    ///   otherwise the instruction (if matched) is unpredictable.
+    /// - "(1)": instruction bit is part of an instruction argument, but is expected to be 1,
+    ///   otherwise the instruction (if matched) is unpredictable.
+    ///
+    /// For example, the following creates a pattern to match the MRS instruction:
+    ///
+    /// ```
+    /// # use armagnac::decoder::InstructionPattern;
+    /// # use armagnac::instructions::InstructionSize;
+    /// let pattern = InstructionPattern::new("11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx");
+    /// let code = 0xf3ef8308;
+    /// assert!(pattern.test(code, InstructionSize::Ins32).is_ok());
+    /// ```
+    ///
+    /// The pattern string must have 16 or 32 elements. If incorrect, this method will panic.
     pub fn new(pattern: &str) -> Self {
         // Parse pattern string expression to build a simpler pattern vector with one element per
         // bit.
         let mut bits = Vec::new();
+        bits.reserve_exact(
+            pattern
+                .chars()
+                .filter(|&c| c == '0' || c == '1' || c == 'x')
+                .count(),
+        );
         let mut parenthesis = 0;
         for c in pattern.chars() {
             match parenthesis {
@@ -91,57 +158,59 @@ impl InstructionPattern {
         }
         assert_eq!(parenthesis, 0);
         assert!(bits.len() == 16 || bits.len() == 32);
-        Self(bits)
+
+        // Calculate the testing masks
+        let mut test_mask = 0;
+        let mut test_value = 0;
+        let mut unp_mask = 0;
+        let mut unp_value = 0;
+        for bit in bits.iter() {
+            let (tm, tv, um, uv) = match bit {
+                InstructionPatternBit::OpcodeZero => (1, 0, 0, 0),
+                InstructionPatternBit::OpcodeOne => (1, 1, 0, 0),
+                InstructionPatternBit::Arg => (0, 0, 0, 0),
+                InstructionPatternBit::ArgZero => (0, 0, 1, 0),
+                InstructionPatternBit::ArgOne => (0, 0, 1, 1),
+            };
+            test_mask = (test_mask << 1) | tm;
+            test_value = (test_value << 1) | tv;
+            unp_mask = (unp_mask << 1) | um;
+            unp_value = (unp_value << 1) | uv;
+        }
+
+        Self {
+            bits,
+            test_mask,
+            test_value,
+            unp_mask,
+            unp_value,
+        }
     }
 
-    /// Returns true if given instruction matches the pattern.
-    ///
-    /// # Arguments
-    ///
-    /// * `ins` - Instruction
+    /// Returns whether given instruction code matches the pattern.
+    /// Returns [InstructionDecodeError::Unpredictable] if the instruction matches but some of its
+    /// argument bits are incorrect.
     pub fn test(&self, ins: u32, size: InstructionSize) -> Result<bool, InstructionDecodeError> {
+        if ins & self.test_mask != self.test_value {
+            return Ok(false);
+        }
+        // Testing this after checking the value is more efficient (rejecting from test_value has
+        // higher probability).
         if size != self.size() {
             return Ok(false);
         }
-        let mut x = ins;
-        let mut unpredictable = false;
-        for p in self.0.iter().rev() {
-            let bit = x & 1;
-            match p {
-                InstructionPatternBit::OpcodeZero => {
-                    if bit != 0 {
-                        return Ok(false);
-                    }
-                }
-                InstructionPatternBit::OpcodeOne => {
-                    if bit != 1 {
-                        return Ok(false);
-                    }
-                }
-                InstructionPatternBit::ArgZero => {
-                    if bit != 0 {
-                        unpredictable = true;
-                    }
-                }
-                InstructionPatternBit::ArgOne => {
-                    if bit != 1 {
-                        unpredictable = true;
-                    }
-                }
-                InstructionPatternBit::Arg => {}
-            }
-            x >>= 1
+        // Instruction matches, but we now need to check that the "(0)" and "(1)" arguments bits
+        // matches as well.
+        // Note this can only be done after the two previous tests.
+        if ins & self.unp_mask != self.unp_value {
+            return Err(InstructionDecodeError::Unpredictable);
         }
-        assert_eq!(x, 0);
-        if unpredictable {
-            Err(InstructionDecodeError::Unpredictable)
-        } else {
-            Ok(true)
-        }
+        return Ok(true);
     }
 
+    /// Number of bits of the instruction code this pattern is supposed to match.
     pub fn size(&self) -> InstructionSize {
-        match self.0.len() {
+        match self.bits.len() {
             16 => InstructionSize::Ins16,
             32 => InstructionSize::Ins32,
             _ => panic!(),
@@ -149,27 +218,51 @@ impl InstructionPattern {
     }
 }
 
-struct DecoderEntry {
+impl Display for InstructionPattern {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut result = String::new();
+        for bit in self.bits.iter() {
+            result.push_str(match bit {
+                InstructionPatternBit::OpcodeZero => "0",
+                InstructionPatternBit::OpcodeOne => "1",
+                InstructionPatternBit::Arg => "x",
+                InstructionPatternBit::ArgZero => "(0)",
+                InstructionPatternBit::ArgOne => "(1)",
+            })
+        }
+        write!(f, "{}", result)
+    }
+}
+
+/// Associates an instruction decoding function to the corresponding multiple instruction patterns.
+#[derive(Clone)]
+pub struct BasicDecoderEntry {
     /// All possible patterns which can match for the given instruction.
     /// Pattern number of index 0 corresponds to T1 encoding, pattern of index 1 to T2 encoding,
     /// etc.
-    patterns: Vec<InstructionPattern>,
-    /// Decoding function of the instruction
-    decoder: InstructionDecodingFunction,
+    pub patterns: Vec<InstructionPattern>,
+    /// Decoding function of the instruction.
+    pub decoder: InstructionDecodingFunction,
 }
 
 /// A very simple and unoptimized instruction decoder.
+///
+/// Decoder initialization is fast, but decoding is in `O(N)` where `N` is the total number of
+/// instruction patterns. This makes this decoder suitable for short emulations.
+///
+/// This decoder can be reused to build a faster/optimized decoder on top of it. A good example of
+/// this is [Lut16InstructionDecoder].
 pub struct BasicInstructionDecoder {
-    entries: Vec<DecoderEntry>,
+    pub entries: Vec<BasicDecoderEntry>,
 }
 
-fn box_decoder<T: 'static + Instruction>(
+fn rc_decoder<T: 'static + Instruction>(
     tn: usize,
     ins: u32,
     state: ItState,
-) -> Result<Box<dyn 'static + Instruction>, DecodeError> {
+) -> Result<Rc<dyn Instruction>, DecodeError> {
     match T::try_decode(tn, ins, state) {
-        Ok(x) => Ok(Box::new(x)),
+        Ok(x) => Ok(Rc::new(x)),
         Err(e) => Err(e),
     }
 }
@@ -308,12 +401,12 @@ impl BasicInstructionDecoder {
     /// The decoder will fetch the corresponding instruction patterns and the decoding function to
     /// be called when a pattern matches.
     pub fn insert<T: 'static + Instruction>(&mut self) {
-        self.entries.push(DecoderEntry {
+        self.entries.push(BasicDecoderEntry {
             patterns: T::patterns()
                 .iter()
                 .map(|p| InstructionPattern::new(p))
                 .collect(),
-            decoder: box_decoder::<T>,
+            decoder: rc_decoder::<T>,
         });
     }
 }
@@ -324,7 +417,7 @@ impl InstructionDecode for BasicInstructionDecoder {
         ins: u32,
         size: InstructionSize,
         state: ItState,
-    ) -> Result<Box<dyn Instruction>, InstructionDecodeError> {
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
         for entry in &self.entries {
             for (i, pattern) in entry.patterns.iter().enumerate() {
                 if pattern.test(ins, size)? {
@@ -338,11 +431,188 @@ impl InstructionDecode for BasicInstructionDecoder {
     }
 }
 
+/// Instruction decoder with a look-up-table for 16-bit instruction decoding.
+///
+/// This has 16-bit instruction decoding O(1) complexity, but has a strong cost during
+/// initialization to generate the table. The table is initialized using a given base instruction
+/// decoder.
+///
+/// The look-up table is only valid outside IT blocks. 16-bit instructions inside an IT block are
+/// resolved using the given base decoder.
+///
+/// 32-bit wide instructions are resolved using the given base instruction decoder.
+pub struct Lut16InstructionDecoder {
+    base_decoder: BasicInstructionDecoder,
+    lut16: Vec<Result<Rc<dyn Instruction>, InstructionDecodeError>>,
+}
+
+impl Lut16InstructionDecoder {
+    pub fn new() -> Self {
+        let base_decoder = BasicInstructionDecoder::new();
+        let lut16 = (0..=u16::MAX)
+            .map(|i| base_decoder.try_decode(i as u32, InstructionSize::Ins16, ItState::new()))
+            .collect();
+        Self {
+            base_decoder,
+            lut16,
+        }
+    }
+}
+
+impl InstructionDecode for Lut16InstructionDecoder {
+    fn try_decode(
+        &self,
+        ins: u32,
+        size: InstructionSize,
+        state: ItState,
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
+        match size {
+            InstructionSize::Ins16 => {
+                if state.0 == 0 {
+                    self.lut16[ins as usize].clone()
+                } else {
+                    self.base_decoder.try_decode(ins, size, state)
+                }
+            }
+            InstructionSize::Ins32 => self.base_decoder.try_decode(ins, size, state),
+        }
+    }
+}
+
+/// Divides instruction matching search space in groups, indexed by the most significant bits of
+/// their encoding.
+///
+/// Instruction matching is `in O(N / (head_bit_count ^ 2))` (if instructions most significant bits
+/// are uniformely distributed, which is not the case for Arm 32 bit encodings).
+pub struct GroupedInstructionDecoder {
+    /// Number of bits used for grouping.
+    /// Always greater than 0 and lower than 32.
+    head_bit_count: u8,
+    /// Groups of instruction and patterns.
+    /// There is always `2^head_bit_count` groups.
+    entries: Vec<Vec<(InstructionPattern, usize, InstructionDecodingFunction)>>,
+}
+
+impl GroupedInstructionDecoder {
+    pub fn new(head_bit_count: u8) -> Self {
+        debug_assert!((head_bit_count > 0) && (head_bit_count < 32));
+        let mut entries = Vec::new();
+        entries.resize_with(1 << head_bit_count, || Vec::new());
+        Self {
+            head_bit_count,
+            entries,
+        }
+    }
+
+    pub fn try_from_basic_decoder(head_bit_count: u8) -> Result<Self, ()> {
+        let mut result = Self::new(head_bit_count);
+        let basic_decoder = BasicInstructionDecoder::new();
+        for entry in basic_decoder.entries {
+            result.try_insert_from_decoder_entry(&entry)?;
+        }
+        Ok(result)
+    }
+
+    pub fn try_insert(
+        &mut self,
+        pattern: &InstructionPattern,
+        tn: usize,
+        f: InstructionDecodingFunction,
+    ) -> Result<(), ()> {
+        let mut group = 0;
+        for pattern_bit in pattern.bits[0..self.head_bit_count as usize].iter() {
+            let bit = match pattern_bit {
+                InstructionPatternBit::OpcodeZero => 0,
+                InstructionPatternBit::OpcodeOne => 1,
+                _ => return Err(()),
+            };
+            group = (group << 1) | bit;
+        }
+        self.entries[group].push((pattern.clone(), tn, f));
+        Ok(())
+    }
+
+    pub fn try_insert_from_decoder_entry(&mut self, entry: &BasicDecoderEntry) -> Result<(), ()> {
+        for (i, pattern) in entry.patterns.iter().enumerate() {
+            self.try_insert(pattern, i + 1, entry.decoder)?
+        }
+        Ok(())
+    }
+}
+
+impl InstructionDecode for GroupedInstructionDecoder {
+    fn try_decode(
+        &self,
+        ins: u32,
+        size: InstructionSize,
+        state: ItState,
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
+        let group = ins >> (size.bit_count() - self.head_bit_count as usize);
+        for (pattern, tn, f) in self.entries[group as usize].iter() {
+            if pattern.test(ins, size)? {
+                if let Ok(ins) = (f)(*tn, ins, state) {
+                    return Ok(ins);
+                }
+            }
+        }
+        Err(InstructionDecodeError::Unknown)
+    }
+}
+
+/// A decoder mixing a [Lut16InstructionDecoder] for 16 bit encodings, and a
+/// [GroupedInstructionDecoder] for 32 bit encodings. This is the fastest decoder provided by
+/// Armagnac, but has a very long initialization time due to the generation of the look-up table.
+pub struct Lut16AndGrouped32InstructionDecoder {
+    /// The decoder used for 16 bit encodings.
+    lut_decoder: Lut16InstructionDecoder,
+    /// The decoder used for 32 bit encodings.
+    group_decoder: GroupedInstructionDecoder,
+}
+
+impl Lut16AndGrouped32InstructionDecoder {
+    pub fn new() -> Self {
+        let lut_decoder = Lut16InstructionDecoder::new();
+        let mut group_decoder = GroupedInstructionDecoder::new(5);
+        for entry in lut_decoder.base_decoder.entries.iter() {
+            for (i, pattern) in entry
+                .patterns
+                .iter()
+                .enumerate()
+                .filter(|(_, p)| p.size() == InstructionSize::Ins32)
+            {
+                group_decoder
+                    .try_insert(pattern, i + 1, entry.decoder)
+                    .unwrap()
+            }
+        }
+        Self {
+            lut_decoder,
+            group_decoder,
+        }
+    }
+}
+
+impl InstructionDecode for Lut16AndGrouped32InstructionDecoder {
+    fn try_decode(
+        &self,
+        ins: u32,
+        size: InstructionSize,
+        state: ItState,
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
+        match size {
+            InstructionSize::Ins16 => self.lut_decoder.try_decode(ins, size, state),
+            InstructionSize::Ins32 => self.group_decoder.try_decode(ins, size, state),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::BasicInstructionDecoder;
     use crate::{
-        decoder::InstructionDecode, instructions::{InstructionSize, Mnemonic}, it_state::ItState
+        decoder::InstructionDecode,
+        instructions::{InstructionSize, Mnemonic},
+        it_state::ItState,
     };
     use std::{
         fs::File,

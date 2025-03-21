@@ -13,7 +13,7 @@ use std::{
 
 use crate::{
     condition::Condition,
-    decoder::{InstructionDecode, InstructionDecodeError, BasicInstructionDecoder},
+    decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
     irq::Irq,
@@ -151,6 +151,22 @@ pub enum ArmVersion {
 /// }
 /// assert_eq!(proc.registers.r2, 3);
 /// ```
+///
+/// By default [ArmProcessor] uses [BasicInstructionDecoder] for decoding instructions. When
+/// running long emulations, you may want to use a more performant decoder, at the cost of a longer
+/// initialization time:
+///
+/// ```
+/// use armagnac::arm::{ArmProcessor, ArmVersion};
+/// use armagnac::decoder::{Lut16AndGrouped32InstructionDecoder};
+///
+/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new());
+/// ```
+///
+/// You can also write your own decoder by implementing the [InstructionDecode] trait. For example,
+/// when emulating a small function for fuzzing, you may only keep the instructions used in the
+/// assembly of that particular method to make the instruction decoding faster.
 pub struct ArmProcessor {
     /// ARM emutaled version.
     pub version: ArmVersion,
@@ -163,7 +179,7 @@ pub struct ArmProcessor {
     /// Parses word or double-word values to decode them as executable ARM instructions.
     /// Since this is a performance critical task of the emulator, different implementation with
     /// different optimisation strategies, which may depend on the context, may be selected.
-    instruction_decoder: Box<dyn InstructionDecode>,
+    pub instruction_decoder: Box<dyn InstructionDecode>,
     pub cycles: u64,
     code_hooks: Vec<CodeHook>,
     pub event_on_instruction: bool,
@@ -185,14 +201,13 @@ pub struct ArmProcessor {
     pub tolerate_pop_stack_unaligned_pc: bool,
 }
 
-type InstructionBox = Box<dyn Instruction>;
+type InstructionBox = Rc<dyn Instruction>;
 
 impl ArmProcessor {
-    /// Creates a new ARMv7 processor
+    /// Creates a new Arm processor.
     ///
-    /// # Arguments
-    ///
-    /// * `external_exception_count` - Number of available external exceptions.
+    /// The `external_exception_count` argument is the number of platform specific exceptions. You
+    /// may use 0 by default if no mapped peripheral may trigger such an interruption.
     pub fn new(version: ArmVersion, external_exception_count: usize) -> Self {
         let exception_count = 16usize.checked_add(external_exception_count).unwrap();
         let system_control = Rc::new(RefCell::new(SystemControl::new()));

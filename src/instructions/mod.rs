@@ -5,6 +5,8 @@
 //! in the [and] module by the [and::AndImm] for the Immediate variant and [and::AndReg] for the
 //! Register variant.
 
+use std::rc::Rc;
+
 use crate::{
     arm::{ArmProcessor, RunError},
     condition::Condition,
@@ -232,6 +234,10 @@ impl InstructionSize {
             _ => InstructionSize::Ins16,
         }
     }
+
+    pub fn bit_count(&self) -> usize {
+        (*self as usize) * 8
+    }
 }
 
 /// Trait to facilitate fields and arguments extraction from an instruction encoding.
@@ -390,7 +396,7 @@ pub trait Mnemonic {
     fn mnemonic(&self, pc: u32) -> String;
 }
 
-impl Mnemonic for Box<dyn Instruction> {
+impl Mnemonic for Rc<dyn Instruction> {
     fn mnemonic(&self, pc: u32) -> String {
         let args = self.args(pc);
         if args.len() > 0 {
@@ -494,6 +500,9 @@ mod tests {
                 }
             )
         }
+
+        assert_eq!(InstructionSize::Ins16.bit_count(), 16);
+        assert_eq!(InstructionSize::Ins32.bit_count(), 32);
     }
 
     #[test]
