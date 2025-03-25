@@ -48,7 +48,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - LDREX: Load Register Exclusive
 - LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword
-- LDRHT: Load Register Halfword Unprivileged
 - LDRSBT: Load Register Signed Byte Unprivileged
 - LDRSHT: Load Register Signed Halfword Unprivileged
 - LDRT: Load Register Unprivileged

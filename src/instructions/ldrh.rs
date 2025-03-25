@@ -222,29 +222,3 @@ impl Instruction for LdrhReg {
         )
     }
 }
-
-/// LDRHT instruction.
-pub struct Ldrht {}
-
-impl Instruction for Ldrht {
-    fn patterns() -> &'static [&'static str] {
-        &[]
-        //&["111110000011xxxxxxxx1110xxxxxxxx"]
-    }
-
-    fn try_decode(_tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        todo!()
-    }
-
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        todo!()
-    }
-
-    fn name(&self) -> String {
-        todo!()
-    }
-
-    fn args(&self, _pc: u32) -> String {
-        todo!()
-    }
-}
