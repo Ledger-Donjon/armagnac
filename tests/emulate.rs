@@ -11,7 +11,7 @@ fn test_memcpy() {
     assert_eq!(
         helper
             .proc
-            .bytes_at(ADDR_RAM, expect.bytes().len() as u32)
+            .read_bytes_iface(ADDR_RAM, expect.bytes().len() as u32)
             .unwrap()
             .as_slice(),
         expect.as_bytes()

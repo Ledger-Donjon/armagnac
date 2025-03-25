@@ -233,7 +233,7 @@ mod tests {
     fn test_ldrsb_imm() {
         let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
-        proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
+        proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 
         proc.registers.r1 = 0x1000 - 16;
         let mut ins = LdrsbImm {
@@ -267,7 +267,7 @@ mod tests {
     fn test_ldrsb_lit() {
         let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
-        proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
+        proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 
         let ins = LdrsbLit {
             rt: RegisterIndex::R0,
@@ -284,7 +284,7 @@ mod tests {
     fn test_ldrsb_reg() {
         let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
         proc.map_ram(0x1000, 4).unwrap();
-        proc.set_u32le_at(0x1000, 0x12b456f8).unwrap();
+        proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 
         let mut ins = LdrsbReg {
             rt: RegisterIndex::R0,

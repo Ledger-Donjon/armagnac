@@ -324,7 +324,7 @@ impl ArmProcessor {
     /// for 8 bit read accesses.
     pub fn read_u8_with_priv(&mut self, address: u32, privileged: bool) -> Result<u8, RunError> {
         self.validate_address(address, privileged, false, false);
-        self.u8_at(address)
+        self.read_u8_iface(address)
     }
 
     /// Implements `MemA_with_priv` and `MemU_with_priv` from Arm Architecture Reference Manual,
@@ -336,7 +336,7 @@ impl ArmProcessor {
         privileged: bool,
     ) -> Result<(), RunError> {
         self.validate_address(address, privileged, false, false);
-        self.set_u8_at(address, value)
+        self.write_u8_iface(address, value)
     }
 
     /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 16 bit read
@@ -348,7 +348,7 @@ impl ArmProcessor {
     ) -> Result<u16, RunError> {
         self.usage_fault_if_unaligned(address, 2);
         self.validate_address(address, privileged, false, false);
-        let mut value = self.u16le_at(address)?;
+        let mut value = self.read_u16le_iface(address)?;
         if self.system_control.borrow_mut().aircr.endianess() {
             value = value.swap_bytes()
         }
@@ -368,7 +368,7 @@ impl ArmProcessor {
         if self.system_control.borrow_mut().aircr.endianess() {
             value = value.swap_bytes()
         }
-        self.set_u16le_at(address, value)
+        self.write_u16le_iface(address, value)
     }
 
     /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 32 bit read
@@ -380,7 +380,7 @@ impl ArmProcessor {
     ) -> Result<u32, RunError> {
         self.usage_fault_if_unaligned(address, 4);
         self.validate_address(address, privileged, false, false);
-        let mut value = self.u32le_at(address)?;
+        let mut value = self.read_u32le_iface(address)?;
         if self.system_control.borrow_mut().aircr.endianess() {
             value = value.swap_bytes()
         }
@@ -400,7 +400,7 @@ impl ArmProcessor {
         if self.system_control.borrow_mut().aircr.endianess() {
             value = value.swap_bytes()
         }
-        self.set_u32le_at(address, value)
+        self.write_u32le_iface(address, value)
     }
 
     /// Implements `MemA` and `MemU` from Arm Architecture Reference Manual, for 8 bit read
@@ -571,19 +571,8 @@ impl ArmProcessor {
         self.write_u32_unaligned_with_priv(address, value, self.is_privileged())
     }
 
-    /// Corresponds to `ValidateAddress()` in the Arm Architecture Reference Manual.
-    fn validate_address(
-        &self,
-        _address: u32,
-        _is_priv: bool,
-        _is_write: bool,
-        _is_instr_fetch: bool,
-    ) {
-        // TODO
-    }
-
-    /// Returns bytes at given address in memory
-    pub fn u8_at(&mut self, address: u32) -> Result<u8, RunError> {
+    /// Reads a byte at `address` without checking for privileges.
+    pub fn read_u8_iface(&mut self, address: u32) -> Result<u8, RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
@@ -608,8 +597,8 @@ impl ArmProcessor {
         }
     }
 
-    ///// Set byte value at address
-    pub fn set_u8_at(&mut self, address: u32, value: u8) -> Result<(), RunError> {
+    /// Write byte `value` at `address` without checking for privileges.
+    pub fn write_u8_iface(&mut self, address: u32, value: u8) -> Result<(), RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
@@ -636,7 +625,8 @@ impl ArmProcessor {
         }
     }
 
-    pub fn set_u16le_at(&mut self, address: u32, value: u16) -> Result<(), RunError> {
+    /// Write halfword `value` at `address` without checking for privileges or alignment.
+    pub fn write_u16le_iface(&mut self, address: u32, value: u16) -> Result<(), RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
@@ -664,8 +654,8 @@ impl ArmProcessor {
         }
     }
 
-    /// Returns halfword at given address in memory
-    pub fn u16le_at(&mut self, address: u32) -> Result<u16, RunError> {
+    /// Read halfword at `address` without checking for privileges or alignment.
+    pub fn read_u16le_iface(&mut self, address: u32) -> Result<u16, RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         if let Some(mapping) = self.memory_mappings.get_mut(address) {
             let read = mapping
@@ -690,8 +680,8 @@ impl ArmProcessor {
         }
     }
 
-    /// Returns 32-bit word at given address in memory
-    pub fn u32le_at(&mut self, address: u32) -> Result<u32, RunError> {
+    /// Reads 32-bit word at `address` without checking for privileges or alignment.
+    pub fn read_u32le_iface(&mut self, address: u32) -> Result<u32, RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
@@ -716,7 +706,8 @@ impl ArmProcessor {
         }
     }
 
-    pub fn set_u32le_at(&mut self, address: u32, value: u32) -> Result<(), RunError> {
+    /// Writes 32-bit word at `address` without checking for privileges or alignment.
+    pub fn write_u32le_iface(&mut self, address: u32, value: u32) -> Result<(), RunError> {
         let mut env = Env::new(self.cycles, self.is_privileged());
         let mapping = self
             .memory_mappings
@@ -741,24 +732,37 @@ impl ArmProcessor {
         })
     }
 
-    /// Reads `size` successive bytes starting at `address`.
+    /// Corresponds to `ValidateAddress()` in the Arm Architecture Reference Manual.
+    /// Currently not implemented, MPU is not enforced yet.
+    fn validate_address(
+        &self,
+        _address: u32,
+        _is_priv: bool,
+        _is_write: bool,
+        _is_instr_fetch: bool,
+    ) {
+        // TODO
+    }
+
+    /// Reads `size` successive bytes starting at `address`, without checking for privileges or
+    /// alignment.
     ///
     /// Panics if address overflows. This may change in the future.
-    pub fn bytes_at(&mut self, address: u32, size: u32) -> Result<Vec<u8>, RunError> {
+    pub fn read_bytes_iface(&mut self, address: u32, size: u32) -> Result<Vec<u8>, RunError> {
         let mut result = Vec::new();
         result.reserve_exact(size as usize);
         for a in address..address.checked_add(size).unwrap() {
-            result.push(self.u8_at(a)?);
+            result.push(self.read_u8_iface(a)?);
         }
         Ok(result)
     }
 
-    /// Writes bytes starting at `address`.
+    /// Writes bytes starting at `address`, without checking for privileges or alignment.
     ///
     /// Panics if address overflows. This may change in the future.
-    pub fn set_bytes_at(&mut self, address: u32, data: &[u8]) -> Result<(), RunError> {
+    pub fn write_bytes_iface(&mut self, address: u32, data: &[u8]) -> Result<(), RunError> {
         for i in 0..data.len() as u32 {
-            self.set_u8_at(address.checked_add(i).unwrap(), data[i as usize])?
+            self.write_u8_iface(address.checked_add(i).unwrap(), data[i as usize])?
         }
         Ok(())
     }
@@ -816,7 +820,7 @@ impl ArmProcessor {
         &mut self,
         address: u32,
     ) -> Result<(InstructionBox, InstructionSize), RunError> {
-        let hw = self.u16le_at(address)?;
+        let hw = self.read_u16le_iface(address)?;
         let it_state = self.registers.psr.it_state();
         let size = InstructionSize::from_halfword(hw);
         let ins = match size {
@@ -825,7 +829,7 @@ impl ArmProcessor {
                     .try_decode(hw as u32, InstructionSize::Ins16, it_state)?
             }
             InstructionSize::Ins32 => {
-                let hw2 = self.u16le_at(address + 2)?;
+                let hw2 = self.read_u16le_iface(address + 2)?;
                 self.instruction_decoder.try_decode(
                     ((hw as u32) << 16) + hw2 as u32,
                     InstructionSize::Ins32,
@@ -1016,16 +1020,16 @@ impl ArmProcessor {
 
         let return_address = self.pc();
         println!("DEBUG SET RETURN ADDRESS {:0x}", return_address);
-        self.set_u32le_at(frame_ptr, self.registers.r0)?;
-        self.set_u32le_at(frame_ptr + 0x04, self.registers.r1)?;
-        self.set_u32le_at(frame_ptr + 0x08, self.registers.r2)?;
-        self.set_u32le_at(frame_ptr + 0x0c, self.registers.r3)?;
-        self.set_u32le_at(frame_ptr + 0x10, self.registers.r12)?;
-        self.set_u32le_at(frame_ptr + 0x14, self.registers.lr)?;
-        self.set_u32le_at(frame_ptr + 0x18, return_address)?;
+        self.write_u32le_iface(frame_ptr, self.registers.r0)?;
+        self.write_u32le_iface(frame_ptr + 0x04, self.registers.r1)?;
+        self.write_u32le_iface(frame_ptr + 0x08, self.registers.r2)?;
+        self.write_u32le_iface(frame_ptr + 0x0c, self.registers.r3)?;
+        self.write_u32le_iface(frame_ptr + 0x10, self.registers.r12)?;
+        self.write_u32le_iface(frame_ptr + 0x14, self.registers.lr)?;
+        self.write_u32le_iface(frame_ptr + 0x18, return_address)?;
         let mut xpsr = self.registers.psr.get();
         xpsr.set_bit(9, frame_ptr_align);
-        self.set_u32le_at(frame_ptr + 0x1c, xpsr)?;
+        self.write_u32le_iface(frame_ptr + 0x1c, xpsr)?;
 
         let lr = match self.registers.mode {
             Mode::Handler => 0xfffffff1,
@@ -1048,13 +1052,13 @@ impl ArmProcessor {
     fn pop_stack(&mut self, frame_ptr: u32, exc_return: u32) -> Result<(), RunError> {
         let frame_size = 0x20;
         let force_align = self.system_control.borrow().ccr.stkalign();
-        self.registers.r0 = self.u32le_at(frame_ptr)?;
-        self.registers.r1 = self.u32le_at(frame_ptr + 0x04)?;
-        self.registers.r2 = self.u32le_at(frame_ptr + 0x08)?;
-        self.registers.r3 = self.u32le_at(frame_ptr + 0x0c)?;
-        self.registers.r12 = self.u32le_at(frame_ptr + 0x10)?;
-        self.registers.lr = self.u32le_at(frame_ptr + 0x14)?;
-        let mut pc = self.u32le_at(frame_ptr + 0x18)?;
+        self.registers.r0 = self.read_u32le_iface(frame_ptr)?;
+        self.registers.r1 = self.read_u32le_iface(frame_ptr + 0x04)?;
+        self.registers.r2 = self.read_u32le_iface(frame_ptr + 0x08)?;
+        self.registers.r3 = self.read_u32le_iface(frame_ptr + 0x0c)?;
+        self.registers.r12 = self.read_u32le_iface(frame_ptr + 0x10)?;
+        self.registers.lr = self.read_u32le_iface(frame_ptr + 0x14)?;
+        let mut pc = self.read_u32le_iface(frame_ptr + 0x18)?;
         // PC should be halfword aligned, otherwise execution is unpredictable according to the
         // specification. However, some implementations may not respect this and it may still work
         // on hardware, so we have the option `tolerate_pop_stack_unaligned_pc` to tolerate this if
@@ -1067,7 +1071,7 @@ impl ArmProcessor {
         };
         self.registers.pc = pc;
 
-        let psr = self.u32le_at(frame_ptr + 0x1c)?;
+        let psr = self.read_u32le_iface(frame_ptr + 0x1c)?;
         let sp_mask = ((psr.bit(9) && force_align) as u32) << 2;
         self.registers.psr.set(psr); // Note: this does not copy bit 9
 
@@ -1086,7 +1090,7 @@ impl ArmProcessor {
     fn exception_taken(&mut self, number: Irq) {
         let vtor = self.system_control.borrow().vtor.offset();
         let vector_address = number.number() as u32 * 4 + vtor;
-        let jump_address = self.u32le_at(vector_address).unwrap();
+        let jump_address = self.read_u32le_iface(vector_address).unwrap();
         self.set_pc(jump_address & 0xfffffffe);
         self.registers.mode = Mode::Handler;
         self.registers

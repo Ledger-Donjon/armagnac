@@ -318,7 +318,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::ldrh::LdrhImm>();
         dec.insert::<instructions::ldrh::LdrhLit>();
         dec.insert::<instructions::ldrh::LdrhReg>();
-        dec.insert::<instructions::ldrh::Ldrht>();
+        dec.insert::<instructions::ldrht::Ldrht>();
         dec.insert::<instructions::ldrsb::LdrsbImm>();
         dec.insert::<instructions::ldrsb::LdrsbLit>();
         dec.insert::<instructions::ldrsb::LdrsbReg>();
