@@ -2,7 +2,6 @@
 //! It is slow, incomplete and unoptimized. However, it is fully written in Rust!
 //!
 //! Check [arm::ArmProcessor] to know how to quickly emulate an ARM binary.
-#![feature(concat_idents)]
 
 mod align;
 mod arith;
