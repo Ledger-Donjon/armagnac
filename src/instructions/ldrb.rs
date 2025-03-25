@@ -77,7 +77,7 @@ impl Instruction for LdrbImm {
         let rn = proc[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
-        let data = proc.u8_at(addr)?;
+        let data = proc.read_u8(addr)?;
         proc.set(self.0.rt, data as u32);
         if self.0.wback {
             proc.set(self.0.rn, offset_addr);
@@ -144,7 +144,7 @@ impl Instruction for LdrbReg {
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let addr = proc[self.rn].wrapping_add(offset);
-        let data = proc.u8_at(addr)?;
+        let data = proc.read_u8(addr)?;
         proc.set(self.rt, data as u32);
         Ok(false)
     }
@@ -196,7 +196,7 @@ impl Instruction for LdrbLit {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
-        let data = proc.u8_at(address)?;
+        let data = proc.read_u8(address)?;
         proc.set(self.rt, data as u32);
         Ok(false)
     }

@@ -83,7 +83,7 @@ impl Instruction for LdrshImm {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        let data = proc.u16le_at(address)?;
+        let data = proc.read_u16_unaligned(address)?;
         if self.wback {
             proc.set(self.rn, offset_addr);
         }
@@ -136,7 +136,7 @@ impl Instruction for LdrshLit {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
-        let data = proc.u16le_at(address)?;
+        let data = proc.read_u16_unaligned(address)?;
         proc.set(self.rt, ((data as i16) as i32) as u32);
         Ok(false)
     }
@@ -202,7 +202,7 @@ impl Instruction for LdrshReg {
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let rn = proc[self.rn];
         let address = rn.wrapping_add(offset);
-        let data = ((proc.u16le_at(address)? as i16) as i32) as u32;
+        let data = ((proc.read_u16_unaligned(address)? as i16) as i32) as u32;
         proc.set(self.rt, data);
         Ok(false)
     }

@@ -138,7 +138,7 @@ impl Vtor {
     }
 }
 
-struct Aircr(u32);
+pub struct Aircr(u32);
 
 impl Aircr {
     fn write(&mut self, value: u32, env: &mut Env) -> Result<(), MemoryAccessError> {
@@ -154,6 +154,14 @@ impl Aircr {
             }
         }
         Ok(())
+    }
+
+    /// Returns ENDIANESS bit value.
+    /// This bit indicates the system endianess:
+    /// - 0: little endian,
+    /// - 1: big endian.
+    pub fn endianess(&self) -> bool {
+        self.0.bit(15)
     }
 }
 
@@ -180,6 +188,51 @@ impl Ccr {
     /// Returns NONBASETHRDENA bit value.
     pub fn nonbasethrdena(&self) -> bool {
         self.0.bit(0)
+    }
+
+    /// Sets NONBASETHRDENA bit value.
+    pub fn set_nonbasethrdena(&mut self, value: bool) {
+        self.0.set_bit(0, value);
+    }
+
+    /// Returns USERSETMPEND bit value.
+    pub fn usersetmpend(&self) -> bool {
+        self.0.bit(1)
+    }
+
+    /// Sets USERSETMPEND bit value.
+    pub fn set_usersetmpend(&mut self, value: bool) {
+        self.0.set_bit(1, value)
+    }
+
+    /// Returns UNALIGN_TRP bit value.
+    pub fn unalign_trp(&self) -> bool {
+        self.0.bit(3)
+    }
+
+    /// Sets UNALIGN_TRP bit value.
+    pub fn set_unalign_trp(&mut self, value: bool) {
+        self.0.set_bit(3, value)
+    }
+
+    /// Returns DIV_0_TRP bit value.
+    pub fn div_0_trp(&self) -> bool {
+        self.0.bit(4)
+    }
+
+    /// Sets DIV_0_TRP bit value.
+    pub fn set_div_0_trp(&mut self, value: bool) {
+        self.0.set_bit(4, value)
+    }
+
+    /// Returns BFHFNMIGN bit value.
+    pub fn bfhfnmign(&self) -> bool {
+        self.0.bit(8)
+    }
+
+    /// Sets BFHFNMIGN bit value.
+    pub fn set_bfhfnmign(&mut self, value: bool) {
+        self.0.set_bit(8, value)
     }
 
     /// Returns STKALIGN bit value.
@@ -240,10 +293,11 @@ pub struct SystemControl {
     strvr: MaskedRegister,
     stcvr: u32,
     pub vtor: Vtor,
-    aircr: Aircr,
+    pub aircr: Aircr,
     pub ccr: Ccr,
     shpr: [u32; 3],
     shcsr: Shcsr,
+    pub cfsr: Cfsr,
     cpacr: Cpacr,
     nvic_iser: [u32; 16],
     nvic_icer: [u32; 16],
@@ -267,6 +321,7 @@ impl Default for SystemControl {
             ccr: Default::default(),
             shpr: Default::default(),
             shcsr: Default::default(),
+            cfsr: Default::default(),
             cpacr: Default::default(),
             nvic_iser: Default::default(),
             nvic_icer: Default::default(),
@@ -293,7 +348,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Ccr => self.ccr.0,
             SystemControlRegister::Shpr(i) => self.shpr[i as usize],
             SystemControlRegister::Shcsr => self.shcsr.0,
-            SystemControlRegister::Cfsr => todo!(),
+            SystemControlRegister::Cfsr => self.cfsr.0,
             SystemControlRegister::Hfsr => todo!(),
             SystemControlRegister::Dfsr => todo!(),
             SystemControlRegister::Mmfar => todo!(),
@@ -330,7 +385,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Ccr => self.ccr.write(value)?,
             SystemControlRegister::Shpr(i) => self.shpr[i as usize] = value,
             SystemControlRegister::Shcsr => self.shcsr.write(value)?,
-            SystemControlRegister::Cfsr => todo!(),
+            SystemControlRegister::Cfsr => self.cfsr.write(value)?,
             SystemControlRegister::Hfsr => todo!(),
             SystemControlRegister::Dfsr => todo!(),
             SystemControlRegister::Mmfar => todo!(),
@@ -363,6 +418,212 @@ impl RegistersMemoryInterface for SystemControl {
                 }
             }
         }
+    }
+}
+
+/// CFSR (Configurable Fault Status Register).
+#[derive(Default)]
+pub struct Cfsr(u32);
+
+impl Cfsr {
+    /// Sets new register value.
+    /// Returns [MemoryAccessError::InvalidValue] when attempting to write a reserved bit.
+    pub fn write(&mut self, value: u32) -> MemoryWriteResult {
+        if value & !0x030fbfbb != 0 {
+            return Err(MemoryAccessError::InvalidValue);
+        }
+        self.0 = value;
+        Ok(())
+    }
+
+    /// Returns IACCVIOL bit value.
+    pub fn iaccviol(&self) -> bool {
+        self.0.bit(0)
+    }
+
+    /// Sets IACCVIOL bit value.
+    pub fn set_iaccviol(&mut self, value: bool) {
+        self.0.set_bit(0, value)
+    }
+
+    /// Returns DACCVIOL bit value.
+    pub fn daccviol(&self) -> bool {
+        self.0.bit(1)
+    }
+
+    /// Sets DACCVIOL bit value.
+    pub fn set_daccviol(&mut self, value: bool) {
+        self.0.set_bit(1, value);
+    }
+
+    /// Returns MUNSTKER bit value.
+    pub fn munstker(&self) -> bool {
+        self.0.bit(3)
+    }
+
+    /// Sets MUNSTKER bit value.
+    pub fn set_munstker(&mut self, value: bool) {
+        self.0.set_bit(3, value)
+    }
+
+    /// Returns MSTKERR bit value.
+    pub fn mstkerr(&self) -> bool {
+        self.0.bit(4)
+    }
+
+    /// Sets MSTKERR bit value.
+    pub fn set_mstkerr(&mut self, value: bool) {
+        self.0.set_bit(4, value)
+    }
+
+    /// Returns MLSPERR bit value.
+    pub fn mlsperr(&self) -> bool {
+        self.0.bit(5)
+    }
+
+    /// Sets MLSPERR bit value.
+    pub fn set_mlsperr(&mut self, value: bool) {
+        self.0.set_bit(5, value)
+    }
+
+    /// Returns MMARVALID bit value.
+    pub fn mmarvalid(&self) -> bool {
+        self.0.bit(7)
+    }
+
+    /// Sets MMARVALID bit value.
+    pub fn set_mmarvalid(&mut self, value: bool) {
+        self.0.set_bit(7, value)
+    }
+
+    /// Returns IBUSERR bit value.
+    pub fn ibuserr(&self) -> bool {
+        self.0.bit(8)
+    }
+
+    /// Sets IBUSERR bit value.
+    pub fn set_ibuserr(&mut self, value: bool) {
+        self.0.set_bit(8, value)
+    }
+
+    /// Returns PRECISERR bit value.
+    pub fn preciserr(&self) -> bool {
+        self.0.bit(9)
+    }
+
+    /// Sets PRECISERR bit value.
+    pub fn set_preciserr(&mut self, value: bool) {
+        self.0.set_bit(9, value)
+    }
+
+    /// Returns IMPRECISERR bit value.
+    pub fn impreciserr(&self) -> bool {
+        self.0.bit(10)
+    }
+
+    /// Sets IMPRECISERR bit value.
+    pub fn set_impreciserr(&mut self, value: bool) {
+        self.0.set_bit(10, value)
+    }
+
+    /// Returns UNSTKERR bit value.
+    pub fn unstkerr(&self) -> bool {
+        self.0.bit(11)
+    }
+
+    /// Sets UNSTKERR bit value.
+    pub fn set_unstkerr(&mut self, value: bool) {
+        self.0.set_bit(11, value)
+    }
+
+    /// Returns STKERR bit value.
+    pub fn stkerr(&self) -> bool {
+        self.0.bit(12)
+    }
+
+    /// Sets STKERR bit value.
+    pub fn set_stkerr(&mut self, value: bool) {
+        self.0.set_bit(12, value)
+    }
+
+    /// Returns LSPERR bit value.
+    pub fn lsperr(&self) -> bool {
+        self.0.bit(13)
+    }
+
+    /// Sets LSPERR bit value.
+    pub fn set_lsperr(&mut self, value: bool) {
+        self.0.set_bit(13, value)
+    }
+
+    /// Returns BFARVALID bit value.
+    pub fn bfarvalid(&self) -> bool {
+        self.0.bit(15)
+    }
+
+    /// Sets BFARVALID bit value.
+    pub fn set_bfarvalid(&mut self, value: bool) {
+        self.0.set_bit(15, value)
+    }
+
+    /// Returns UNDEFINSTR bit value.
+    pub fn undefinstr(&self) -> bool {
+        self.0.bit(16)
+    }
+
+    /// Sets UNDEFINSTR bit value.
+    pub fn set_undefinstr(&mut self, value: bool) {
+        self.0.set_bit(16, value);
+    }
+
+    /// Returns INVSTATE bit value.
+    pub fn invstate(&self) -> bool {
+        self.0.bit(17)
+    }
+
+    /// Sets INVSTATE bit value.
+    pub fn set_invstate(&mut self, value: bool) {
+        self.0.set_bit(17, value);
+    }
+
+    /// Returns INVPC bit value.
+    pub fn invpc(&self) -> bool {
+        self.0.bit(18)
+    }
+
+    /// Sets INVPC bit value.
+    pub fn set_invpc(&mut self, value: bool) {
+        self.0.set_bit(18, value)
+    }
+
+    /// Returns NOCP bit value.
+    pub fn nocp(&self) -> bool {
+        self.0.bit(19)
+    }
+
+    /// Sets NOCP bit value.
+    pub fn set_nocp(&mut self, value: bool) {
+        self.0.set_bit(19, value)
+    }
+
+    /// Returns UNALIGNED bit value.
+    pub fn unaligned(&self) -> bool {
+        self.0.bit(24)
+    }
+
+    /// Sets UNALIGNED bit value.
+    pub fn set_unaligned(&mut self, value: bool) {
+        self.0.set_bit(24, value)
+    }
+
+    /// Returns DIVBYZERO bit value.
+    pub fn divbyzero(&self) -> bool {
+        self.0.bit(25)
+    }
+
+    /// Sets DIVBYZERO bit value.
+    pub fn set_divbyzero(&mut self, value: bool) {
+        self.0.set_bit(25, value)
     }
 }
 

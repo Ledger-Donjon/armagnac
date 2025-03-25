@@ -84,7 +84,7 @@ impl Instruction for StrbImm {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u8_at(address, (proc[self.rt] & 0xff) as u8)?;
+        proc.write_u8(address, (proc[self.rt] & 0xff) as u8)?;
         if self.wback {
             proc.set(self.rn, offset_addr)
         }
@@ -151,7 +151,7 @@ impl Instruction for StrbReg {
         let shift = Shift::lsl(self.shift as u32);
         let (offset, _) = shift_c(proc[self.rm], shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
-        proc.set_u8_at(address, (proc[self.rt] & 0xff) as u8)?;
+        proc.write_u8(address, (proc[self.rt] & 0xff) as u8)?;
         Ok(false)
     }
 

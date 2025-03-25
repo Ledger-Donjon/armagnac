@@ -60,7 +60,7 @@ impl Instruction for Pop {
         *proc.registers.sp_mut() += 4 * self.registers.len() as u32;
         let mut jump = false;
         for reg in self.registers.iter() {
-            let val = proc.u32le_at(addr)?;
+            let val = proc.read_u32_aligned(addr)?;
             if reg.is_pc() {
                 jump = true;
                 proc.load_write_pc(val)?

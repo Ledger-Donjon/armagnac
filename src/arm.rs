@@ -12,6 +12,7 @@ use std::{
 };
 
 use crate::{
+    align::Align,
     condition::Condition,
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
@@ -307,6 +308,278 @@ impl ArmProcessor {
 
     pub fn hook_code(&mut self, range: Range<usize>) {
         self.code_hooks.push(CodeHook { range })
+    }
+
+    /// If given `address` is not aligned to `size`, set `UNALIGNED` bit in CFSR register and take
+    /// usage fault exception. This method is used by memory access calls performed by
+    /// instructions.
+    fn usage_fault_if_unaligned(&mut self, address: u32, size: usize) {
+        if !address.is_aligned(size) {
+            self.system_control.borrow_mut().cfsr.set_unaligned(true);
+            self.exception_taken(Irq::UsageFault);
+        }
+    }
+
+    /// Implements `MemA_with_priv` and `MemU_with_priv` from Arm Architecture Reference Manual,
+    /// for 8 bit read accesses.
+    pub fn read_u8_with_priv(&mut self, address: u32, privileged: bool) -> Result<u8, RunError> {
+        self.validate_address(address, privileged, false, false);
+        self.u8_at(address)
+    }
+
+    /// Implements `MemA_with_priv` and `MemU_with_priv` from Arm Architecture Reference Manual,
+    /// for 8 bit write accesses.
+    pub fn write_u8_with_priv(
+        &mut self,
+        address: u32,
+        value: u8,
+        privileged: bool,
+    ) -> Result<(), RunError> {
+        self.validate_address(address, privileged, false, false);
+        self.set_u8_at(address, value)
+    }
+
+    /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 16 bit read
+    /// accesses.
+    pub fn read_u16_aligned_with_priv(
+        &mut self,
+        address: u32,
+        privileged: bool,
+    ) -> Result<u16, RunError> {
+        self.usage_fault_if_unaligned(address, 2);
+        self.validate_address(address, privileged, false, false);
+        let mut value = self.u16le_at(address)?;
+        if self.system_control.borrow_mut().aircr.endianess() {
+            value = value.swap_bytes()
+        }
+        Ok(value)
+    }
+
+    /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 16 bit write
+    /// accesses.
+    pub fn write_u16_aligned_with_priv(
+        &mut self,
+        address: u32,
+        mut value: u16,
+        privileged: bool,
+    ) -> Result<(), RunError> {
+        self.usage_fault_if_unaligned(address, 2);
+        self.validate_address(address, privileged, false, false);
+        if self.system_control.borrow_mut().aircr.endianess() {
+            value = value.swap_bytes()
+        }
+        self.set_u16le_at(address, value)
+    }
+
+    /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 32 bit read
+    /// accesses.
+    pub fn read_u32_aligned_with_priv(
+        &mut self,
+        address: u32,
+        privileged: bool,
+    ) -> Result<u32, RunError> {
+        self.usage_fault_if_unaligned(address, 4);
+        self.validate_address(address, privileged, false, false);
+        let mut value = self.u32le_at(address)?;
+        if self.system_control.borrow_mut().aircr.endianess() {
+            value = value.swap_bytes()
+        }
+        Ok(value)
+    }
+
+    /// Implements `MemA_with_priv` from Arm Architecture Reference Manual, for 32 bit write
+    /// accesses.
+    pub fn write_u32_aligned_with_priv(
+        &mut self,
+        address: u32,
+        mut value: u32,
+        privileged: bool,
+    ) -> Result<(), RunError> {
+        self.usage_fault_if_unaligned(address, 4);
+        self.validate_address(address, privileged, false, false);
+        if self.system_control.borrow_mut().aircr.endianess() {
+            value = value.swap_bytes()
+        }
+        self.set_u32le_at(address, value)
+    }
+
+    /// Implements `MemA` and `MemU` from Arm Architecture Reference Manual, for 8 bit read
+    /// accesses.
+    pub fn read_u8(&mut self, address: u32) -> Result<u8, RunError> {
+        self.read_u8_with_priv(address, self.is_privileged())
+    }
+
+    /// Implements `MemA` and `MemU` from Arm Architecture Reference Manual, for 8 bit write
+    /// accesses.
+    pub fn write_u8(&mut self, address: u32, value: u8) -> Result<(), RunError> {
+        self.write_u8_with_priv(address, value, self.is_privileged())
+    }
+
+    /// Implements `MemA` from Arm Architecture Reference Manual, for 16 bit read accesses.
+    pub fn read_u16_aligned(&mut self, address: u32) -> Result<u16, RunError> {
+        self.read_u16_aligned_with_priv(address, self.is_privileged())
+    }
+
+    /// Implements `MemA` from Arm Architecture Reference Manual, for 8 bit write accesses.
+    pub fn write_u16_aligned(&mut self, address: u32, value: u16) -> Result<(), RunError> {
+        self.write_u16_aligned_with_priv(address, value, self.is_privileged())
+    }
+
+    /// Implements `MemA` from Arm Architecture Reference Manual, for 32 bit read accesses.
+    pub fn read_u32_aligned(&mut self, address: u32) -> Result<u32, RunError> {
+        self.read_u32_aligned_with_priv(address, self.is_privileged())
+    }
+
+    /// Implements `MemA` from Arm Architecture Reference Manual, for 32 bit write accesses.
+    pub fn write_u32_aligned(&mut self, address: u32, value: u32) -> Result<(), RunError> {
+        self.write_u32_aligned_with_priv(address, value, self.is_privileged())
+    }
+
+    /// Implements `MemU_with_priv` from Arm Architecture Reference Manual, for 16 bit read
+    /// accesses.
+    pub fn read_u16_unaligned_with_priv(
+        &mut self,
+        address: u32,
+        privileged: bool,
+    ) -> Result<u16, RunError> {
+        if address.is_aligned(2) {
+            self.read_u16_aligned_with_priv(address, privileged)
+        } else if self.system_control.borrow().ccr.unalign_trp() {
+            self.system_control.borrow_mut().cfsr.set_unaligned(true);
+            self.exception_taken(Irq::UsageFault);
+            Ok(0)
+        } else {
+            // Unaligned access
+            let v0 = self.read_u8_with_priv(address, privileged)?;
+            let v1 = self.read_u8_with_priv(address.wrapping_add(1), privileged)?;
+            if self.system_control.borrow().aircr.endianess() {
+                Ok(v1 as u16 | ((v0 as u16) << 8))
+            } else {
+                Ok(v0 as u16 | ((v1 as u16) << 8))
+            }
+        }
+    }
+
+    /// Implements `MemU_with_priv` from Arm Architecture Reference Manual, for 16 bit write
+    /// accesses.
+    pub fn write_u16_unaligned_with_priv(
+        &mut self,
+        address: u32,
+        value: u16,
+        privileged: bool,
+    ) -> Result<(), RunError> {
+        if address.is_aligned(2) {
+            self.write_u16_aligned_with_priv(address, value, privileged)
+        } else if self.system_control.borrow().ccr.unalign_trp() {
+            self.system_control.borrow_mut().cfsr.set_unaligned(true);
+            self.exception_taken(Irq::UsageFault);
+            Ok(())
+        } else {
+            // Unaligned access
+            let v0 = value as u8;
+            let v1 = (value >> 8) as u8;
+            if self.system_control.borrow().aircr.endianess() {
+                self.write_u8_with_priv(address, v1, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(1), v0, privileged)?;
+            } else {
+                self.write_u8_with_priv(address, v0, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(1), v1, privileged)?;
+            }
+            Ok(())
+        }
+    }
+
+    /// Implements `MemU_with_priv` from Arm Architecture Reference Manual, for 32 bit read
+    /// accesses.
+    pub fn read_u32_unaligned_with_priv(
+        &mut self,
+        address: u32,
+        privileged: bool,
+    ) -> Result<u32, RunError> {
+        if address.is_aligned(4) {
+            self.read_u32_aligned_with_priv(address, privileged)
+        } else if self.system_control.borrow().ccr.unalign_trp() {
+            self.system_control.borrow_mut().cfsr.set_unaligned(true);
+            self.exception_taken(Irq::UsageFault);
+            Ok(0)
+        } else {
+            // Unaligned access
+            let v0 = self.read_u8_with_priv(address, privileged)?;
+            let v1 = self.read_u8_with_priv(address.wrapping_add(1), privileged)?;
+            let v2 = self.read_u8_with_priv(address.wrapping_add(2), privileged)?;
+            let v3 = self.read_u8_with_priv(address.wrapping_add(3), privileged)?;
+            if self.system_control.borrow().aircr.endianess() {
+                Ok(v3 as u32 | ((v2 as u32) << 8) | ((v1 as u32) << 16) | ((v0 as u32) << 24))
+            } else {
+                Ok(v0 as u32 | ((v1 as u32) << 8) | ((v2 as u32) << 16) | ((v3 as u32) << 24))
+            }
+        }
+    }
+
+    /// Implements `MemU_with_priv` from Arm Architecture Reference Manual, for 32 bit write
+    /// accesses.
+    pub fn write_u32_unaligned_with_priv(
+        &mut self,
+        address: u32,
+        value: u32,
+        privileged: bool,
+    ) -> Result<(), RunError> {
+        if address.is_aligned(4) {
+            self.write_u32_aligned_with_priv(address, value, privileged)
+        } else if self.system_control.borrow().ccr.unalign_trp() {
+            self.system_control.borrow_mut().cfsr.set_unaligned(true);
+            self.exception_taken(Irq::UsageFault);
+            Ok(())
+        } else {
+            // Unaligned access
+            let v0 = value as u8;
+            let v1 = (value >> 8) as u8;
+            let v2 = (value >> 16) as u8;
+            let v3 = (value >> 24) as u8;
+            if self.system_control.borrow().aircr.endianess() {
+                self.write_u8_with_priv(address, v3, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(1), v2, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(2), v1, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(3), v0, privileged)?;
+            } else {
+                self.write_u8_with_priv(address, v0, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(1), v1, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(2), v2, privileged)?;
+                self.write_u8_with_priv(address.wrapping_add(3), v3, privileged)?;
+            }
+            Ok(())
+        }
+    }
+
+    /// Implements `MemU` from Arm Architecture Reference Manual, for 16 bit read accesses.
+    pub fn read_u16_unaligned(&mut self, address: u32) -> Result<u16, RunError> {
+        self.read_u16_unaligned_with_priv(address, self.is_privileged())
+    }
+
+    /// Implements `MemU` from Arm Architecture Reference Manual, for 16 bit write accesses.
+    pub fn write_u16_unaligned(&mut self, address: u32, value: u16) -> Result<(), RunError> {
+        self.write_u16_unaligned_with_priv(address, value, self.is_privileged())
+    }
+
+    /// Implements `MemU` from Arm Architecture Reference Manual, for 32 bit read accesses.
+    pub fn read_u32_unaligned(&mut self, address: u32) -> Result<u32, RunError> {
+        self.read_u32_unaligned_with_priv(address, self.is_privileged())
+    }
+
+    /// Implements `MemU` from Arm Architecture Reference Manual, for 32 bit write accesses.
+    pub fn write_u32_unaligned(&mut self, address: u32, value: u32) -> Result<(), RunError> {
+        self.write_u32_unaligned_with_priv(address, value, self.is_privileged())
+    }
+
+    /// Corresponds to `ValidateAddress()` in the Arm Architecture Reference Manual.
+    fn validate_address(
+        &self,
+        _address: u32,
+        _is_priv: bool,
+        _is_write: bool,
+        _is_instr_fetch: bool,
+    ) {
+        // TODO
     }
 
     /// Returns bytes at given address in memory
@@ -845,7 +1118,9 @@ impl ArmProcessor {
         }
     }
 
-    /// Returns true if execution is privileged
+    /// Returns true if execution is privileged.
+    ///
+    /// Corresponds to `FindPriv()` from Arm Architecture Reference Manual.
     pub fn is_privileged(&self) -> bool {
         if self.registers.mode == Mode::Handler {
             true

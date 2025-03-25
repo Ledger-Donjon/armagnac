@@ -96,7 +96,7 @@ impl Instruction for StrImm {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u32le_at(address, proc[self.rt])?;
+        proc.write_u32_unaligned(address, proc[self.rt])?;
         if self.wback {
             proc.set(self.rn, offset_addr)
         }
@@ -163,7 +163,7 @@ impl Instruction for StrReg {
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
         let data = proc[self.rt];
-        proc.set_u32le_at(address, data)?;
+        proc.write_u32_unaligned(address, data)?;
         Ok(false)
     }
 
@@ -232,8 +232,8 @@ impl Instruction for StrdImm {
         let address = if self.index { offset_addr } else { rn };
         let rt = proc[self.rt];
         let rt2 = proc[self.rt2];
-        proc.set_u32le_at(address, rt)?;
-        proc.set_u32le_at(address.wrapping_add(4), rt2)?;
+        proc.write_u32_aligned(address, rt)?;
+        proc.write_u32_aligned(address.wrapping_add(4), rt2)?;
         if self.wback {
             proc.set(self.rn, offset_addr);
         }

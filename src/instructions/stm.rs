@@ -62,7 +62,7 @@ impl Instruction for Stm {
             // lowest.unwrap is possible here: if we are iterating, there is at least one register
             // in the list.
             if !(self.wback && reg == self.rn && reg != lowest.unwrap()) {
-                proc.set_u32le_at(address, proc[reg])?
+                proc.write_u32_aligned(address, proc[reg])?
             }
             address = address.wrapping_add(4);
         }

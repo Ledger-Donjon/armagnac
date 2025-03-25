@@ -51,7 +51,7 @@ impl Instruction for Stmdb {
         let mut addr = proc[self.rn];
         for reg in self.registers.iter().rev() {
             addr = addr.wrapping_sub(4);
-            proc.set_u32le_at(addr, proc[reg])?;
+            proc.write_u32_aligned(addr, proc[reg])?;
         }
         if self.wback {
             proc.set(self.rn, addr);

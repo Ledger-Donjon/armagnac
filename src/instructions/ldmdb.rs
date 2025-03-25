@@ -51,7 +51,7 @@ impl Instruction for Ldmdb {
         let mut address = wback_address;
         let mut jump = false;
         for reg in self.registers.iter() {
-            let value = proc.u32le_at(address)?;
+            let value = proc.read_u32_aligned(address)?;
             if reg.is_pc() {
                 proc.bx_write_pc(value)?;
                 jump = true;

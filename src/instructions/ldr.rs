@@ -98,7 +98,7 @@ impl Instruction for LdrImm {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let addr = if self.index { offset_addr } else { rn };
-        let data = proc.u32le_at(addr)?;
+        let data = proc.read_u32_unaligned(addr)?;
         if self.wback {
             proc.set(self.rn, offset_addr);
         }
@@ -173,7 +173,7 @@ impl Instruction for LdrLit {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let addr = base.wrapping_add_or_sub(self.imm32, self.add);
-        let data = proc.u32le_at(addr)?;
+        let data = proc.read_u32_unaligned(addr)?;
         if self.rt.is_pc() {
             if addr & 3 == 0 {
                 todo!();
@@ -256,7 +256,7 @@ impl Instruction for LdrReg {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(offset, self.add);
         let address = if self.index { offset_addr } else { rn };
-        let data = proc.u32le_at(address)?;
+        let data = proc.read_u32_unaligned(address)?;
         if self.wback {
             proc.set(self.rn, offset_addr);
         }

@@ -85,7 +85,7 @@ impl Instruction for StrhImm {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
-        proc.set_u16le_at(address, proc[self.rt] as u16)?;
+        proc.write_u16_unaligned(address, proc[self.rt] as u16)?;
         if self.wback {
             proc.set(self.rn, offset_addr)
         }
@@ -153,7 +153,7 @@ impl Instruction for StrhReg {
         let carry_in = proc.registers.psr.c();
         let offset = shift_c(proc[self.rm], Shift::lsl(self.shift as u32), carry_in).0;
         let address = proc[self.rn].wrapping_add(offset);
-        proc.set_u16le_at(address, proc[self.rt] as u16)?;
+        proc.write_u16_unaligned(address, proc[self.rt] as u16)?;
         Ok(false)
     }
 
