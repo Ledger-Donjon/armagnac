@@ -2,12 +2,14 @@
 //! It is slow, incomplete and unoptimized. However, it is fully written in Rust!
 //!
 //! Check [arm::ArmProcessor] to know how to quickly emulate an ARM binary.
+#![feature(concat_idents)]
 
 mod align;
 mod arith;
 pub mod arm;
 mod condition;
 pub mod decoder;
+pub mod harness;
 pub mod helpers;
 pub mod instructions;
 pub mod irq;
