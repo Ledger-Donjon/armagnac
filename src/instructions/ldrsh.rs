@@ -136,7 +136,7 @@ impl Instruction for LdrshLit {
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
-        let data = proc.u32le_at(address)?;
+        let data = proc.u16le_at(address)?;
         proc.set(self.rt, ((data as i16) as i32) as u32);
         Ok(false)
     }
