@@ -44,7 +44,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - CLREX: Clear Exclusive
 - DBG: Debug Hint
 - LDC, LDC2: Load Coprossessor
-- LDRBT: Load Register Byte Unprivileged
 - LDREX: Load Register Exclusive
 - LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword
