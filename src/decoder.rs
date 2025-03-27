@@ -369,6 +369,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::rsb::RsbReg>();
         dec.insert::<instructions::sbfx::Sbfx>();
         dec.insert::<instructions::sdiv::Sdiv>();
+        dec.insert::<instructions::ssat::Ssat>();
         dec.insert::<instructions::stmdb::Stmdb>();
         dec.insert::<instructions::stm::Stm>();
         dec.insert::<instructions::str::StrImm>();

@@ -81,6 +81,7 @@ pub mod sbc;
 pub mod sbfx;
 pub mod sdiv;
 pub mod sev;
+pub mod ssat;
 pub mod stm;
 pub mod stmdb;
 pub mod str;

@@ -72,6 +72,10 @@ c2fa14f2 qsub8  r2, r4
 84fab2f2 qdsub  r2, r4
 4fea3101 rrx    r1, r1
 5fea3100 rrxs   r0, r1
+01f30000 ssat   r0, #1, r1
+02f30601 ssat   r1, #7, r2
+03f39e02 ssat   r2, #31, r3, lsl #2
+2cf3c93b ssat   r11, #10, r12, asr #15
 92ea030f teq    r2, r3
 92f0000f teq    r2, #0
 e9fb0021 umlal  r2, r1, r9, r0

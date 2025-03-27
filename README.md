@@ -84,7 +84,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - SMULL: Signed Multiply Long
 - SMULWB, SMULWT: Signed Multiply (word by halfword)
 - SMUSD, SMUSDX: Signed Dual Multiply Subtract
-- SSAT: Signed Saturate
 - SSAT16: Signed Saturate 16
 - SSAX: Signed Subtract and Add with Exchange
 - SSUB16: Signed Subtract 16
