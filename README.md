@@ -50,7 +50,6 @@ Here is the list of instructions that are not implemented yet. In particular, th
 - LDREXH: Load Register Exclusive Halfword
 - LDRSBT: Load Register Signed Byte Unprivileged
 - LDRSHT: Load Register Signed Halfword Unprivileged
-- LDRT: Load Register Unprivileged
 - MCR, MCR2: Move to Coprocessor from ARM Register
 - MCRR, MCRR2: Move to Compressor from two ARM Registers
 - MRC, MRC2: Move to ARM Register from Coprocessor

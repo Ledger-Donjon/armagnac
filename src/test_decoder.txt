@@ -35,6 +35,9 @@ b1fa81f0 clz    r0, r1
 b2fa82f1 clz    r1, r2
 bcfa8cfb clz    r11, r12
 bff35f8f dmb
+51f8000e ldrt   r0, [r1]
+52f8aa1e ldrt   r1, [r2, #170]
+5cf8ffbe ldrt   r11, [r12, #255]
 5fea4121 lsls   r1, r1, #9
 cff6ff70 movt   r0, #65535
 cff6ff71 movt   r1, #65535

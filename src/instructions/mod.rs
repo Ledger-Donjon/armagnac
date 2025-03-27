@@ -46,6 +46,7 @@ pub mod ldrh;
 pub mod ldrht;
 pub mod ldrsb;
 pub mod ldrsh;
+pub mod ldrt;
 pub mod lsl;
 pub mod lsr;
 pub mod mla;
