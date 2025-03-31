@@ -5,7 +5,7 @@
 
 Armagnac is a simple ARM Thumb emulation library written in Rust which can be used to emulate simple embedded systems. The library gives high control on the processor execution, allowing to run instruction by instruction, create hooks, inspect or modify the system state on the fly. Integration of custom peripherals in the memory space is made easy, allowing custom platforms emulation. This library has little dependencies.
 
-The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet. Only ARMv7M is implemented at the moment. Expect bugs, rage and frustration.
+The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet. Implementation has been mostly tested against ArmV7-M firmwares, a bit less against ArmV8-M, and ArmV6-M has not been tested. Expect bugs, rage and frustration.
 
 Currently, emulation speed is typically 8 million instructions per second. There is no virtualization or translation to native code whatsoever. Also, there is no "unsafe" code.
 
@@ -32,12 +32,24 @@ assert_eq!(proc.registers.r2, 3);
 ## Limitations
 
 Here is a non-exhaustive list of what is not implemented/supported yet:
+- There is not MPU support for ArmV6-M yet, only skeletons for ArmV7-M and ArmV8-M.
 - Although some MPU registers are emulated, accesses are currently not verified by the processor.
 - There is basic support for exceptions, but priorities are not enforced yet.
 
-## Unimplemented instructions
+## Unimplemented instructions for ArmV6-M
 
-Here is the list of instructions that are not implemented yet. In particular, there is not support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
+Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version:
+
+- BKPT: Breakpoint
+- REVSH: Byte-Reverse Signed Halfword
+- UDF: Undefined
+- WFE: Wait For Event
+- WFI: Wait For Interrupt
+- YIELD
+
+## Unimplemented instructions for ArmV7-M/ArmV8-M
+
+Here is the list of instructions that are not implemented yet for ArmV7-M and/or ArmV8-M architecture versions. In particular, there is not support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
 
 - BKPT: Breakpoint
 - CDP, CDP2: Coprocessor Data Processing

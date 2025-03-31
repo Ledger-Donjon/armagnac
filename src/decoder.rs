@@ -1,4 +1,14 @@
 //! Instruction decoding module.
+//!
+//! Before executing an instruction, Armagnac has to decode it. First, the emulator fetches the
+//! next instruction half-word from the memory. From this value, the emulator finds out if the
+//! next instruction is encoded on 16-bit or 32-bit. For 32-bit instructions, it then fetches the
+//! second halfword. Once the whole instruction code has been fetched, the emulator has to find to
+//! which instruction it matches. This is done by using an intruction decoder - a struct which
+//! implements the [InstructionDecode] trait.
+//!
+//! The instruction decoder implementation can be selected by changing
+//! [crate::arm::ArmProcessor::instruction_decoder].
 
 use crate::{
     arith::ArithError,
