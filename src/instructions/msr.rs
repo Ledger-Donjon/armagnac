@@ -1,5 +1,10 @@
 //! Implements MSR (Move to Special Register) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::{Mode, RegisterIndex},
 };
-
-use super::Instruction;
 
 /// MSR (register) instruction.
 pub struct Msr {
@@ -19,8 +22,13 @@ pub struct Msr {
 }
 
 impl Instruction for Msr {
-    fn patterns() -> &'static [&'static str] {
-        &["11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        // TODO: For ArmV8-M encoding can accept a mask. This is not implemented yet.
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

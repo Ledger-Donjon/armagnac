@@ -1,5 +1,10 @@
 //! Implements RBIT (Reverse Bits) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 pub struct Rbit {
     /// Destination register
@@ -18,8 +21,12 @@ pub struct Rbit {
 }
 
 impl Instruction for Rbit {
-    fn patterns() -> &'static [&'static str] {
-        &["111110101001xxxx1111xxxx1010xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "111110101001xxxx1111xxxx1010xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

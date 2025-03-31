@@ -1,13 +1,16 @@
 //! Implements PUSH (Push Multiple Registers) instruction.
 
+use super::{stmdb::Stmdb, unpredictable, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::{stmdb::Stmdb, unpredictable, Instruction};
 
 /// PUSH instruction.
 pub struct Push {
@@ -16,11 +19,24 @@ pub struct Push {
 }
 
 impl Instruction for Push {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
+        // TODO: fix support for ArmV8-M
         &[
-            "1011010xxxxxxxxx",
-            "1110100100101101(0)x(0)xxxxxxxxxxxxx",
-            "1111100001001101xxxx110100000100",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M],
+                expression: "1011010xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M],
+                expression: "1110100100101101(0)x(0)xxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M],
+                expression: "1111100001001101xxxx110100000100",
+            },
         ]
     }
 

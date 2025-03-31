@@ -1,5 +1,10 @@
 //! Implements UMLAL (Unsigned Multiply Accumulate Long) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// UMLAL instruction.
 ///
@@ -27,8 +30,12 @@ pub struct Umlal {
 }
 
 impl Instruction for Umlal {
-    fn patterns() -> &'static [&'static str] {
-        &["111110111110xxxxxxxxxxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "111110111110xxxxxxxxxxxx0000xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

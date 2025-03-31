@@ -1,6 +1,10 @@
 //! Implements SUB (Subtract) instruction.
 
 use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -23,12 +27,28 @@ pub struct SubImm {
 }
 
 impl Instruction for SubImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "0001111xxxxxxxxx",
-            "00111xxxxxxxxxxx",
-            "11110x01101xxxxx0xxxxxxxxxxxxxxx",
-            "11110x101010xxxx0xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0001111xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "00111xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x01101xxxxx0xxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "11110x101010xxxx0xxxxxxxxxxxxxxx",
+            },
         ]
     }
 
@@ -121,8 +141,19 @@ pub struct SubReg {
 }
 
 impl Instruction for SubReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0001101xxxxxxxxx", "11101011101xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0001101xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101011101xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
@@ -195,11 +226,23 @@ pub struct SubSpMinusImm {
 }
 
 impl Instruction for SubSpMinusImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "101100001xxxxxxx",
-            "11110x01101x1101xxxxxxxxxxxxxxxx",
-            "11110x10101011010xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "101100001xxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11110x01101x1101xxxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x10101011010xxxxxxxxxxxxxxx",
+            },
         ]
     }
 

@@ -1,7 +1,10 @@
 //! Implements STRH (Store Register Halfword) instruction.
 
-use core::panic;
-
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +12,7 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use core::panic;
 
 /// STRH (immediate) instruction.
 pub struct StrhImm {
@@ -29,11 +31,23 @@ pub struct StrhImm {
 }
 
 impl Instruction for StrhImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "10000xxxxxxxxxxx",
-            "111110001010xxxxxxxxxxxxxxxxxxxx",
-            "111110000010xxxxxxxx1xxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "10000xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110001010xxxxxxxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "111110000010xxxxxxxx1xxxxxxxxxxx",
+            },
         ]
     }
 
@@ -120,8 +134,19 @@ pub struct StrhReg {
 }
 
 impl Instruction for StrhReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0101001xxxxxxxxx", "111110000010xxxxxxxx000000xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0101001xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110000010xxxxxxxx000000xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

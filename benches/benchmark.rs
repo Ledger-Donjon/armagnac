@@ -1,4 +1,6 @@
-use armagnac::{decoder::Lut16AndGrouped32InstructionDecoder, harness::ElfHarness};
+use armagnac::{
+    arm::ArmVersion::V7M, decoder::Lut16AndGrouped32InstructionDecoder, harness::ElfHarness,
+};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Duration;
 
@@ -16,7 +18,7 @@ pub fn benchmark(c: &mut Criterion) {
     });
 
     // Test with faster instruction decoder
-    harness.proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new());
+    harness.proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new(V7M));
 
     g.bench_function("math_lut16grouped32_decoder", |b| {
         b.iter(|| black_box(harness.call1("bench_math", 5.0f32.to_bits())))

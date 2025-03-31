@@ -1,6 +1,10 @@
 //! Implements CBNZ (Compare and Branch on Non-Zero) and CBZ (Compare and Branch on Zero) instructions.
 
 use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -20,8 +24,12 @@ pub struct Cbnz {
 }
 
 impl Instruction for Cbnz {
-    fn patterns() -> &'static [&'static str] {
-        &["1011x0x1xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "1011x0x1xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

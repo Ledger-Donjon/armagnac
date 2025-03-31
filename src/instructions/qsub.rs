@@ -1,6 +1,7 @@
 //! Implements QSUB (Saturating Subtract) instruction.
 
 use super::Instruction;
+use super::{ArmVersion::V8M, Pattern};
 use crate::{
     arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
@@ -23,8 +24,12 @@ pub struct Qsub {
 }
 
 impl Instruction for Qsub {
-    fn patterns() -> &'static [&'static str] {
-        &["111110101000xxxx1111xxxx1010xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V8M],
+            expression: "111110101000xxxx1111xxxx1010xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

@@ -1,5 +1,10 @@
 //! Implements ROR (Rotate Right) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// ROR (immediate) instruction.
 ///
@@ -27,8 +30,12 @@ pub struct RorImm {
 }
 
 impl Instruction for RorImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11101010010x1111(0)xxxxxxxxx11xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M],
+            expression: "11101010010x1111(0)xxxxxxxxx11xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -81,8 +88,19 @@ pub struct RorReg {
 }
 
 impl Instruction for RorReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000111xxxxxx", "11111010011xxxxx1111xxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M],
+                expression: "0100000111xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M],
+                expression: "11111010011xxxxx1111xxxx0000xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

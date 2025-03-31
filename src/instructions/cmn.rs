@@ -1,5 +1,10 @@
 //! Implements CMN (Compare Negative) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// CMN (immediate) instruction.
 ///
@@ -22,8 +25,12 @@ pub struct CmnImm {
 }
 
 impl Instruction for CmnImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x010001xxxx0xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x010001xxxx0xxx1111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -68,8 +75,19 @@ pub struct CmnReg {
 }
 
 impl Instruction for CmnReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100001011xxxxxx", "111010110001xxxx(0)xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001011xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111010110001xxxx(0)xxx1111xxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

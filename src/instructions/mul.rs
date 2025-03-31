@@ -1,5 +1,10 @@
 //! Implements MUL (Multiply) instruction.
 
+use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// MUL instruction.
 pub struct Mul {
@@ -23,8 +26,19 @@ pub struct Mul {
 }
 
 impl Instruction for Mul {
-    fn patterns() -> &'static [&'static str] {
-        &["0100001101xxxxxx", "111110110000xxxx1111xxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001101xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110110000xxxx1111xxxx0000xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

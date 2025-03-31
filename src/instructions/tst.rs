@@ -1,5 +1,10 @@
 //! Implements TST (Test) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// TST (immediate) instruction.
 pub struct TstImm {
@@ -22,8 +25,12 @@ pub struct TstImm {
 }
 
 impl Instruction for TstImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x000001xxxx0xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x000001xxxx0xxx1111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -61,8 +68,19 @@ pub struct TstReg {
 }
 
 impl Instruction for TstReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100001000xxxxxx", "111010100001xxxx(0)xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001000xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111010100001xxxx(0)xxx1111xxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

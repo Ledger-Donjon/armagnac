@@ -1,6 +1,11 @@
 //! Implements STM (Store Multiple), STMIA (Store Multiple Increment After) and STMEA (Store
 //! Multiple Empty Ascending) instructions.
 
+use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// STM instruction.
 pub struct Stm {
@@ -22,8 +25,19 @@ pub struct Stm {
 }
 
 impl Instruction for Stm {
-    fn patterns() -> &'static [&'static str] {
-        &["11000xxxxxxxxxxx", "1110100010x0xxxx(0)x(0)xxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "11000xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "1110100010x0xxxx(0)x(0)xxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

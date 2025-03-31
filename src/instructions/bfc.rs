@@ -1,5 +1,10 @@
 //! Implements BFC (Bit Field Clear) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::RunError,
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// BFC instruction.
 ///
@@ -25,8 +28,12 @@ pub struct Bfc {
 }
 
 impl Instruction for Bfc {
-    fn patterns() -> &'static [&'static str] {
-        &["11110(0)11011011110xxxxxxxxx(0)xxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110(0)11011011110xxxxxxxxx(0)xxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

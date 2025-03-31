@@ -1,5 +1,10 @@
 //! Implements MOVT (Move Top) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// MOVT instruction.
 ///
@@ -21,8 +24,12 @@ pub struct Movt {
 }
 
 impl Instruction for Movt {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x101100xxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x101100xxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

@@ -1,5 +1,7 @@
 //! Implements QDSUB (Saturating Double and Subtract) instruction.
 
+use super::Instruction;
+use super::{ArmVersion::V8M, Pattern};
 use crate::{
     arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
@@ -8,8 +10,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// QDSUB instruction.
 ///
@@ -24,8 +24,12 @@ pub struct Qdsub {
 }
 
 impl Instruction for Qdsub {
-    fn patterns() -> &'static [&'static str] {
-        &["111110101000xxxx1111xxxx1011xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V8M],
+            expression: "111110101000xxxx1111xxxx1011xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

@@ -1,13 +1,16 @@
 //! Implements REV (Byte-Reverse Word) instruction.
 
+use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// REV instruction.
 pub struct Rev {
@@ -18,8 +21,19 @@ pub struct Rev {
 }
 
 impl Instruction for Rev {
-    fn patterns() -> &'static [&'static str] {
-        &["1011101000xxxxxx", "111110101001xxxx1111xxxx1000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "1011101000xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110101001xxxx1111xxxx1000xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

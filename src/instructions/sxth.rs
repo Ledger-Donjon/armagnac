@@ -1,5 +1,10 @@
 //! Implements SXTH (Signed Extend Halfword) instruction.
 
+use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::ror,
     arm::{ArmProcessor, RunError},
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// SXTH instruction.
 ///
@@ -24,8 +27,19 @@ pub struct Sxth {
 }
 
 impl Instruction for Sxth {
-    fn patterns() -> &'static [&'static str] {
-        &["1011001000xxxxxx", "11111010000011111111xxxx1(0)xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "1011001000xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11111010000011111111xxxx1(0)xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

@@ -1,5 +1,7 @@
 //! Implements ADC (Add with Carry) instruction.
 
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{Instruction, Pattern};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +11,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// ADC (immediate) instruction.
 ///
@@ -27,8 +27,12 @@ pub struct AdcImm {
 }
 
 impl Instruction for AdcImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x01010xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x01010xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -85,8 +89,19 @@ pub struct AdcReg {
 }
 
 impl Instruction for AdcReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000101xxxxxx", "11101011010xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100000101xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101011010xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

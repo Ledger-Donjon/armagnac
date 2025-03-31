@@ -1,5 +1,10 @@
 //! Implements BFI (Bit Field Insert) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// BFI instruction.
 ///
@@ -27,8 +30,12 @@ pub struct Bfi {
 }
 
 impl Instruction for Bfi {
-    fn patterns() -> &'static [&'static str] {
-        &["11110(0)110110xxxx0xxxxxxxxx(0)xxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110(0)110110xxxx0xxxxxxxxx(0)xxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

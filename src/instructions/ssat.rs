@@ -1,6 +1,10 @@
 //! Implements SSAT (Signed Saturate) instruction.
 
 use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, signed_sat_q, Shift},
     arm::{ArmProcessor, RunError},
@@ -27,8 +31,12 @@ pub struct Ssat {
 }
 
 impl Instruction for Ssat {
-    fn patterns() -> &'static [&'static str] {
-        &["11110(0)1100x0xxxx0xxxxxxxxx(0)xxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110(0)1100x0xxxx0xxxxxxxxx(0)xxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

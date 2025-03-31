@@ -1,5 +1,10 @@
 //! Implements BL (Branch with Link) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::sign_extend,
     arm::{ArmProcessor, RunError},
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
 };
 
-use super::Instruction;
-
 /// BL instruction.
 pub struct Bl {
     /// Offset.
@@ -17,8 +20,12 @@ pub struct Bl {
 }
 
 impl Instruction for Bl {
-    fn patterns() -> &'static [&'static str] {
-        &["11110xxxxxxxxxxx11x1xxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "11110xxxxxxxxxxx11x1xxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

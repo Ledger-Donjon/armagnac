@@ -2,6 +2,8 @@
 
 use core::panic;
 
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{other, unpredictable, DecodeHelper, Instruction, Pattern};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
     arm::{ArmProcessor, RunError},
@@ -11,8 +13,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// ADD (immediate) instruction.
 pub struct AddImm {
@@ -27,12 +27,28 @@ pub struct AddImm {
 }
 
 impl Instruction for AddImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "0001110xxxxxxxxx",
-            "00110xxxxxxxxxxx",
-            "11110x01000xxxxx0xxxxxxxxxxxxxxx",
-            "11110x100000xxxx0xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0001110xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "00110xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x01000xxxxx0xxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "11110x100000xxxx0xxxxxxxxxxxxxxx",
+            },
         ]
     }
 
@@ -123,11 +139,23 @@ pub struct AddReg {
 }
 
 impl Instruction for AddReg {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "0001100xxxxxxxxx",
-            "01000100xxxxxxxx",
-            "11101011000xxxxx(0)xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0001100xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "01000100xxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11101011000xxxxx(0)xxxxxxxxxxxxxxx",
+            },
         ]
     }
 
@@ -228,12 +256,28 @@ pub struct AddSpPlusImm {
 }
 
 impl Instruction for AddSpPlusImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "10101xxxxxxxxxxx",
-            "101100000xxxxxxx",
-            "11110x01000x11010xxxxxxxxxxxxxxx",
-            "11110x10000011010xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "10101xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "101100000xxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x01000x11010xxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "11110x10000011010xxxxxxxxxxxxxxx",
+            },
         ]
     }
 
@@ -316,11 +360,23 @@ pub struct AddSpPlusReg {
 }
 
 impl Instruction for AddSpPlusReg {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "01000100x1101xxx",
-            "010001001xxxx101",
-            "11101011000x11010xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01000100x1101xxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "010001001xxxx101",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11101011000x11010xxxxxxxxxxxxxxx",
+            },
         ]
     }
 

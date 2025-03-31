@@ -1,5 +1,6 @@
 //! Implements RRX (Rotate Right with Extend) instruction.
 
+use super::{ArmVersion::V7M, Pattern};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -25,8 +26,12 @@ pub struct Rrx {
 }
 
 impl Instruction for Rrx {
-    fn patterns() -> &'static [&'static str] {
-        &["11101010010x1111(0)000xxxx0011xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M],
+            expression: "11101010010x1111(0)000xxxx0011xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

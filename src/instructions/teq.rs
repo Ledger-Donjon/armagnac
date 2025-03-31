@@ -1,6 +1,10 @@
 //! Implements TEQ (Test Equivalence) instruction.
 
 use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -23,8 +27,12 @@ pub struct TeqImm {
 }
 
 impl Instruction for TeqImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x001001xxxx0xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x001001xxxx0xxx1111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -64,8 +72,12 @@ pub struct TeqReg {
 }
 
 impl Instruction for TeqReg {
-    fn patterns() -> &'static [&'static str] {
-        &["111010101001xxxx(0)xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "111010101001xxxx(0)xxx1111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

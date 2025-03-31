@@ -1,5 +1,5 @@
 use crate::{
-    arm::{self, ArmProcessor, ArmVersion},
+    arm::{ArmProcessor, ArmVersion},
     instructions::Mnemonic,
 };
 use object::{File, Object, ObjectSection, ObjectSymbol};

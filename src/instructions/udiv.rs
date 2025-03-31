@@ -1,13 +1,16 @@
 //! Implements UDIV (Unsigned Divide) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{rdn_args_string, unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 pub struct Udiv {
     /// Destination register.
@@ -19,8 +22,12 @@ pub struct Udiv {
 }
 
 impl Instruction for Udiv {
-    fn patterns() -> &'static [&'static str] {
-        &["111110111011xxxx(1)(1)(1)(1)xxxx1111xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "111110111011xxxx(1)(1)(1)(1)xxxx1111xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

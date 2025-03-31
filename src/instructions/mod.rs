@@ -8,7 +8,7 @@
 use std::rc::Rc;
 
 use crate::{
-    arm::{ArmProcessor, RunError},
+    arm::{ArmProcessor, ArmVersion, RunError},
     condition::Condition,
     decoder::DecodeError,
     it_state::ItState,
@@ -101,6 +101,12 @@ pub mod umull;
 pub mod uxtb;
 pub mod uxth;
 
+pub struct Pattern {
+    pub tn: usize,
+    pub versions: &'static [ArmVersion],
+    pub expression: &'static str,
+}
+
 /// All instructions must implement this trait in order to be integrated into the emulator.
 pub trait Instruction {
     /// Returns a list of string patterns the instruction can match.
@@ -121,7 +127,7 @@ pub trait Instruction {
     /// Patterns can have 16 or 32 symbols. If not, the instruction decoder is expected to panic.
     ///
     /// For instance, the pattern "0001110xxxxxxxxx" matches the ADD instruction T1 encoding.
-    fn patterns() -> &'static [&'static str]
+    fn patterns() -> &'static [Pattern]
     where
         Self: Sized;
 

@@ -1,5 +1,10 @@
 //! Implements STR (Store Register) instruction.
 
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -8,8 +13,6 @@ use crate::{
     instructions::{DecodeHelper, ItState},
     registers::RegisterIndex,
 };
-
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, Instruction};
 
 /// STR (immediate) instruction.
 pub struct StrImm {
@@ -28,12 +31,28 @@ pub struct StrImm {
 }
 
 impl Instruction for StrImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "01100xxxxxxxxxxx",
-            "10010xxxxxxxxxxx",
-            "111110001100xxxxxxxxxxxxxxxxxxxx",
-            "111110000100xxxxxxxx1xxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01100xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "10010xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "111110001100xxxxxxxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "111110000100xxxxxxxx1xxxxxxxxxxx",
+            },
         ]
     }
 
@@ -129,8 +148,19 @@ pub struct StrReg {
 }
 
 impl Instruction for StrReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0101000xxxxxxxxx", "111110000100xxxxxxxx000000xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0101000xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110000100xxxxxxxx000000xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -201,8 +231,12 @@ pub struct StrdImm {
 }
 
 impl Instruction for StrdImm {
-    fn patterns() -> &'static [&'static str] {
-        &["1110100xx1x0xxxxxxxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "1110100xx1x0xxxxxxxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

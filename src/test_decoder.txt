@@ -25,9 +25,12 @@ cee7 b      0xfa0
 c800 lsls   r0, r1, #3
 3046 mov    r0, r6
 0422 movs   r2, #4
-70bd pop    {r4, r5, r6, pc}
-07b5 push   {r0, r1, r2, lr}
-37b5 push   {r0, r1, r2, r4, r5, lr}
+# 70bd pop    {r4, r5, r6, pc}
+70bd ldm    sp!, {r4, r5, r6, pc}
+# 07b5 push   {r0, r1, r2, lr}
+07b5 stmdb  sp!, {r0, r1, r2, lr}
+# 37b5 push   {r0, r1, r2, r4, r5, lr}
+37b5 stmdb  sp!, {r0, r1, r2, r4, r5, lr}
 2090 str    r0, [sp, #128]
 0194 str    r4, [sp, #4]
 80b2 uxth   r0, r0
@@ -70,8 +73,8 @@ c2fa14f2 qsub8  r2, r4
 83fab2f1 qdsub  r1, r2, r3
 8cfabbfa qdsub  r10, r11, r12
 84fab2f2 qdsub  r2, r4
-4fea3101 rrx    r1, r1
-5fea3100 rrxs   r0, r1
+# 4fea3101 rrx    r1, r1
+# 5fea3100 rrxs   r0, r1
 01f30000 ssat   r0, #1, r1
 02f30601 ssat   r1, #7, r2
 03f39e02 ssat   r2, #31, r3, lsl #2

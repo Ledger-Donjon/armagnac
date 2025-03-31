@@ -1,13 +1,16 @@
 //! Implements CPS (Change Processor State) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
     it_state::ItState,
 };
-
-use super::Instruction;
 
 pub struct Cps {
     /// True when interrupt must be enabled, false otherwise.
@@ -19,8 +22,19 @@ pub struct Cps {
 }
 
 impl Instruction for Cps {
-    fn patterns() -> &'static [&'static str] {
-        &["10110110011x(0)(0)xx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M],
+                expression: "10110110011x(0)(0)(1)(0)",
+            },
+            Pattern {
+                tn: 1,
+                versions: &[V7M, V8M],
+                expression: "10110110011x(0)(0)xx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

@@ -1,5 +1,10 @@
 //! Implements EOR (Exclusive OR) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// EOR (immediate) instruction
 pub struct EorImm {
@@ -27,8 +30,12 @@ pub struct EorImm {
 }
 
 impl Instruction for EorImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x00100xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x00100xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -82,8 +89,19 @@ pub struct EorReg {
 }
 
 impl Instruction for EorReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000001xxxxxx", "11101010100xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100000001xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010100xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

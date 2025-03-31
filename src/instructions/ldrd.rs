@@ -1,5 +1,10 @@
 //! Implements LDRD (Load Register Dual) instruction.
 
+use super::{AddOrSub, Instruction};
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{AddOrSub, Instruction};
 
 /// LDRD (immediate) instruction.
 pub struct LdrdImm {
@@ -30,8 +33,12 @@ pub struct LdrdImm {
 }
 
 impl Instruction for LdrdImm {
-    fn patterns() -> &'static [&'static str] {
-        &["1110100xx1x1xxxxxxxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "1110100xx1x1xxxxxxxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -98,8 +105,12 @@ pub struct LdrdLit {
 }
 
 impl Instruction for LdrdLit {
-    fn patterns() -> &'static [&'static str] {
-        &["1110100xx1x11111xxxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "1110100xx1x11111xxxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

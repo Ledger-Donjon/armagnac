@@ -1,6 +1,7 @@
 //! Implements ADR (Address to Register) instruction.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{unpredictable, DecodeHelper, Instruction, Pattern};
 use crate::{align::Align, registers::RegisterIndex};
 
 /// ADR instruction.
@@ -14,11 +15,23 @@ pub struct Adr {
 }
 
 impl Instruction for Adr {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "10100xxxxxxxxxxx",
-            "11110x10101011110xxxxxxxxxxxxxxx",
-            "11110x10000011110xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "10100xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11110x10101011110xxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x10000011110xxxxxxxxxxxxxxx",
+            },
         ]
     }
 

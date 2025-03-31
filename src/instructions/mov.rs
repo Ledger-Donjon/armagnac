@@ -1,7 +1,11 @@
 //! Implements MOV (Move) instruction.
 
-use core::panic;
-
+use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
+use crate::arith::{shift_c, Shift, ShiftType};
 use crate::{
     arith::thumb_expand_imm_optc,
     arm::{ArmProcessor, RunError},
@@ -10,8 +14,7 @@ use crate::{
     instructions::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
+use core::panic;
 
 /// MOV (immediate) instruction.
 pub struct MovImm {
@@ -26,11 +29,23 @@ pub struct MovImm {
 }
 
 impl Instruction for MovImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "00100xxxxxxxxxxx",
-            "11110x00010x11110xxxxxxxxxxxxxxx",
-            "11110x100100xxxx0xxxxxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "00100xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11110x00010x11110xxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110x100100xxxx0xxxxxxxxxxxxxxx",
+            },
         ]
     }
 
@@ -98,11 +113,24 @@ pub struct MovReg {
 }
 
 impl Instruction for MovReg {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
+        // TODO: For ArmV8-M, encodings T2 and T3 can support shifts, this is not implemented yet.
         &[
-            "01000110xxxxxxxx",
-            "0000000000xxxxxx",
-            "11101010010x1111(0)000xxxx0000xxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01000110xxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "0000000000xxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11101010010x1111(0)000xxxx0000xxxx",
+            },
         ]
     }
 
@@ -159,5 +187,95 @@ impl Instruction for MovReg {
 
     fn args(&self, _pc: u32) -> String {
         format!("{}, {}", self.rd, self.rm)
+    }
+}
+
+/// MOV (Register-shifted Register).
+///
+/// This is a ArmV8 instruction, similar to RRX instruction in ArmV7.
+pub struct MovRegShiftReg {
+    /// Destination register.
+    rd: RegisterIndex,
+    /// Source register.
+    rm: RegisterIndex,
+    /// Register holding the amount of shift.
+    rs: RegisterIndex,
+    /// Shift type.
+    shift_type: ShiftType,
+    /// True if condition flags are updated.
+    set_flags: bool,
+}
+
+impl Instruction for MovRegShiftReg {
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V8M],
+                expression: "010000xxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V8M],
+                expression: "111110100xxxxxxx1111xxxx0000xxxx",
+            },
+        ]
+    }
+
+    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        match tn {
+            1 => {
+                let rdm = ins.reg3(0);
+                let op = ins.imm4(6);
+                other((op != 0b0010) && (op != 0b0011) && (op != 0b0100) && (op != 0b0111))?; // Related encodings
+                Ok(Self {
+                    rd: rdm,
+                    rm: rdm,
+                    rs: ins.reg3(3),
+                    shift_type: ShiftType::from_bits(((op >> 1) & 2) | (op & 1)),
+                    set_flags: !state.in_it_block(),
+                })
+            }
+            2 => {
+                let rd = ins.reg4(8);
+                let rm = ins.reg4(16);
+                let rs = ins.reg4(0);
+                unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc() || rs.is_sp_or_pc())?;
+                Ok(Self {
+                    rd,
+                    rm,
+                    rs,
+                    shift_type: ShiftType::from_bits(ins.imm2(21)),
+                    set_flags: ins.bit(20),
+                })
+            }
+            _ => panic!(),
+        }
+    }
+
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+        let shift_n = proc[self.rs] & 0xff;
+        let carry_in = proc.registers.psr.c();
+        let (result, carry) = shift_c(
+            proc[self.rm],
+            Shift {
+                t: self.shift_type,
+                n: shift_n,
+            },
+            carry_in,
+        );
+        proc.set(self.rd, result);
+        if self.set_flags {
+            proc.registers.psr.set_nz(result).set_c(carry);
+        }
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        if self.set_flags { "movs" } else { "mov" }.into()
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!("{}, {}, {} {}", self.rd, self.rm, self.shift_type, self.rs)
     }
 }

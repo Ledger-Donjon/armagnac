@@ -1,6 +1,10 @@
 //! Implements SBC (Subtract with Carry) instruction.
 
 use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -27,8 +31,12 @@ pub struct SbcImm {
 }
 
 impl Instruction for SbcImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x01011xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x01011xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -85,8 +93,19 @@ pub struct SbcReg {
 }
 
 impl Instruction for SbcReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000110xxxxxx", "11101011011xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M],
+                expression: "0100000110xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101011011xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

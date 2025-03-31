@@ -1,6 +1,10 @@
 //! Implements LDR (Load Register) instruction.
 
 use super::{other, undefined, unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -29,12 +33,28 @@ pub struct LdrImm {
 }
 
 impl Instruction for LdrImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "01101xxxxxxxxxxx",
-            "10011xxxxxxxxxxx",
-            "111110001101xxxxxxxxxxxxxxxxxxxx",
-            "111110000101xxxxxxxx1xxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01101xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "10011xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "111110001101xxxxxxxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "111110000101xxxxxxxx1xxxxxxxxxxx",
+            },
         ]
     }
 
@@ -146,8 +166,19 @@ pub struct LdrLit {
 }
 
 impl Instruction for LdrLit {
-    fn patterns() -> &'static [&'static str] {
-        &["01001xxxxxxxxxxx", "11111000x1011111xxxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01001xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11111000x1011111xxxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
@@ -215,8 +246,19 @@ pub struct LdrReg {
 }
 
 impl Instruction for LdrReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0101100xxxxxxxxx", "111110000101xxxxxxxx000000xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0101100xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110000101xxxxxxxx000000xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

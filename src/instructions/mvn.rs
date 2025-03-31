@@ -1,5 +1,10 @@
 //! Implements MVN (Move Not) instruction.
 
+use super::{unpredictable, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, Instruction};
 
 /// MVN (immediate) instruction.
 pub struct MvnImm {
@@ -25,8 +28,12 @@ pub struct MvnImm {
 }
 
 impl Instruction for MvnImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x00011x11110xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x00011x11110xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -72,8 +79,19 @@ pub struct MvnReg {
 }
 
 impl Instruction for MvnReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100001111xxxxxx", "11101010011x1111(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001111xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010011x1111(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

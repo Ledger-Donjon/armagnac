@@ -129,6 +129,19 @@ pub enum ShiftType {
     Rrx,
 }
 
+impl ShiftType {
+    pub fn from_bits(imm2: u32) -> Self {
+        debug_assert!(imm2 < 4);
+        match imm2 {
+            0 => ShiftType::Lsl,
+            1 => ShiftType::Lsr,
+            2 => ShiftType::Asr,
+            3 => ShiftType::Ror,
+            _ => panic!(),
+        }
+    }
+}
+
 impl Display for ShiftType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {

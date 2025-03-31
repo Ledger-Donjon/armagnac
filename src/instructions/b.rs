@@ -1,11 +1,11 @@
 //! Implements B (Branch) instruction.
 
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{undefined, unpredictable, Instruction, Pattern};
 use crate::{
     arith::sign_extend, arm::ArmProcessor, condition::Condition, decoder::DecodeError,
     instructions::other, it_state::ItState,
 };
-
-use super::{undefined, unpredictable, Instruction};
 
 /// B instruction.
 pub struct B {
@@ -16,12 +16,28 @@ pub struct B {
 }
 
 impl Instruction for B {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "1101xxxxxxxxxxxx",
-            "11100xxxxxxxxxxx",
-            "11110xxxxxxxxxxx10x0xxxxxxxxxxxx",
-            "11110xxxxxxxxxxx10x1xxxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "1101xxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "11100xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "11110xxxxxxxxxxx10x0xxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 4,
+                versions: &[V7M, V8M],
+                expression: "11110xxxxxxxxxxx10x1xxxxxxxxxxxx",
+            },
         ]
     }
 

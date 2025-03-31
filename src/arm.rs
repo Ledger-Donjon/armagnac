@@ -119,11 +119,27 @@ impl MemoryMappings {
 /// ARM architecture version.
 ///
 /// Used to specify which architecture is being emulated.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ArmVersion {
+    /// ARMv6-M
+    ///
+    /// Implemented by:
+    /// - Cortex-M0
+    /// - Cortex-M0+
+    /// - Cortex-M1
+    /// - SecurCore SC000
+    V6M,
     /// ARMv7-M
+    ///
+    /// Implemented by:
+    /// - Cortex-M3
+    /// - SecurCore SC300
     V7M,
     /// ARMv8-M
+    ///
+    /// Implemented by:
+    /// - Cortex-M23
+    /// - Cortex-M33
     V8M,
 }
 
@@ -162,7 +178,7 @@ pub enum ArmVersion {
 /// use armagnac::decoder::{Lut16AndGrouped32InstructionDecoder};
 ///
 /// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
-/// proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new());
+/// proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new(ArmVersion::V7M));
 /// ```
 ///
 /// You can also write your own decoder by implementing the [InstructionDecode] trait. For example,
@@ -218,7 +234,7 @@ impl ArmProcessor {
             memory_mappings: MemoryMappings::new(),
             execution_priority: 0,
             exception_active: (0..exception_count).map(|_| false).collect(),
-            instruction_decoder: Box::new(BasicInstructionDecoder::new()),
+            instruction_decoder: Box::new(BasicInstructionDecoder::new(version)),
             cycles: 0,
             code_hooks: Vec::new(),
             event_on_instruction: false,
@@ -229,6 +245,7 @@ impl ArmProcessor {
         };
         processor.map_iface(0xe000e000, system_control).unwrap();
         match version {
+            ArmVersion::V6M => {}
             ArmVersion::V7M => processor
                 .map_iface(0xe000ed90, Rc::new(RefCell::new(MpuV7M::new())))
                 .unwrap(),

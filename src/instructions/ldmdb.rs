@@ -1,6 +1,11 @@
 //! Implements LDMDB (Load Multiple Decrement Before) and LDMEA (Load Multiple Empty Ascending)
 //! instructions.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::Instruction;
 
 /// LDMDB, LDMEA instructions.
 ///
@@ -25,8 +28,12 @@ pub struct Ldmdb {
 }
 
 impl Instruction for Ldmdb {
-    fn patterns() -> &'static [&'static str] {
-        &["1110100100x1xxxxxx(0)xxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "1110100100x1xxxxxx(0)xxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

@@ -1,5 +1,7 @@
 //! Implements ASR (Arithmetic Shift Right) instruction.
 
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -8,8 +10,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction};
 
 /// ASR (immediate) instruction.
 pub struct AsrImm {
@@ -24,8 +24,19 @@ pub struct AsrImm {
 }
 
 impl Instruction for AsrImm {
-    fn patterns() -> &'static [&'static str] {
-        &["00010xxxxxxxxxxx", "11101010010x1111(0)xxxxxxxxx10xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "00010xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010010x1111(0)xxxxxxxxx10xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
@@ -84,8 +95,19 @@ pub struct AsrReg {
 }
 
 impl Instruction for AsrReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000100xxxxxx", "11111010010xxxxx1111xxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100000100xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11111010010xxxxx1111xxxx0000xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

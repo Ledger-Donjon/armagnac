@@ -1,5 +1,10 @@
 //! Implements CMP (Compare) instruction.
 
+use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{unpredictable, DecodeHelper, Instruction};
 
 /// CMP (immediate) instruction.
 pub struct CmpImm {
@@ -19,8 +22,19 @@ pub struct CmpImm {
 }
 
 impl Instruction for CmpImm {
-    fn patterns() -> &'static [&'static str] {
-        &["00101xxxxxxxxxxx", "11110x011011xxxx0xxx1111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "00101xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11110x011011xxxx0xxx1111xxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -67,11 +81,23 @@ pub struct CmpReg {
 }
 
 impl Instruction for CmpReg {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "0100001010xxxxxx",
-            "01000101xxxxxxxx",
-            "111010111011xxxx(0)xxx1111xxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001010xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V6M, V7M, V8M],
+                expression: "01000101xxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "111010111011xxxx(0)xxx1111xxxxxxxx",
+            },
         ]
     }
 

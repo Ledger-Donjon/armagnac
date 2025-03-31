@@ -1,12 +1,15 @@
 //! Implements ISB (Instruction Synchronization Barrier) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     it_state::ItState,
 };
-
-use super::Instruction;
 
 pub struct Isb {
     /// Option, 4-bits wide.
@@ -14,8 +17,12 @@ pub struct Isb {
 }
 
 impl Instruction for Isb {
-    fn patterns() -> &'static [&'static str] {
-        &["111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0110xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0110xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

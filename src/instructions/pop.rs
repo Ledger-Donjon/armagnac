@@ -1,13 +1,16 @@
 //! Implements POP (Pop Multiple Registers) instruction.
 
+use super::{unpredictable, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},
 };
-
-use super::{unpredictable, Instruction};
 
 /// POP instruction.
 pub struct Pop {
@@ -16,11 +19,24 @@ pub struct Pop {
 }
 
 impl Instruction for Pop {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
+        // TODO: better support for ArmV8-M, encoding T4 is missing.
         &[
-            "1011110xxxxxxxxx",
-            "1110100010111101xx(0)xxxxxxxxxxxxx",
-            "1111100001011101xxxx101100000100",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M],
+                expression: "1011110xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "1110100010111101xx(0)xxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M],
+                expression: "1111100001011101xxxx101100000100",
+            },
         ]
     }
 

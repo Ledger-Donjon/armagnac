@@ -1,5 +1,10 @@
 //! Implements MLA (Multiply Accumulate) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -7,8 +12,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// MLA instruction.
 pub struct Mla {
@@ -23,8 +26,12 @@ pub struct Mla {
 }
 
 impl Instruction for Mla {
-    fn patterns() -> &'static [&'static str] {
-        &["111110110000xxxxxxxxxxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "111110110000xxxxxxxxxxxx0000xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

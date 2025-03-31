@@ -1,5 +1,10 @@
 //! Implements ORN (Logical OR NOT) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 /// ORN (immediate) instruction.
 ///
@@ -29,8 +32,12 @@ pub struct OrnImm {
 }
 
 impl Instruction for OrnImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x00011xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x00011xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -84,8 +91,12 @@ pub struct OrnReg {
 }
 
 impl Instruction for OrnReg {
-    fn patterns() -> &'static [&'static str] {
-        &["11101010011xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11101010011xxxxx(0)xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

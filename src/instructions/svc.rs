@@ -1,5 +1,10 @@
 //! Implements SVC (Supervisor Call) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -8,8 +13,6 @@ use crate::{
     it_state::ItState,
 };
 
-use super::Instruction;
-
 /// Supervisor Call instruction.
 pub struct Svc {
     /// Immediate constant
@@ -17,8 +20,12 @@ pub struct Svc {
 }
 
 impl Instruction for Svc {
-    fn patterns() -> &'static [&'static str] {
-        &["11011111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "11011111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

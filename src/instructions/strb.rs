@@ -1,5 +1,10 @@
 //! Implements STRB (Store Byte) instruction.
 
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -7,8 +12,6 @@ use crate::{
     instructions::ItState,
     registers::RegisterIndex,
 };
-
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
 
 /// STRB (immediate) instruction.
 pub struct StrbImm {
@@ -27,11 +30,23 @@ pub struct StrbImm {
 }
 
 impl Instruction for StrbImm {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "01110xxxxxxxxxxx",
-            "111110001000xxxxxxxxxxxxxxxxxxxx",
-            "111110000000xxxxxxxx1xxxxxxxxxxx",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "01110xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110001000xxxxxxxxxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V7M, V8M],
+                expression: "111110000000xxxxxxxx1xxxxxxxxxxx",
+            },
         ]
     }
 
@@ -117,8 +132,19 @@ pub struct StrbReg {
 }
 
 impl Instruction for StrbReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0101010xxxxxxxxx", "111110000000xxxxxxxx000000xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0101010xxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111110000000xxxxxxxx000000xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

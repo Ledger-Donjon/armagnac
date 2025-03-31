@@ -1,5 +1,7 @@
 //! Implements AND instruction.
 
+use super::ArmVersion::{V6M, V7M, V8M};
+use super::{other, unpredictable, DecodeHelper, Instruction, Pattern};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +11,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// AND immediate instruction.
 pub struct AndImm {
@@ -27,8 +27,12 @@ pub struct AndImm {
 }
 
 impl Instruction for AndImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x00000xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x00000xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -85,8 +89,19 @@ pub struct AndReg {
 }
 
 impl Instruction for AndReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000000xxxxxx", "11101010000xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100000000xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010000xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

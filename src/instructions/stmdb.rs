@@ -2,6 +2,10 @@
 //! instructions.
 
 use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -25,23 +29,46 @@ pub struct Stmdb {
 }
 
 impl Instruction for Stmdb {
-    fn patterns() -> &'static [&'static str] {
-        &["1110100100x0xxxx(0)x(0)xxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V7M, V8M],
+                expression: "1110100100x0xxxx(0)x(0)xxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V8M],
+                expression: "1011010xxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
-        let rn = ins.reg4(16);
-        let registers = MainRegisterList::new((ins & 0x5fff) as u16);
-        let wback = ins.bit(21);
-        other(wback && rn.is_sp())?; // PUSH
-        unpredictable(rn.is_pc() || registers.len() < 2)?;
-        unpredictable(wback && registers.contains(&rn))?;
-        Ok(Self {
-            rn,
-            wback,
-            registers,
-        })
+        match tn {
+            1 => {
+                let rn = ins.reg4(16);
+                let registers = MainRegisterList::new((ins & 0x5fff) as u16);
+                let wback = ins.bit(21);
+                other(wback && rn.is_sp())?; // PUSH
+                unpredictable(rn.is_pc() || registers.len() < 2)?;
+                unpredictable(wback && registers.contains(&rn))?;
+                Ok(Self {
+                    rn,
+                    wback,
+                    registers,
+                })
+            }
+            2 => {
+                let registers = MainRegisterList::new(((ins.imm1(8) << 14) | ins.imm8(0)) as u16);
+                Ok(Self {
+                    rn: RegisterIndex::Sp,
+                    wback: true,
+                    registers,
+                })
+            }
+            _ => panic!(),
+        }
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
@@ -65,6 +92,6 @@ impl Instruction for Stmdb {
 
     fn args(&self, _pc: u32) -> String {
         let wback = if self.wback { "!" } else { "" };
-        format!("{}{}{{{}}}", self.rn, wback, self.registers)
+        format!("{}{}, {{{}}}", self.rn, wback, self.registers)
     }
 }

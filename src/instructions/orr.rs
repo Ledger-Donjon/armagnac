@@ -1,7 +1,10 @@
 //! Implements ORR (Logical OR) instruction.
 
-use core::panic;
-
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -10,8 +13,7 @@ use crate::{
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
-
-use super::Instruction;
+use core::panic;
 
 /// ORR (immediate) instruction.
 pub struct OrrImm {
@@ -28,8 +30,12 @@ pub struct OrrImm {
 }
 
 impl Instruction for OrrImm {
-    fn patterns() -> &'static [&'static str] {
-        &["11110x00010xxxxx0xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110x00010xxxxx0xxxxxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
@@ -82,8 +88,19 @@ pub struct OrrReg {
 }
 
 impl Instruction for OrrReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100001100xxxxxx", "11101010010xxxxx(0)xxxxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100001100xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010010xxxxx(0)xxxxxxxxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

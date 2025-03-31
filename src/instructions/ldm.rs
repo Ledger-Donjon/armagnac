@@ -2,6 +2,10 @@
 //! Full Descending) instructions.
 
 use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -21,8 +25,24 @@ pub struct Ldm {
 }
 
 impl Instruction for Ldm {
-    fn patterns() -> &'static [&'static str] {
-        &["11001xxxxxxxxxxx", "1110100010x1xxxxxx(0)xxxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "11001xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "1110100010x1xxxxxx(0)xxxxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 3,
+                versions: &[V8M],
+                expression: "1011110xxxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
@@ -49,6 +69,14 @@ impl Instruction for Ldm {
                     rn,
                     registers,
                     wback,
+                }
+            }
+            3 => {
+                let registers = MainRegisterList::new(((ins.imm1(8) << 15) | (ins.imm8(0))) as u16);
+                Self {
+                    rn: RegisterIndex::Sp,
+                    registers,
+                    wback: true,
                 }
             }
             _ => panic!(),

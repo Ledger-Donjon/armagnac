@@ -1,8 +1,11 @@
 //! Implements DMB (Data Memory Barrier) instruction.
 
-use crate::instructions::DecodeHelper;
-
 use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
+use crate::instructions::DecodeHelper;
 
 /// DMB instruction.
 ///
@@ -15,8 +18,12 @@ pub struct Dmb {
 }
 
 impl Instruction for Dmb {
-    fn patterns() -> &'static [&'static str] {
-        &["111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0101xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0101xxxx",
+        }]
     }
 
     fn try_decode(

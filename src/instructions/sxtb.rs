@@ -1,6 +1,10 @@
 //! Implements SXTB (Signed Extend Byte) instruction.
 
 use super::{unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::ror,
     arm::{ArmProcessor, RunError},
@@ -23,8 +27,19 @@ pub struct Sxtb {
 }
 
 impl Instruction for Sxtb {
-    fn patterns() -> &'static [&'static str] {
-        &["1011001001xxxxxx", "11111010000011111111xxxx1(0)xxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "1011001001xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11111010000011111111xxxx1(0)xxxxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

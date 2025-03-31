@@ -1,5 +1,10 @@
 //! Implements IT (If Then) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     condition::Condition,
@@ -7,8 +12,6 @@ use crate::{
     instructions::{other, unpredictable},
     it_state::{ItState, ItThenElse},
 };
-
-use super::Instruction;
 
 // IT instruction.
 //
@@ -19,8 +22,12 @@ pub struct It {
 }
 
 impl Instruction for It {
-    fn patterns() -> &'static [&'static str] {
-        &["10111111xxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "10111111xxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

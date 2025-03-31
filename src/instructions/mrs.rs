@@ -1,15 +1,17 @@
 //! Implements MRS (Move to Register from Special) instruction.
 
-use core::panic;
-
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
-
-use super::Instruction;
+use core::panic;
 
 pub struct Mrs {
     /// Destination register.
@@ -19,8 +21,12 @@ pub struct Mrs {
 }
 
 impl Instruction for Mrs {
-    fn patterns() -> &'static [&'static str] {
-        &["11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

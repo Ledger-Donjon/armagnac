@@ -1,19 +1,27 @@
 //! Implements NOP (No Operation) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
 };
 
-use super::Instruction;
-
 /// NOP instruction.
 pub struct Nop {}
 
 impl Instruction for Nop {
-    fn patterns() -> &'static [&'static str] {
-        &["1011111100000000"]
+    fn patterns() -> &'static [Pattern] {
+        // TODO: encoding T2 for ArmV7-M and ArmV8-M.
+        &[Pattern {
+            tn: 1,
+            versions: &[V6M, V7M, V8M],
+            expression: "1011111100000000",
+        }]
     }
 
     fn try_decode(_tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {

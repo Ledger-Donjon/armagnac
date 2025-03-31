@@ -1,13 +1,16 @@
 //! Implements UBFX (Unsigned Bit Field Extract) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
-
-use super::Instruction;
 
 pub struct Ubfx {
     /// Destination register.
@@ -21,8 +24,12 @@ pub struct Ubfx {
 }
 
 impl Instruction for Ubfx {
-    fn patterns() -> &'static [&'static str] {
-        &["11110(0)111100xxxx0xxxxxxxxx(0)xxxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11110(0)111100xxxx0xxxxxxxxx(0)xxxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

@@ -2,6 +2,7 @@
 
 use crate::{
     arith::ArithError,
+    arm::ArmVersion,
     instructions::{self, Instruction, InstructionSize},
     it_state::ItState,
 };
@@ -85,6 +86,8 @@ type InstructionDecodingFunction =
 /// given instruction.
 #[derive(Clone)]
 pub struct InstructionPattern {
+    /// Encoding number, 1 for T1, 2 for T2, etc.
+    tn: usize,
     /// Indicates how each bit of an instruction code must be tested during pattern matching.
     bits: Vec<InstructionPatternBit>,
     /// Bit mask for testing opcode value.
@@ -115,13 +118,13 @@ impl InstructionPattern {
     /// ```
     /// # use armagnac::decoder::InstructionPattern;
     /// # use armagnac::instructions::InstructionSize;
-    /// let pattern = InstructionPattern::new("11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx");
+    /// let pattern = InstructionPattern::new(1, "11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx");
     /// let code = 0xf3ef8308;
     /// assert!(pattern.test(code, InstructionSize::Ins32).is_ok());
     /// ```
     ///
     /// The pattern string must have 16 or 32 elements. If incorrect, this method will panic.
-    pub fn new(pattern: &str) -> Self {
+    pub fn new(tn: usize, pattern: &str) -> Self {
         // Parse pattern string expression to build a simpler pattern vector with one element per
         // bit.
         let mut bits = Vec::new();
@@ -179,6 +182,7 @@ impl InstructionPattern {
         }
 
         Self {
+            tn,
             bits,
             test_mask,
             test_value,
@@ -268,149 +272,151 @@ fn rc_decoder<T: 'static + Instruction>(
 }
 
 impl BasicInstructionDecoder {
-    pub fn new() -> Self {
+    pub fn new(version: ArmVersion) -> Self {
         let mut dec = Self {
             entries: Vec::new(),
         };
-        dec.insert::<instructions::adc::AdcImm>();
-        dec.insert::<instructions::adc::AdcReg>();
-        dec.insert::<instructions::add::AddImm>();
-        dec.insert::<instructions::add::AddReg>();
-        dec.insert::<instructions::add::AddSpPlusImm>();
-        dec.insert::<instructions::add::AddSpPlusReg>();
-        dec.insert::<instructions::adr::Adr>();
-        dec.insert::<instructions::and::AndImm>();
-        dec.insert::<instructions::and::AndReg>();
-        dec.insert::<instructions::asr::AsrImm>();
-        dec.insert::<instructions::asr::AsrReg>();
-        dec.insert::<instructions::b::B>();
-        dec.insert::<instructions::bfc::Bfc>();
-        dec.insert::<instructions::bfi::Bfi>();
-        dec.insert::<instructions::bic::BicImm>();
-        dec.insert::<instructions::bic::BicReg>();
-        dec.insert::<instructions::bl::Bl>();
-        dec.insert::<instructions::blx::Blx>();
-        dec.insert::<instructions::bx::Bx>();
-        dec.insert::<instructions::cbnz::Cbnz>();
-        dec.insert::<instructions::clz::Clz>();
-        dec.insert::<instructions::cmn::CmnImm>();
-        dec.insert::<instructions::cmn::CmnReg>();
-        dec.insert::<instructions::cmp::CmpImm>();
-        dec.insert::<instructions::cmp::CmpReg>();
-        dec.insert::<instructions::cps::Cps>();
-        dec.insert::<instructions::dmb::Dmb>();
-        dec.insert::<instructions::dsb::Dsb>();
-        dec.insert::<instructions::eor::EorImm>();
-        dec.insert::<instructions::eor::EorReg>();
-        dec.insert::<instructions::isb::Isb>();
-        dec.insert::<instructions::it::It>();
-        dec.insert::<instructions::ldm::Ldm>();
-        dec.insert::<instructions::ldmdb::Ldmdb>();
-        dec.insert::<instructions::ldr::LdrImm>();
-        dec.insert::<instructions::ldr::LdrImm>();
-        dec.insert::<instructions::ldr::LdrLit>();
-        dec.insert::<instructions::ldr::LdrReg>();
-        dec.insert::<instructions::ldrb::LdrbImm>();
-        dec.insert::<instructions::ldrb::LdrbReg>();
-        dec.insert::<instructions::ldrb::LdrbLit>();
-        dec.insert::<instructions::ldrbt::Ldrbt>();
-        dec.insert::<instructions::ldrd::LdrdImm>();
-        dec.insert::<instructions::ldrd::LdrdLit>();
-        dec.insert::<instructions::ldrh::LdrhImm>();
-        dec.insert::<instructions::ldrh::LdrhLit>();
-        dec.insert::<instructions::ldrh::LdrhReg>();
-        dec.insert::<instructions::ldrt::Ldrt>();
-        dec.insert::<instructions::ldrht::Ldrht>();
-        dec.insert::<instructions::ldrsb::LdrsbImm>();
-        dec.insert::<instructions::ldrsb::LdrsbLit>();
-        dec.insert::<instructions::ldrsb::LdrsbReg>();
-        dec.insert::<instructions::ldrsh::LdrshImm>();
-        dec.insert::<instructions::ldrsh::LdrshLit>();
-        dec.insert::<instructions::ldrsh::LdrshReg>();
-        dec.insert::<instructions::lsl::LslImm>();
-        dec.insert::<instructions::lsl::LslReg>();
-        dec.insert::<instructions::lsr::LsrImm>();
-        dec.insert::<instructions::lsr::LsrReg>();
-        dec.insert::<instructions::mla::Mla>();
-        dec.insert::<instructions::mls::Mls>();
-        dec.insert::<instructions::mov::MovImm>();
-        dec.insert::<instructions::mov::MovReg>();
-        dec.insert::<instructions::movt::Movt>();
-        dec.insert::<instructions::mrs::Mrs>();
-        dec.insert::<instructions::msr::Msr>();
-        dec.insert::<instructions::mul::Mul>();
-        dec.insert::<instructions::mvn::MvnImm>();
-        dec.insert::<instructions::mvn::MvnReg>();
-        dec.insert::<instructions::nop::Nop>();
-        dec.insert::<instructions::orn::OrnImm>();
-        dec.insert::<instructions::orn::OrnReg>();
-        dec.insert::<instructions::orr::OrrImm>();
-        dec.insert::<instructions::orr::OrrReg>();
-        dec.insert::<instructions::pop::Pop>();
-        dec.insert::<instructions::push::Push>();
-        dec.insert::<instructions::sbc::SbcImm>();
-        dec.insert::<instructions::sbc::SbcReg>();
-        dec.insert::<instructions::sev::Sev>();
-        dec.insert::<instructions::qadd::Qadd>();
-        dec.insert::<instructions::qadd8::Qadd8>();
-        dec.insert::<instructions::qadd16::Qadd16>();
-        dec.insert::<instructions::qdadd::Qdadd>();
-        dec.insert::<instructions::qdsub::Qdsub>();
-        dec.insert::<instructions::qsub::Qsub>();
-        dec.insert::<instructions::qsub16::Qsub16>();
-        dec.insert::<instructions::qsub8::Qsub8>();
-        dec.insert::<instructions::rbit::Rbit>();
-        dec.insert::<instructions::rev::Rev>();
-        dec.insert::<instructions::rev16::Rev16>();
-        dec.insert::<instructions::ror::RorImm>();
-        dec.insert::<instructions::ror::RorReg>();
-        dec.insert::<instructions::rrx::Rrx>();
-        dec.insert::<instructions::rsb::RsbImm>();
-        dec.insert::<instructions::rsb::RsbReg>();
-        dec.insert::<instructions::sbfx::Sbfx>();
-        dec.insert::<instructions::sdiv::Sdiv>();
-        dec.insert::<instructions::ssat::Ssat>();
-        dec.insert::<instructions::stmdb::Stmdb>();
-        dec.insert::<instructions::stm::Stm>();
-        dec.insert::<instructions::str::StrImm>();
-        dec.insert::<instructions::str::StrReg>();
-        dec.insert::<instructions::str::StrdImm>();
-        dec.insert::<instructions::strb::StrbImm>();
-        dec.insert::<instructions::strb::StrbReg>();
-        dec.insert::<instructions::strh::StrhImm>();
-        dec.insert::<instructions::strh::StrhReg>();
-        dec.insert::<instructions::sub::SubImm>();
-        dec.insert::<instructions::sub::SubReg>();
-        dec.insert::<instructions::sub::SubSpMinusImm>();
-        dec.insert::<instructions::svc::Svc>();
-        dec.insert::<instructions::sxtb::Sxtb>();
-        dec.insert::<instructions::sxth::Sxth>();
-        dec.insert::<instructions::tbb::Tbb>();
-        dec.insert::<instructions::teq::TeqImm>();
-        dec.insert::<instructions::teq::TeqReg>();
-        dec.insert::<instructions::tst::TstImm>();
-        dec.insert::<instructions::tst::TstReg>();
-        dec.insert::<instructions::ubfx::Ubfx>();
-        dec.insert::<instructions::udiv::Udiv>();
-        dec.insert::<instructions::umlal::Umlal>();
-        dec.insert::<instructions::umull::Umull>();
-        dec.insert::<instructions::uxtb::Uxtb>();
-        dec.insert::<instructions::uxth::Uxth>();
+        dec.insert::<instructions::adc::AdcImm>(version);
+        dec.insert::<instructions::adc::AdcReg>(version);
+        dec.insert::<instructions::add::AddImm>(version);
+        dec.insert::<instructions::add::AddReg>(version);
+        dec.insert::<instructions::add::AddSpPlusImm>(version);
+        dec.insert::<instructions::add::AddSpPlusReg>(version);
+        dec.insert::<instructions::adr::Adr>(version);
+        dec.insert::<instructions::and::AndImm>(version);
+        dec.insert::<instructions::and::AndReg>(version);
+        dec.insert::<instructions::asr::AsrImm>(version);
+        dec.insert::<instructions::asr::AsrReg>(version);
+        dec.insert::<instructions::b::B>(version);
+        dec.insert::<instructions::bfc::Bfc>(version);
+        dec.insert::<instructions::bfi::Bfi>(version);
+        dec.insert::<instructions::bic::BicImm>(version);
+        dec.insert::<instructions::bic::BicReg>(version);
+        dec.insert::<instructions::bl::Bl>(version);
+        dec.insert::<instructions::blx::Blx>(version);
+        dec.insert::<instructions::bx::Bx>(version);
+        dec.insert::<instructions::cbnz::Cbnz>(version);
+        dec.insert::<instructions::clz::Clz>(version);
+        dec.insert::<instructions::cmn::CmnImm>(version);
+        dec.insert::<instructions::cmn::CmnReg>(version);
+        dec.insert::<instructions::cmp::CmpImm>(version);
+        dec.insert::<instructions::cmp::CmpReg>(version);
+        dec.insert::<instructions::cps::Cps>(version);
+        dec.insert::<instructions::dmb::Dmb>(version);
+        dec.insert::<instructions::dsb::Dsb>(version);
+        dec.insert::<instructions::eor::EorImm>(version);
+        dec.insert::<instructions::eor::EorReg>(version);
+        dec.insert::<instructions::isb::Isb>(version);
+        dec.insert::<instructions::it::It>(version);
+        dec.insert::<instructions::ldm::Ldm>(version);
+        dec.insert::<instructions::ldmdb::Ldmdb>(version);
+        dec.insert::<instructions::ldr::LdrImm>(version);
+        dec.insert::<instructions::ldr::LdrImm>(version);
+        dec.insert::<instructions::ldr::LdrLit>(version);
+        dec.insert::<instructions::ldr::LdrReg>(version);
+        dec.insert::<instructions::ldrb::LdrbImm>(version);
+        dec.insert::<instructions::ldrb::LdrbReg>(version);
+        dec.insert::<instructions::ldrb::LdrbLit>(version);
+        dec.insert::<instructions::ldrbt::Ldrbt>(version);
+        dec.insert::<instructions::ldrd::LdrdImm>(version);
+        dec.insert::<instructions::ldrd::LdrdLit>(version);
+        dec.insert::<instructions::ldrh::LdrhImm>(version);
+        dec.insert::<instructions::ldrh::LdrhLit>(version);
+        dec.insert::<instructions::ldrh::LdrhReg>(version);
+        dec.insert::<instructions::ldrt::Ldrt>(version);
+        dec.insert::<instructions::ldrht::Ldrht>(version);
+        dec.insert::<instructions::ldrsb::LdrsbImm>(version);
+        dec.insert::<instructions::ldrsb::LdrsbLit>(version);
+        dec.insert::<instructions::ldrsb::LdrsbReg>(version);
+        dec.insert::<instructions::ldrsh::LdrshImm>(version);
+        dec.insert::<instructions::ldrsh::LdrshLit>(version);
+        dec.insert::<instructions::ldrsh::LdrshReg>(version);
+        dec.insert::<instructions::lsl::LslImm>(version);
+        dec.insert::<instructions::lsl::LslReg>(version);
+        dec.insert::<instructions::lsr::LsrImm>(version);
+        dec.insert::<instructions::lsr::LsrReg>(version);
+        dec.insert::<instructions::mla::Mla>(version);
+        dec.insert::<instructions::mls::Mls>(version);
+        dec.insert::<instructions::mov::MovImm>(version);
+        dec.insert::<instructions::mov::MovReg>(version);
+        dec.insert::<instructions::mov::MovRegShiftReg>(version);
+        dec.insert::<instructions::movt::Movt>(version);
+        dec.insert::<instructions::mrs::Mrs>(version);
+        dec.insert::<instructions::msr::Msr>(version);
+        dec.insert::<instructions::mul::Mul>(version);
+        dec.insert::<instructions::mvn::MvnImm>(version);
+        dec.insert::<instructions::mvn::MvnReg>(version);
+        dec.insert::<instructions::nop::Nop>(version);
+        dec.insert::<instructions::orn::OrnImm>(version);
+        dec.insert::<instructions::orn::OrnReg>(version);
+        dec.insert::<instructions::orr::OrrImm>(version);
+        dec.insert::<instructions::orr::OrrReg>(version);
+        dec.insert::<instructions::pop::Pop>(version);
+        dec.insert::<instructions::push::Push>(version);
+        dec.insert::<instructions::sbc::SbcImm>(version);
+        dec.insert::<instructions::sbc::SbcReg>(version);
+        dec.insert::<instructions::sev::Sev>(version);
+        dec.insert::<instructions::qadd::Qadd>(version);
+        dec.insert::<instructions::qadd8::Qadd8>(version);
+        dec.insert::<instructions::qadd16::Qadd16>(version);
+        dec.insert::<instructions::qdadd::Qdadd>(version);
+        dec.insert::<instructions::qdsub::Qdsub>(version);
+        dec.insert::<instructions::qsub::Qsub>(version);
+        dec.insert::<instructions::qsub16::Qsub16>(version);
+        dec.insert::<instructions::qsub8::Qsub8>(version);
+        dec.insert::<instructions::rbit::Rbit>(version);
+        dec.insert::<instructions::rev::Rev>(version);
+        dec.insert::<instructions::rev16::Rev16>(version);
+        dec.insert::<instructions::ror::RorImm>(version);
+        dec.insert::<instructions::ror::RorReg>(version);
+        dec.insert::<instructions::rrx::Rrx>(version);
+        dec.insert::<instructions::rsb::RsbImm>(version);
+        dec.insert::<instructions::rsb::RsbReg>(version);
+        dec.insert::<instructions::sbfx::Sbfx>(version);
+        dec.insert::<instructions::sdiv::Sdiv>(version);
+        dec.insert::<instructions::ssat::Ssat>(version);
+        dec.insert::<instructions::stmdb::Stmdb>(version);
+        dec.insert::<instructions::stm::Stm>(version);
+        dec.insert::<instructions::str::StrImm>(version);
+        dec.insert::<instructions::str::StrReg>(version);
+        dec.insert::<instructions::str::StrdImm>(version);
+        dec.insert::<instructions::strb::StrbImm>(version);
+        dec.insert::<instructions::strb::StrbReg>(version);
+        dec.insert::<instructions::strh::StrhImm>(version);
+        dec.insert::<instructions::strh::StrhReg>(version);
+        dec.insert::<instructions::sub::SubImm>(version);
+        dec.insert::<instructions::sub::SubReg>(version);
+        dec.insert::<instructions::sub::SubSpMinusImm>(version);
+        dec.insert::<instructions::svc::Svc>(version);
+        dec.insert::<instructions::sxtb::Sxtb>(version);
+        dec.insert::<instructions::sxth::Sxth>(version);
+        dec.insert::<instructions::tbb::Tbb>(version);
+        dec.insert::<instructions::teq::TeqImm>(version);
+        dec.insert::<instructions::teq::TeqReg>(version);
+        dec.insert::<instructions::tst::TstImm>(version);
+        dec.insert::<instructions::tst::TstReg>(version);
+        dec.insert::<instructions::ubfx::Ubfx>(version);
+        dec.insert::<instructions::udiv::Udiv>(version);
+        dec.insert::<instructions::umlal::Umlal>(version);
+        dec.insert::<instructions::umull::Umull>(version);
+        dec.insert::<instructions::uxtb::Uxtb>(version);
+        dec.insert::<instructions::uxth::Uxth>(version);
         dec
     }
 
-    /// Registers a new instruction type to the decoder.
-    ///
-    /// The decoder will fetch the corresponding instruction patterns and the decoding function to
-    /// be called when a pattern matches.
-    pub fn insert<T: 'static + Instruction>(&mut self) {
-        self.entries.push(BasicDecoderEntry {
-            patterns: T::patterns()
-                .iter()
-                .map(|p| InstructionPattern::new(p))
-                .collect(),
-            decoder: rc_decoder::<T>,
-        });
+    pub fn insert<T: 'static + Instruction>(&mut self, version: ArmVersion) {
+        let mut patterns = Vec::new();
+        for pattern in T::patterns().iter() {
+            if pattern.versions.iter().any(|&v| v == version) {
+                patterns.push(InstructionPattern::new(pattern.tn, pattern.expression));
+            }
+        }
+        if patterns.len() > 0 {
+            self.entries.push(BasicDecoderEntry {
+                patterns,
+                decoder: rc_decoder::<T>,
+            });
+        }
     }
 }
 
@@ -422,9 +428,9 @@ impl InstructionDecode for BasicInstructionDecoder {
         state: ItState,
     ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
         for entry in &self.entries {
-            for (i, pattern) in entry.patterns.iter().enumerate() {
+            for pattern in entry.patterns.iter() {
                 if pattern.test(ins, size)? {
-                    if let Ok(ins) = (entry.decoder)(i + 1, ins, state) {
+                    if let Ok(ins) = (entry.decoder)(pattern.tn, ins, state) {
                         return Ok(ins);
                     }
                 }
@@ -450,8 +456,8 @@ pub struct Lut16InstructionDecoder {
 }
 
 impl Lut16InstructionDecoder {
-    pub fn new() -> Self {
-        let base_decoder = BasicInstructionDecoder::new();
+    pub fn new(version: ArmVersion) -> Self {
+        let base_decoder = BasicInstructionDecoder::new(version);
         let lut16 = (0..=u16::MAX)
             .map(|i| base_decoder.try_decode(i as u32, InstructionSize::Ins16, ItState::new()))
             .collect();
@@ -507,9 +513,9 @@ impl GroupedInstructionDecoder {
         }
     }
 
-    pub fn try_from_basic_decoder(head_bit_count: u8) -> Result<Self, ()> {
+    pub fn try_from_basic_decoder(head_bit_count: u8, version: ArmVersion) -> Result<Self, ()> {
         let mut result = Self::new(head_bit_count);
-        let basic_decoder = BasicInstructionDecoder::new();
+        let basic_decoder = BasicInstructionDecoder::new(version);
         for entry in basic_decoder.entries {
             result.try_insert_from_decoder_entry(&entry)?;
         }
@@ -536,8 +542,8 @@ impl GroupedInstructionDecoder {
     }
 
     pub fn try_insert_from_decoder_entry(&mut self, entry: &BasicDecoderEntry) -> Result<(), ()> {
-        for (i, pattern) in entry.patterns.iter().enumerate() {
-            self.try_insert(pattern, i + 1, entry.decoder)?
+        for pattern in entry.patterns.iter() {
+            self.try_insert(pattern, pattern.tn, entry.decoder)?
         }
         Ok(())
     }
@@ -573,18 +579,17 @@ pub struct Lut16AndGrouped32InstructionDecoder {
 }
 
 impl Lut16AndGrouped32InstructionDecoder {
-    pub fn new() -> Self {
-        let lut_decoder = Lut16InstructionDecoder::new();
+    pub fn new(version: ArmVersion) -> Self {
+        let lut_decoder = Lut16InstructionDecoder::new(version);
         let mut group_decoder = GroupedInstructionDecoder::new(5);
         for entry in lut_decoder.base_decoder.entries.iter() {
-            for (i, pattern) in entry
+            for pattern in entry
                 .patterns
                 .iter()
-                .enumerate()
-                .filter(|(_, p)| p.size() == InstructionSize::Ins32)
+                .filter(|p| p.size() == InstructionSize::Ins32)
             {
                 group_decoder
-                    .try_insert(pattern, i + 1, entry.decoder)
+                    .try_insert(pattern, pattern.tn, entry.decoder)
                     .unwrap()
             }
         }
@@ -612,10 +617,10 @@ impl InstructionDecode for Lut16AndGrouped32InstructionDecoder {
 #[cfg(test)]
 mod tests {
     use super::{
-        BasicInstructionDecoder, GroupedInstructionDecoder, Lut16AndGrouped32InstructionDecoder,
-        Lut16InstructionDecoder,
+        BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
     };
     use crate::{
+        arm::ArmVersion::{V7M, V8M},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
         it_state::ItState,
@@ -631,7 +636,7 @@ mod tests {
     fn test_dissassembly() {
         let file = File::open("src/test_decoder.txt").unwrap();
         let buf_reader = BufReader::new(file);
-        let decoder = BasicInstructionDecoder::new();
+        let decoder = BasicInstructionDecoder::new(V8M);
 
         for line in buf_reader.lines().map(|l| l.unwrap()) {
             // Skip comment lines
@@ -686,9 +691,9 @@ mod tests {
     /// Checks that [Lut16InstructionDecoder] always decodes the same as [BasicInstructionDecoder].
     #[test]
     fn test_instruction_decoders() {
-        let dec_a = BasicInstructionDecoder::new();
-        let dec_b = Lut16InstructionDecoder::new();
-        let dec_c = Lut16AndGrouped32InstructionDecoder::new();
+        let dec_a = BasicInstructionDecoder::new(V7M);
+        let dec_b = Lut16InstructionDecoder::new(V7M);
+        let dec_c = Lut16AndGrouped32InstructionDecoder::new(V7M);
         let it = ItState::new();
 
         for i in 0..=u16::MAX {

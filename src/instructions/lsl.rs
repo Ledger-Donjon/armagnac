@@ -1,5 +1,10 @@
 //! Implements LSL (Logical Shift Left) instruction.
 
+use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -9,8 +14,6 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
-
-use super::{other, unpredictable, DecodeHelper, Instruction};
 
 /// LSL (immediate) instruction.
 pub struct LslImm {
@@ -25,8 +28,19 @@ pub struct LslImm {
 }
 
 impl Instruction for LslImm {
-    fn patterns() -> &'static [&'static str] {
-        &["00000xxxxxxxxxxx", "11101010010x1111(0)xxxxxxxxx00xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "00000xxxxxxxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11101010010x1111(0)xxxxxxxxx00xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
@@ -91,8 +105,19 @@ pub struct LslReg {
 }
 
 impl Instruction for LslReg {
-    fn patterns() -> &'static [&'static str] {
-        &["0100000010xxxxxx", "11111010000xxxxx1111xxxx0000xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "0100000010xxxxxx",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "11111010000xxxxx1111xxxx0000xxxx",
+            },
+        ]
     }
 
     fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {

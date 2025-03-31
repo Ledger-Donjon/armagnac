@@ -1,6 +1,7 @@
 //! Implements QADD8 (Saturating Add 8) instruction.
 
 use super::Instruction;
+use super::{ArmVersion::V8M, Pattern};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -22,8 +23,12 @@ pub struct Qadd8 {
 }
 
 impl Instruction for Qadd8 {
-    fn patterns() -> &'static [&'static str] {
-        &["111110101000xxxx1111xxxx0001xxxx"]
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V8M],
+            expression: "111110101000xxxx1111xxxx0001xxxx",
+        }]
     }
 
     fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {

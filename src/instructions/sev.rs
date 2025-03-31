@@ -1,21 +1,32 @@
 //! Implements SEV (Send Event) instruction.
 
+use super::Instruction;
+use super::{
+    ArmVersion::{V6M, V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::ItState,
 };
 
-use super::Instruction;
-
 /// SEV instruction.
 pub struct Sev {}
 
 impl Instruction for Sev {
-    fn patterns() -> &'static [&'static str] {
+    fn patterns() -> &'static [Pattern] {
         &[
-            "1011111101000000",
-            "111100111010(1)(1)(1)(1)10(0)0(0)00000000000",
+            Pattern {
+                tn: 1,
+                versions: &[V6M, V7M, V8M],
+                expression: "1011111101000000",
+            },
+            Pattern {
+                tn: 2,
+                versions: &[V7M, V8M],
+                expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000000000",
+            },
         ]
     }
 
