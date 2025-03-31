@@ -86,8 +86,6 @@ type InstructionDecodingFunction =
 /// given instruction.
 #[derive(Clone)]
 pub struct InstructionPattern {
-    /// Encoding number, 1 for T1, 2 for T2, etc.
-    tn: usize,
     /// Indicates how each bit of an instruction code must be tested during pattern matching.
     bits: Vec<InstructionPatternBit>,
     /// Bit mask for testing opcode value.
@@ -118,13 +116,13 @@ impl InstructionPattern {
     /// ```
     /// # use armagnac::decoder::InstructionPattern;
     /// # use armagnac::instructions::InstructionSize;
-    /// let pattern = InstructionPattern::new(1, "11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx");
+    /// let pattern = InstructionPattern::new("11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx");
     /// let code = 0xf3ef8308;
     /// assert!(pattern.test(code, InstructionSize::Ins32).is_ok());
     /// ```
     ///
     /// The pattern string must have 16 or 32 elements. If incorrect, this method will panic.
-    pub fn new(tn: usize, pattern: &str) -> Self {
+    pub fn new(pattern: &str) -> Self {
         // Parse pattern string expression to build a simpler pattern vector with one element per
         // bit.
         let mut bits = Vec::new();
@@ -182,7 +180,6 @@ impl InstructionPattern {
         }
 
         Self {
-            tn,
             bits,
             test_mask,
             test_value,
@@ -244,7 +241,7 @@ pub struct BasicDecoderEntry {
     /// All possible patterns which can match for the given instruction.
     /// Pattern number of index 0 corresponds to T1 encoding, pattern of index 1 to T2 encoding,
     /// etc.
-    pub patterns: Vec<InstructionPattern>,
+    pub patterns: Vec<(usize, InstructionPattern)>,
     /// Decoding function of the instruction.
     pub decoder: InstructionDecodingFunction,
 }
@@ -408,7 +405,7 @@ impl BasicInstructionDecoder {
         let mut patterns = Vec::new();
         for pattern in T::patterns().iter() {
             if pattern.versions.iter().any(|&v| v == version) {
-                patterns.push(InstructionPattern::new(pattern.tn, pattern.expression));
+                patterns.push((pattern.tn, InstructionPattern::new(pattern.expression)));
             }
         }
         if patterns.len() > 0 {
@@ -428,9 +425,9 @@ impl InstructionDecode for BasicInstructionDecoder {
         state: ItState,
     ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
         for entry in &self.entries {
-            for pattern in entry.patterns.iter() {
+            for (tn, pattern) in entry.patterns.iter() {
                 if pattern.test(ins, size)? {
-                    if let Ok(ins) = (entry.decoder)(pattern.tn, ins, state) {
+                    if let Ok(ins) = (entry.decoder)(*tn, ins, state) {
                         return Ok(ins);
                     }
                 }
@@ -542,8 +539,8 @@ impl GroupedInstructionDecoder {
     }
 
     pub fn try_insert_from_decoder_entry(&mut self, entry: &BasicDecoderEntry) -> Result<(), ()> {
-        for pattern in entry.patterns.iter() {
-            self.try_insert(pattern, pattern.tn, entry.decoder)?
+        for (tn, pattern) in entry.patterns.iter() {
+            self.try_insert(pattern, *tn, entry.decoder)?
         }
         Ok(())
     }
@@ -583,13 +580,13 @@ impl Lut16AndGrouped32InstructionDecoder {
         let lut_decoder = Lut16InstructionDecoder::new(version);
         let mut group_decoder = GroupedInstructionDecoder::new(5);
         for entry in lut_decoder.base_decoder.entries.iter() {
-            for pattern in entry
+            for (tn, pattern) in entry
                 .patterns
                 .iter()
-                .filter(|p| p.size() == InstructionSize::Ins32)
+                .filter(|(_, p)| p.size() == InstructionSize::Ins32)
             {
                 group_decoder
-                    .try_insert(pattern, pattern.tn, entry.decoder)
+                    .try_insert(pattern, *tn, entry.decoder)
                     .unwrap()
             }
         }
