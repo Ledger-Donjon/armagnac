@@ -883,64 +883,64 @@ impl ArmProcessor {
             .iter()
             .any(|ch| ch.range.contains(&(pc as usize)))
         {
-            Ok(Event::Hook { address: pc })
-        } else {
-            let (ins, size) = self.decode_instruction(self.pc())?;
-            // PC is always 4 bytes ahead of currently executed instruction, so we increment PC before
-            // applying the effect of the instruction, and we go back 2 bytes if this is a 16-bit
-            // instruction.
-            self.set_pc(self.pc() + 4);
-            // Conditional execution testing.
-            // Condition is usually defined by the current IT state, excepted for conditional
-            // branch B instruction which can override it by implementing [Instruction::condition].
-            let mut it_state = self.registers.psr.it_state();
-            let condition = ins
-                .condition()
-                .or(it_state.current_condition())
-                .unwrap_or(Condition::Always);
-            // Advance IT block state. This must be done before executing the instruction,
-            // because if the current instruction is IT, it will load a new state.
-            it_state.advance();
-            self.registers.psr.set_it_state(it_state);
-
-            let mut jump = false;
-            if self.registers.psr.test(condition) {
-                jump = ins.execute(self)?;
-            }
-            if !jump && size == InstructionSize::Ins16 {
-                self.set_pc(self.pc() - 2)
-            }
-            // Handle actions that may come from memory accesses.
-            for action in self.memory_op_actions.iter() {
-                match action {
-                    MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins }),
-                    MemoryOpAction::Irq(irq) => {
-                        // A peripheral emitted an interrupt request, save it.
-                        self.interrupt_requests.insert(*irq);
-                    }
-                    MemoryOpAction::Update(_) => panic!(), // This should be filtered prior
-                }
-            }
-            self.memory_op_actions.clear();
-            self.cycles += 1;
-
-            // TODO: handle priorities
-            if let Some(irq) = self.interrupt_requests.pop_first() {
-                let max_num = self.exception_active.len();
-                let num = irq.number();
-                assert!(
-                    (num as usize) < max_num,
-                    "Exception number too high: got {}, max is {}",
-                    num,
-                    max_num - 1
-                );
-                if !self.exception_active[irq.number() as usize] {
-                    self.exception_entry(irq)?;
-                }
-            }
-
-            Ok(Event::Instruction { ins })
+            return Ok(Event::Hook { address: pc });
         }
+
+        let (ins, size) = self.decode_instruction(self.pc())?;
+        // PC is always 4 bytes ahead of currently executed instruction, so we increment PC before
+        // applying the effect of the instruction, and we go back 2 bytes if this is a 16-bit
+        // instruction.
+        self.set_pc(self.pc() + 4);
+        // Conditional execution testing.
+        // Condition is usually defined by the current IT state, excepted for conditional
+        // branch B instruction which can override it by implementing [Instruction::condition].
+        let mut it_state = self.registers.psr.it_state();
+        let condition = ins
+            .condition()
+            .or(it_state.current_condition())
+            .unwrap_or(Condition::Always);
+        // Advance IT block state. This must be done before executing the instruction, because if
+        // the current instruction is IT, it will load a new state.
+        it_state.advance();
+        self.registers.psr.set_it_state(it_state);
+
+        let mut jump = false;
+        if self.registers.psr.test(condition) {
+            jump = ins.execute(self)?;
+        }
+        if !jump && size == InstructionSize::Ins16 {
+            self.set_pc(self.pc() - 2)
+        }
+        // Handle actions that may come from memory accesses.
+        for action in self.memory_op_actions.iter() {
+            match action {
+                MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins }),
+                MemoryOpAction::Irq(irq) => {
+                    // A peripheral emitted an interrupt request, save it.
+                    self.interrupt_requests.insert(*irq);
+                }
+                MemoryOpAction::Update(_) => panic!(), // This should be filtered prior
+            }
+        }
+        self.memory_op_actions.clear();
+        self.cycles += 1;
+
+        // TODO: handle priorities
+        if let Some(irq) = self.interrupt_requests.pop_first() {
+            let max_num = self.exception_active.len();
+            let num = irq.number();
+            assert!(
+                (num as usize) < max_num,
+                "Exception number too high: got {}, max is {}",
+                num,
+                max_num - 1
+            );
+            if !self.exception_active[irq.number() as usize] {
+                self.exception_entry(irq)?;
+            }
+        }
+
+        Ok(Event::Instruction { ins })
     }
 
     /// Enters exception.
