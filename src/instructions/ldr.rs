@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::instructions::indexing_args;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -139,19 +140,11 @@ impl Instruction for LdrImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        match (self.index, self.wback) {
-            (true, false) => {
-                let imm = if self.imm32 != 0 {
-                    format!(", #{}", self.imm32)
-                } else {
-                    "".into()
-                };
-                format!("{}, [{}{}]", self.rt, self.rn, imm)
-            }
-            (true, true) => format!("{}, [{}, #{}]!", self.rt, self.rn, self.imm32),
-            (false, true) => format!("{}, [{}], #{}", self.rt, self.rn, self.imm32),
-            (false, false) => panic!(), // Filtered out by try_decode
-        }
+        format!(
+            "{}, {}",
+            self.rt,
+            indexing_args(self.rn, self.imm32, self.index, self.add, self.wback)
+        )
     }
 }
 
