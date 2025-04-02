@@ -41,7 +41,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version:
 
 - BKPT: Breakpoint
-- REVSH: Byte-Reverse Signed Halfword
 - UDF: Undefined
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
@@ -70,7 +69,6 @@ Here is the list of instructions that are not implemented yet for ArmV7-M and/or
 - PLI: Preload Instruction
 - QASX: Saturating Add and Subtract with Exchange
 - QSAX: Saturating Subtract and Add with Exchange
-- REVSH: Byte-Reverse Signed Halfword
 - SADD16: Signed Add 16
 - SADD8: Signed Add 8
 - SASX: Signed Add and Subtract with Exchange

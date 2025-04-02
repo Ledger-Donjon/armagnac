@@ -27,6 +27,9 @@ c800 lsls   r0, r1, #3
 0422 movs   r2, #4
 # 70bd pop    {r4, r5, r6, pc}
 70bd ldm    sp!, {r4, r5, r6, pc}
+c8ba revsh  r0, r1
+d1ba revsh  r1, r2
+feba revsh  r6, r7
 # 07b5 push   {r0, r1, r2, lr}
 07b5 stmdb  sp!, {r0, r1, r2, lr}
 # 37b5 push   {r0, r1, r2, r4, r5, lr}
@@ -73,6 +76,9 @@ c2fa14f2 qsub8  r2, r4
 83fab2f1 qdsub  r1, r2, r3
 8cfabbfa qdsub  r10, r11, r12
 84fab2f2 qdsub  r2, r4
+91fab1f0 revsh  r0, r1
+92fab2f1 revsh  r1, r2
+9cfabcfb revsh  r11, r12
 # 4fea3101 rrx    r1, r1
 # 5fea3100 rrxs   r0, r1
 01f30000 ssat   r0, #1, r1
