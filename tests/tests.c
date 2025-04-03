@@ -30,3 +30,9 @@ size_t test_memcpy(char* dst) {
 float test_pow(float base, float exponent) {
   return pow(base, exponent);
 }
+
+float test_bkpt(float x) {
+  float result = cos(x);
+  __asm__("bkpt #165");
+  return sin(result);
+}

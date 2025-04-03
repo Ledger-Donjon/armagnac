@@ -13,7 +13,7 @@ pub struct ElfHarness {
     /// Processor executing the test methods.
     pub proc: ArmProcessor,
     /// All symbols and their address, extracted from the ELF file.
-    symbols: BTreeMap<String, u32>,
+    pub symbols: BTreeMap<String, u32>,
 }
 
 impl ElfHarness {

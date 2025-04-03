@@ -1,4 +1,7 @@
-use armagnac::harness::{ElfHarness, ADDR_RAM};
+use armagnac::{
+    arm::Event::{self},
+    harness::{ElfHarness, ADDR_RAM, STACK_SIZE},
+};
 
 /// This test runs a call to memcpy to copy a string to a buffer.
 #[test]
@@ -53,4 +56,43 @@ fn test_pow() {
         f32::from_bits(helper.call2("test_pow", arg0, arg1)),
         449792.0f32
     );
+}
+
+#[test]
+fn test_bkpt() {
+    let elf = include_bytes!("tests.elf");
+    let mut helper = ElfHarness::new(elf);
+    let arg = 6.00f32;
+    helper.proc.registers.r0 = arg.to_bits();
+    let address = helper.symbols["test_bkpt".into()];
+    helper.proc.set_pc(address & 0xfffffffe); // We drop lsb (thumb mode bit)
+    helper.proc.registers.lr = 0xfffffffe;
+    helper.proc.set_sp(ADDR_RAM + STACK_SIZE);
+    let mut breakpoint = None;
+
+    loop {
+        match helper.proc.stepi() {
+            Ok(event) => match event {
+                Event::Break(value) => {
+                    // We have only one BKPT instruction.
+                    assert_eq!(breakpoint, None);
+                    breakpoint = Some(value)
+                }
+                _ => {}
+            },
+            Err(_) => panic!(),
+        }
+        // Run util code branches back to initial LR
+        if helper.proc.pc() == 0xfffffffe {
+            assert_eq!(helper.proc.sp(), ADDR_RAM + STACK_SIZE);
+            break;
+        }
+    }
+
+    // Check that we did break once.
+    assert_eq!(breakpoint, Some(0xa5));
+
+    // Check result, this won't hurt.
+    let result = helper.proc.registers.r0;
+    assert_eq!(f32::from_bits(result), arg.cos().sin());
 }

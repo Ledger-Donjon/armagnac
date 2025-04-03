@@ -24,6 +24,7 @@ pub mod b;
 pub mod bfc;
 pub mod bfi;
 pub mod bic;
+pub mod bkpt;
 pub mod bl;
 pub mod blx;
 pub mod bx;
@@ -161,8 +162,9 @@ pub trait Instruction {
         Self: Sized;
 
     /// Returns instruction execution own condition, or [None] if the condition in the IT state is
-    /// to be followed. Only the B instruction in T1 and T3 encodings should implement this, all
-    /// other instructions rely on the blanket implementation which returns [None].
+    /// to be followed. Only the B instruction in T1 and T3 encodings, and BKPT instruction, should
+    /// implement this, all other instructions rely on the blanket implementation which returns
+    /// [None].
     fn condition(&self) -> Option<Condition> {
         None
     }

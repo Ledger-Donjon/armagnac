@@ -68,8 +68,12 @@ pub fn lsl_c(value: u32, shift: u32) -> (u32, bool) {
 /// * `value` - Value to be shifted
 /// * `shift` - Shift count. Must be > 0.
 pub fn lsr_c(value: u32, shift: u32) -> (u32, bool) {
+    // It is possible to have shift >= 32 if shift amount comes from a register.
     assert!(shift > 0);
-    (value >> shift, value & (1 << (shift - 1)) != 0)
+    (
+        value.checked_shr(shift).unwrap_or(0),
+        value & (1u32.checked_shl(shift - 1).unwrap_or(0)) != 0,
+    )
 }
 
 /// Returns right rotated value and carry out.

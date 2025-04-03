@@ -83,7 +83,7 @@ pub enum Event {
     },
     /// Reset requested during a peripheral emulation, before next instruction could be executed
     ResetFromPeripheral,
-    Break,
+    Break(u8),
 }
 
 struct MemoryMappings(Vec<MemoryMap>);
@@ -205,6 +205,9 @@ pub struct ArmProcessor {
     /// stacked in this attribute during instruction emulation, and then processed one the
     /// instruction is completed.
     memory_op_actions: Vec<MemoryOpAction>,
+    /// Flag set by the BKPT instruction when executed, to hint that [Event::Break] should be
+    /// returned. The value stored in the flag is the 8-bit argument of the KPTR instruction.
+    pub break_request: Option<u8>,
     /// Pending interrupt requests
     interrupt_requests: BTreeSet<Irq>,
     /// System control registers peripheral.
@@ -239,6 +242,7 @@ impl ArmProcessor {
             code_hooks: Vec::new(),
             event_on_instruction: false,
             memory_op_actions: Vec::new(),
+            break_request: None,
             interrupt_requests: BTreeSet::new(),
             system_control: system_control.clone(),
             tolerate_pop_stack_unaligned_pc: false,
@@ -938,6 +942,12 @@ impl ArmProcessor {
             if !self.exception_active[irq.number() as usize] {
                 self.exception_entry(irq)?;
             }
+        }
+
+        // Handle BKPT instructions.
+        if let Some(value) = self.break_request {
+            self.break_request = None;
+            return Ok(Event::Break(value));
         }
 
         Ok(Event::Instruction { ins })

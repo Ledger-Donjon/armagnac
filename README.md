@@ -40,7 +40,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version:
 
-- BKPT: Breakpoint
 - UDF: Undefined
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
@@ -50,7 +49,6 @@ Here is a list of instructions that are not implemented yet for ArmV6-M archiect
 
 Here is the list of instructions that are not implemented yet for ArmV7-M and/or ArmV8-M architecture versions. In particular, there is not support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
 
-- BKPT: Breakpoint
 - CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
 - DBG: Debug Hint

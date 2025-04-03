@@ -299,6 +299,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::bfi::Bfi>(version);
         dec.insert::<instructions::bic::BicImm>(version);
         dec.insert::<instructions::bic::BicReg>(version);
+        dec.insert::<instructions::bkpt::Bkpt>(version);
         dec.insert::<instructions::bl::Bl>(version);
         dec.insert::<instructions::blx::Blx>(version);
         dec.insert::<instructions::bx::Bx>(version);
