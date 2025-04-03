@@ -88,6 +88,7 @@ pub mod stm;
 pub mod stmdb;
 pub mod str;
 pub mod strb;
+pub mod strd;
 pub mod strh;
 pub mod sub;
 pub mod svc;

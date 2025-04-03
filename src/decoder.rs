@@ -388,7 +388,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::stm::Stm>(version);
         dec.insert::<instructions::str::StrImm>(version);
         dec.insert::<instructions::str::StrReg>(version);
-        dec.insert::<instructions::str::StrdImm>(version);
+        dec.insert::<instructions::strd::StrdImm>(version);
         dec.insert::<instructions::strb::StrbImm>(version);
         dec.insert::<instructions::strb::StrbReg>(version);
         dec.insert::<instructions::strh::StrhImm>(version);
