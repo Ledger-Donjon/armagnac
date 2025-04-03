@@ -38,16 +38,50 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 ## Unimplemented instructions for ArmV6-M
 
-Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version:
+Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version. Unimplemented instructions will raise an error during execution.
 
 - UDF: Undefined
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
 - YIELD
 
-## Unimplemented instructions for ArmV7-M/ArmV8-M
+## Unimplemented instructions for ArmV7-M
 
-Here is the list of instructions that are not implemented yet for ArmV7-M and/or ArmV8-M architecture versions. In particular, there is not support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
+Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. In particular, there is no support for coprocessor operations. Unimplemented instructions will raise an error during execution.
+
+- CDP, CDP2: Coprocessor Data Processing
+- CLREX: Clear Exclusive
+- DBG: Debug Hint
+- LDC, LDC2: Load Coprossessor
+- LDREX: Load Register Exclusive
+- LDREXB: Load Register Exclusive Byte
+- LDREXH: Load Register Exclusive Halfword
+- LDRSBT: Load Register Signed Byte Unprivileged
+- LDRSHT: Load Register Signed Halfword Unprivileged
+- MCR, MCR2: Move to Coprocessor from ARM Register
+- MCRR, MCRR2: Move to Compressor from two ARM Registers
+- MCR, MCR2: Move to Coprocessor from ARM Register
+- MCRR, MCRR2: Move to Compressor from two ARM Registers
+- PLD: Preload Data
+- PLI: Preload Instruction
+- SMLAL: Signed Multiply Accumulate Long
+- SMULL: Signed Multiply Long
+- STC, STC2: Store Coprocessor
+- STRBT: Store Register Byte Unprivileged
+- STREX: Store Register Exclusive
+- STREXB: Store Register Exclusive Byte
+- STREXH: Store Register Exclusive Halfword
+- STRHT: Store Register Halfword Unprivileged
+- STRT: Store Register Unprivileged
+- SUB (SP minus register): Subtract
+- USAT: Unsigned Saturate
+- WFE: Wait For Event
+- WFI: Wait For Interrupt
+- YIELD
+
+## Unimplemented instructions for ArmV8-M
+
+Here is the list of instructions that are not implemented yet for ArmV8-M architecture version. In particular, there is no support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
 
 - CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
