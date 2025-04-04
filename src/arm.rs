@@ -37,6 +37,8 @@ pub enum RunError {
     InstructionUnknown,
     /// Instruction is unpredictable.
     InstructionUnpredictable,
+    /// Instruction is undefined.
+    InstructionUndefined,
     /// Execution leads to unpredictable result.
     Unpredictable,
     /// Error when reading the memory or a peripheral.

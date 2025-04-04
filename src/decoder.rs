@@ -405,6 +405,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::tst::TstImm>(version);
         dec.insert::<instructions::tst::TstReg>(version);
         dec.insert::<instructions::ubfx::Ubfx>(version);
+        dec.insert::<instructions::udf::Udf>(version);
         dec.insert::<instructions::udiv::Udiv>(version);
         dec.insert::<instructions::umlal::Umlal>(version);
         dec.insert::<instructions::umull::Umull>(version);

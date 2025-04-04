@@ -98,6 +98,7 @@ pub mod tbb;
 pub mod teq;
 pub mod tst;
 pub mod ubfx;
+pub mod udf;
 pub mod udiv;
 pub mod umlal;
 pub mod umull;

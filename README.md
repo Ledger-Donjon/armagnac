@@ -40,7 +40,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version. Unimplemented instructions will raise an error during execution.
 
-- UDF: Undefined
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
 - YIELD
