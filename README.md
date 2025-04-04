@@ -36,7 +36,7 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 - Although some MPU registers are emulated, accesses are currently not verified by the processor.
 - There is basic support for exceptions, but priorities are not enforced yet.
 
-## Unimplemented instructions for ArmV6-M
+### Unimplemented instructions for ArmV6-M
 
 Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version. Unimplemented instructions will raise an error during execution.
 
@@ -44,7 +44,7 @@ Here is a list of instructions that are not implemented yet for ArmV6-M archiect
 - WFI: Wait For Interrupt
 - YIELD
 
-## Unimplemented instructions for ArmV7-M
+### Unimplemented instructions for ArmV7-M
 
 Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. In particular, there is no support for coprocessor operations. Unimplemented instructions will raise an error during execution.
 
@@ -84,7 +84,7 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - WFI: Wait For Interrupt
 - YIELD
 
-## Unimplemented instructions for ArmV8-M
+### Unimplemented instructions for ArmV8-M
 
 Here is the list of instructions that are not implemented yet for ArmV8-M architecture version. In particular, there is no support for floating-point arithmetic and coprocessor operations. Unimplemented instructions will raise an error during execution.
 
@@ -146,7 +146,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - WLS, DLS, WLSTP, DLSTP: While Loop Start, Do Loop Start, While Loop Start with Tail Predication, Do Loop Start with Tail Predication
 - YIELD
 
-## Unimplemented instructions for ArmV8-M Floating-point extension
+### Unimplemented instructions for ArmV8-M Floating-point extension
 
 - FLDMDBX, FLDMIAX
 - FSTMDBX, FSTMIAX
@@ -189,7 +189,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - VSTR: Floating-point Store Register
 - VSUB: Floating-point Subtract
 
-## Unimplemented instructions for ArmV8-M DSP extension
+### Unimplemented instructions for ArmV8-M DSP extension
 
 - PKHBT, PKHTB: Pack Halfword
 - QASX: Saturating Add and Subtract with Exchange
@@ -251,7 +251,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - UXTAH: Unsigned Extend and Add Halfword
 - UXTB16: Unsigned Extend Byte 16
 
-## Unimplemented instructions for ArmV8-M Custom Datapath extension
+### Unimplemented instructions for ArmV8-M Custom Datapath extension
 
 - CX1: Custom Instruction Class 1
 - CX1D: Custom Instruction Class 1 dual
@@ -263,7 +263,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - VCX2: Custom Extension Instruction Class 2
 - VCX3: Custom Extension Instruction Class 3
 
-## Unimplemented instructions for ArmV8.1-M
+### Unimplemented instructions for ArmV8.1-M
 
 - CINC: Conditional Increment
 - CINV: Conditional Invert
@@ -278,7 +278,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - ESB: Error Synchronization Barrier
 - VSCCLRM: Floating-point Secure Context Clear Multiple
 
-## Unimplemented instructions for ArmV8.1-M MVE
+### Unimplemented instructions for ArmV8.1-M MVE
 
 - ASRL: Arithmetic Shift Right Long
 - LCTP: Loop Clear with Tail Predication
@@ -385,7 +385,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - VST4: Vector Interleaving Store - Stride 4
 - VSTRB, VSTRH, VSTRW: Vector Store Register
 
-## Unimplemented instructions for ArmV8.1-M PACBTI
+### Unimplemented instructions for ArmV8.1-M PACBTI
 
 - AUT: Authenticate link register
 - AUTG: Authenticate general value
@@ -394,7 +394,7 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - PACBTI: Pointer Authentication Code for the link register with BTI clearing
 - PACG: Pointer Authentication Code for a general value
 
-## Unimplemented instructions for ArmV8.1-M Low Overhead Branch extension
+### Unimplemented instructions for ArmV8.1-M Low Overhead Branch extension
 
 - BF, BFX, BFL, BFLX, BFCSEL: Branch Future, Branch Future and Exchange, Branch Future with Link, Branch Future with Link and Exchange, Branch Future Conditional Select
 - LE, LETP: Loop End, Loop End with Tail Predication
