@@ -25,7 +25,7 @@ impl Instruction for Sev {
             Pattern {
                 tn: 2,
                 versions: &[V7M, V8M],
-                expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000000000",
+                expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000000100",
             },
         ]
     }
