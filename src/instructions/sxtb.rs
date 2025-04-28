@@ -37,7 +37,7 @@ impl Instruction for Sxtb {
             Pattern {
                 tn: 2,
                 versions: &[V7M, V8M],
-                expression: "11111010000011111111xxxx1(0)xxxxxx",
+                expression: "11111010010011111111xxxx1(0)xxxxxx",
             },
         ]
     }
