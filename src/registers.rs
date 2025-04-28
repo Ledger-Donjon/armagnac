@@ -39,7 +39,7 @@ pub enum RegisterIndex {
     Psp,
     Primask,
     Basepri,
-    BasepriMask,
+    BasepriMax,
     FaultMask,
     Control,
 }
@@ -104,7 +104,7 @@ impl RegisterIndex {
             9 => Self::Psp,
             16 => Self::Primask,
             17 => Self::Basepri,
-            18 => Self::BasepriMask,
+            18 => Self::BasepriMax,
             19 => Self::FaultMask,
             20 => Self::Control,
             _ => panic!("invalid sys register index"),
@@ -147,7 +147,7 @@ impl RegisterIndex {
             RegisterIndex::Psp => 9,
             RegisterIndex::Primask => 16,
             RegisterIndex::Basepri => 17,
-            RegisterIndex::BasepriMask => 18,
+            RegisterIndex::BasepriMax => 18,
             RegisterIndex::FaultMask => 19,
             RegisterIndex::Control => 20,
             _ => panic!("not a sys register"),
@@ -206,7 +206,7 @@ impl Display for RegisterIndex {
             Self::Psp => "psp",
             Self::Primask => "primask",
             Self::Basepri => "basepri",
-            Self::BasepriMask => "baseprimask",
+            Self::BasepriMax => "basepri_max",
             Self::FaultMask => "faultmask",
             Self::Control => "control",
         };
@@ -885,7 +885,7 @@ impl CoreRegisters {
             RegisterIndex::Psp => self.psp = value,
             RegisterIndex::Primask => self.primask.0 = value,
             RegisterIndex::Basepri => todo!(),
-            RegisterIndex::BasepriMask => todo!(),
+            RegisterIndex::BasepriMax => todo!(),
             RegisterIndex::FaultMask => self.faultmask.0 = value,
             RegisterIndex::Control => self.control.0 = value,
         }
@@ -942,7 +942,7 @@ impl Index<RegisterIndex> for CoreRegisters {
             RegisterIndex::Psp => &self.psp,
             RegisterIndex::Primask => &self.primask.0,
             RegisterIndex::Basepri => todo!(),
-            RegisterIndex::BasepriMask => todo!(),
+            RegisterIndex::BasepriMax => todo!(),
             RegisterIndex::FaultMask => &self.faultmask.0,
             RegisterIndex::Control => &self.control.0,
         }

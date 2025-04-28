@@ -50,6 +50,7 @@ impl Instruction for Msr {
             RegisterIndex::Iapsr => todo!(),
             RegisterIndex::Eapsr => todo!(),
             RegisterIndex::Xpsr => todo!(),
+            RegisterIndex::Ipsr => todo!(),
             RegisterIndex::Epsr => {} // Writes are ignored for EPSR with MSR
             RegisterIndex::Iepsr => todo!(),
             RegisterIndex::Msp => {
@@ -64,7 +65,7 @@ impl Instruction for Msr {
             }
             RegisterIndex::Primask => todo!(),
             RegisterIndex::Basepri => todo!(),
-            RegisterIndex::BasepriMask => todo!(),
+            RegisterIndex::BasepriMax => todo!(),
             RegisterIndex::FaultMask => todo!(),
             RegisterIndex::Control => {
                 if proc.is_privileged() {

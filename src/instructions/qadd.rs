@@ -1,12 +1,15 @@
 //! Implements QADD (Saturating Add) instruction.
 
 use super::Instruction;
-use super::{ArmVersion::V8M, Pattern};
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    instructions::{rdn_args_string, unpredictable, DecodeHelper},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -27,7 +30,7 @@ impl Instruction for Qadd {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V8M],
+            versions: &[V7M, V8M],
             expression: "111110101000xxxx1111xxxx1000xxxx",
         }]
     }
@@ -57,7 +60,9 @@ impl Instruction for Qadd {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rm), self.rn)
+        // According to the reference manual Rd can be omitted when equal to Rm. However gcc does
+        // not do this and for unit testing purpose we prefer sticking to gcc behavior.
+        format!("{}, {}, {}", self.rd, self.rm, self.rn)
     }
 }
 

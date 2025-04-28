@@ -630,7 +630,10 @@ mod tests {
         BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
     };
     use crate::{
-        arm::ArmVersion::{V7M, V8M},
+        arm::{
+            ArmProcessor,
+            ArmVersion::{V7M, V8M},
+        },
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
         it_state::ItState,
@@ -646,7 +649,9 @@ mod tests {
     fn test_dissassembly() {
         let file = File::open("src/test_decoder.txt").unwrap();
         let buf_reader = BufReader::new(file);
-        let decoder = BasicInstructionDecoder::new(V8M);
+        let decoder = BasicInstructionDecoder::new(V7M);
+        let mut proc = ArmProcessor::new(V7M, 0);
+        let mut pc = 0x1000;
 
         for line in buf_reader.lines().map(|l| l.unwrap()) {
             // Skip comment lines
@@ -656,7 +661,7 @@ mod tests {
 
             let pos = line.find(" ").unwrap();
             let bytes = hex::decode(&line[..pos]).unwrap();
-            let mnemonic = &line[pos + 1..];
+            let mnemonic = &line[9..];
 
             let halfword = u16::from_le_bytes(bytes[..2].try_into().unwrap());
             let size = InstructionSize::from_halfword(halfword);
@@ -672,9 +677,20 @@ mod tests {
                 }
             };
 
-            let state = ItState::new();
+            let mut state = proc.registers.psr.it_state();
+            let cond = state.current_condition();
             let ins = decoder.try_decode(ins, size, state).unwrap();
-            assert_eq!(ins.mnemonic(0x1000), mnemonic);
+            assert_eq!(ins.mnemonic(pc, cond), mnemonic);
+            state.advance();
+            proc.registers.psr.set_it_state(state);
+
+            // We need to execute the instruction in the case it is an IT. This way we get the
+            // correct it state for decoding the next instruction when we are inside an IT block
+            // llvm-objdump does set the condition in the name of instruction following IT
+            // instructions, we need to do the same.
+            let _result = ins.execute(&mut proc);
+
+            pc += size.byte_count() as u32;
         }
     }
 

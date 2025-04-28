@@ -336,11 +336,12 @@ impl ArmProcessor {
     /// If given `address` is not aligned to `size`, set `UNALIGNED` bit in CFSR register and take
     /// usage fault exception. This method is used by memory access calls performed by
     /// instructions.
-    fn usage_fault_if_unaligned(&mut self, address: u32, size: usize) {
+    fn usage_fault_if_unaligned(&mut self, address: u32, size: usize) -> Result<(), RunError> {
         if !address.is_aligned(size) {
             self.system_control.borrow_mut().cfsr.set_unaligned(true);
-            self.exception_taken(Irq::UsageFault);
+            self.exception_taken(Irq::UsageFault)?;
         }
+        Ok(())
     }
 
     /// Implements `MemA_with_priv` and `MemU_with_priv` from Arm Architecture Reference Manual,
@@ -469,7 +470,7 @@ impl ArmProcessor {
             self.read_u16_aligned_with_priv(address, privileged)
         } else if self.system_control.borrow().ccr.unalign_trp() {
             self.system_control.borrow_mut().cfsr.set_unaligned(true);
-            self.exception_taken(Irq::UsageFault);
+            self.exception_taken(Irq::UsageFault)?;
             Ok(0)
         } else {
             // Unaligned access
@@ -495,7 +496,7 @@ impl ArmProcessor {
             self.write_u16_aligned_with_priv(address, value, privileged)
         } else if self.system_control.borrow().ccr.unalign_trp() {
             self.system_control.borrow_mut().cfsr.set_unaligned(true);
-            self.exception_taken(Irq::UsageFault);
+            self.exception_taken(Irq::UsageFault)?;
             Ok(())
         } else {
             // Unaligned access
@@ -523,7 +524,7 @@ impl ArmProcessor {
             self.read_u32_aligned_with_priv(address, privileged)
         } else if self.system_control.borrow().ccr.unalign_trp() {
             self.system_control.borrow_mut().cfsr.set_unaligned(true);
-            self.exception_taken(Irq::UsageFault);
+            self.exception_taken(Irq::UsageFault)?;
             Ok(0)
         } else {
             // Unaligned access
@@ -551,7 +552,7 @@ impl ArmProcessor {
             self.write_u32_aligned_with_priv(address, value, privileged)
         } else if self.system_control.borrow().ccr.unalign_trp() {
             self.system_control.borrow_mut().cfsr.set_unaligned(true);
-            self.exception_taken(Irq::UsageFault);
+            self.exception_taken(Irq::UsageFault)?;
             Ok(())
         } else {
             // Unaligned access
@@ -961,7 +962,7 @@ impl ArmProcessor {
     /// Manual.
     fn exception_entry(&mut self, number: Irq) -> Result<(), RunError> {
         self.push_stack()?;
-        self.exception_taken(number);
+        self.exception_taken(number)?;
         Ok(())
     }
 
@@ -1116,10 +1117,10 @@ impl ArmProcessor {
         Ok(())
     }
 
-    fn exception_taken(&mut self, number: Irq) {
+    fn exception_taken(&mut self, number: Irq) -> Result<(), RunError> {
         let vtor = self.system_control.borrow().vtor.offset();
         let vector_address = number.number() as u32 * 4 + vtor;
-        let jump_address = self.read_u32le_iface(vector_address).unwrap();
+        let jump_address = self.read_u32le_iface(vector_address)?;
         self.set_pc(jump_address & 0xfffffffe);
         self.registers.mode = Mode::Handler;
         self.registers
@@ -1134,6 +1135,7 @@ impl ArmProcessor {
         // TODO: ClearExclusiveLocal()
         // TODO: SetEventRegister()
         // TODO: InstructionSynchronizationBarrier()
+        Ok(())
     }
 
     /// Run until next event and return the event

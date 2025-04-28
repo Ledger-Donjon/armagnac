@@ -1,11 +1,12 @@
 //! Implements STM (Store Multiple), STMIA (Store Multiple Increment After) and STMEA (Store
 //! Multiple Empty Ascending) instructions.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -22,6 +23,8 @@ pub struct Stm {
     registers: MainRegisterList,
     /// True to write new offset value back to Rn.
     pub wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Stm {
@@ -49,6 +52,7 @@ impl Instruction for Stm {
                     rn: ins.reg3(8),
                     registers,
                     wback: true,
+                    tn,
                 }
             }
             2 => {
@@ -61,6 +65,7 @@ impl Instruction for Stm {
                     rn,
                     registers,
                     wback,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -90,6 +95,10 @@ impl Instruction for Stm {
 
     fn name(&self) -> String {
         "stm".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

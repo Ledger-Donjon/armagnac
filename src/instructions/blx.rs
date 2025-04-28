@@ -53,7 +53,7 @@ impl Instruction for Blx {
             todo!()
         }
         let target = proc[self.rm];
-        proc.set_lr((proc.pc() - 2) | 1);
+        proc.set_lr((proc.pc().wrapping_sub(2)) | 1);
         proc.blx_write_pc(target);
         Ok(true)
     }

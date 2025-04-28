@@ -1,10 +1,11 @@
 //! Implements RSB (Reverse Subtract) instruction.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -25,6 +26,8 @@ pub struct RsbImm {
     imm32: u32,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for RsbImm {
@@ -50,6 +53,7 @@ impl Instruction for RsbImm {
                 rn: ins.reg3(3),
                 imm32: 0,
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rd = ins.reg4(8);
@@ -61,6 +65,7 @@ impl Instruction for RsbImm {
                     rn,
                     imm32: thumb_expand_imm(imm12)?,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -81,7 +86,15 @@ impl Instruction for RsbImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "rsbs" } else { "rsb" }.into()
+        "rsb".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -143,7 +156,11 @@ impl Instruction for RsbReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "rsbs" } else { "rsb" }.into()
+        "rsb".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {

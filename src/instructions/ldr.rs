@@ -1,11 +1,12 @@
 //! Implements LDR (Load Register) instruction.
 
-use super::{other, undefined, unpredictable, DecodeHelper, Instruction};
+use super::{other, undefined, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
 use crate::instructions::indexing_args;
+use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -31,6 +32,8 @@ pub struct LdrImm {
     pub add: bool,
     /// True to write new offset value back to Rn.
     pub wback: bool,
+    /// Encoding.
+    pub tn: usize,
 }
 
 impl Instruction for LdrImm {
@@ -68,6 +71,7 @@ impl Instruction for LdrImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             2 => Self {
                 rn: RegisterIndex::Sp,
@@ -76,6 +80,7 @@ impl Instruction for LdrImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             3 => {
                 let rn = ins.reg4(16);
@@ -89,6 +94,7 @@ impl Instruction for LdrImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             4 => {
@@ -109,6 +115,7 @@ impl Instruction for LdrImm {
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
                     wback,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -139,6 +146,10 @@ impl Instruction for LdrImm {
         "ldr".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}",
@@ -156,6 +167,8 @@ pub struct LdrLit {
     imm32: u32,
     /// True to add offset, false to subtract.
     add: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LdrLit {
@@ -180,6 +193,7 @@ impl Instruction for LdrLit {
                 rt: ins.reg3(8),
                 imm32: (ins & 0xff) << 2,
                 add: true,
+                tn,
             },
             2 => {
                 let rt = ins.reg4(12);
@@ -188,6 +202,7 @@ impl Instruction for LdrLit {
                     rt,
                     imm32: ins & 0xfff,
                     add: ins.bit(23),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -214,9 +229,14 @@ impl Instruction for LdrLit {
         "ldr".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        //let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
+        let minus = if self.add { "" } else { "-" };
+        format!("{}, [pc, #{}{}]", self.rt, minus, self.imm32)
     }
 }
 
@@ -236,6 +256,8 @@ pub struct LdrReg {
     add: bool,
     /// True to write new offset value back to Rn.
     wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LdrReg {
@@ -264,6 +286,7 @@ impl Instruction for LdrReg {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             2 => {
                 let rt = ins.reg4(12);
@@ -280,6 +303,7 @@ impl Instruction for LdrReg {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -312,12 +336,16 @@ impl Instruction for LdrReg {
         "ldr".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
+    }
+
     fn args(&self, _pc: u32) -> String {
         if self.shift.n == 0 {
             format!("{}, [{}, {}]", self.rt, self.rn, self.rm)
         } else {
             format!(
-                "{}, [{}, {}, {}]",
+                "{}, [{}, {}{}]",
                 self.rt,
                 self.rn,
                 self.rm,

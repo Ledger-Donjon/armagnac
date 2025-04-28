@@ -1,10 +1,10 @@
 //! Implements EOR (Exclusive OR) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -12,6 +12,7 @@ use crate::{
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
     it_state::ItState,
+    qualifier_wide_match,
     registers::RegisterIndex,
 };
 
@@ -66,7 +67,11 @@ impl Instruction for EorImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "eors" } else { "eor" }.into()
+        "eor".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -86,6 +91,8 @@ pub struct EorReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for EorReg {
@@ -114,6 +121,7 @@ impl Instruction for EorReg {
                     rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -127,6 +135,7 @@ impl Instruction for EorReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -145,7 +154,15 @@ impl Instruction for EorReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "eors" } else { "eor" }.into()
+        "eor".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

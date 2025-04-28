@@ -1,10 +1,11 @@
 //! Implements LDRSB (Load Register Signed Byte) instruction.
 
-use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -32,6 +33,8 @@ pub struct LdrsbImm {
     pub add: bool,
     /// True to write new offset value back to Rn.
     pub wback: bool,
+    /// Encoding.
+    pub tn: usize,
 }
 
 impl Instruction for LdrsbImm {
@@ -65,6 +68,7 @@ impl Instruction for LdrsbImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             2 => {
@@ -84,6 +88,7 @@ impl Instruction for LdrsbImm {
                     index: p,
                     add: u,
                     wback: w,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -104,6 +109,10 @@ impl Instruction for LdrsbImm {
 
     fn name(&self) -> String {
         "ldrsb".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 1)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -160,9 +169,17 @@ impl Instruction for LdrsbLit {
         "ldrsb".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
+    fn qualifier(&self) -> Qualifier {
+        // llvm-objdump add .w qualifier despite Arm Architecture Reference Manual doesn't.
+        Qualifier::Wide
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!(
+            "{}, {}",
+            self.rt,
+            indexing_args(RegisterIndex::Pc, self.imm32, true, self.add, false)
+        )
     }
 }
 
@@ -178,6 +195,8 @@ pub struct LdrsbReg {
     rm: RegisterIndex,
     /// Shift to be applied to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LdrsbReg {
@@ -203,6 +222,7 @@ impl Instruction for LdrsbReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rt = ins.reg4(12);
@@ -216,6 +236,7 @@ impl Instruction for LdrsbReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -235,6 +256,10 @@ impl Instruction for LdrsbReg {
 
     fn name(&self) -> String {
         "ldrsb".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -269,6 +294,7 @@ mod tests {
             index: true,
             add: true,
             wback: true,
+            tn: 0,
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0xfffffff8);
@@ -317,6 +343,7 @@ mod tests {
             rn: RegisterIndex::R1,
             rm: RegisterIndex::R2,
             shift: Shift::lsl(0),
+            tn: 0,
         };
 
         proc.registers.r1 = 0x1000;

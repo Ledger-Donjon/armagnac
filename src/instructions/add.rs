@@ -1,9 +1,8 @@
 //! Implements ADD instruction.
 
-use core::panic;
-
 use super::ArmVersion::{V6M, V7M, V8M};
-use super::{other, unpredictable, DecodeHelper, Instruction, Pattern};
+use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
     arm::{ArmProcessor, RunError},
@@ -13,6 +12,7 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
+use core::panic;
 
 /// ADD (immediate) instruction.
 pub struct AddImm {
@@ -24,6 +24,8 @@ pub struct AddImm {
     imm32: u32,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AddImm {
@@ -59,6 +61,7 @@ impl Instruction for AddImm {
                 rn: ins.reg3(3),
                 imm32: ins.imm3(6),
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rdn = ins.reg3(8);
@@ -67,6 +70,7 @@ impl Instruction for AddImm {
                     rn: rdn,
                     imm32: ins & 0xff,
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             3 => {
@@ -83,6 +87,7 @@ impl Instruction for AddImm {
                     rn,
                     imm32,
                     set_flags,
+                    tn,
                 }
             }
             4 => {
@@ -99,6 +104,7 @@ impl Instruction for AddImm {
                     rn,
                     imm32: (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff,
                     set_flags: false,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -115,7 +121,15 @@ impl Instruction for AddImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "adds" } else { "add" }.into()
+        if self.tn == 4 { "addw" } else { "add" }.into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -136,6 +150,8 @@ pub struct AddReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AddReg {
@@ -167,6 +183,7 @@ impl Instruction for AddReg {
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rm = ins.reg4(3);
@@ -186,6 +203,7 @@ impl Instruction for AddReg {
                     rm,
                     shift: Shift::lsl(0),
                     set_flags: false,
+                    tn,
                 }
             }
             3 => {
@@ -209,6 +227,7 @@ impl Instruction for AddReg {
                     rm,
                     shift,
                     set_flags,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -232,7 +251,15 @@ impl Instruction for AddReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "adds" } else { "add" }.into()
+        "add".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -253,6 +280,8 @@ pub struct AddSpPlusImm {
     imm32: u32,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AddSpPlusImm {
@@ -287,11 +316,13 @@ impl Instruction for AddSpPlusImm {
                 rd: ins.reg3(8),
                 imm32: ins.imm8(0) << 2,
                 set_flags: false,
+                tn,
             },
             2 => Self {
                 rd: RegisterIndex::Sp,
                 imm32: ins.imm7(0) << 2,
                 set_flags: false,
+                tn,
             },
             3 => {
                 let rd = ins.reg4(8);
@@ -304,6 +335,7 @@ impl Instruction for AddSpPlusImm {
                     rd,
                     imm32,
                     set_flags,
+                    tn,
                 }
             }
             4 => {
@@ -315,6 +347,7 @@ impl Instruction for AddSpPlusImm {
                     rd,
                     imm32: (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0),
                     set_flags: false,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -335,7 +368,15 @@ impl Instruction for AddSpPlusImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "adds" } else { "add" }.into()
+        if self.tn == 4 { "addw" } else { "add" }.into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -357,6 +398,8 @@ pub struct AddSpPlusReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AddSpPlusReg {
@@ -389,6 +432,7 @@ impl Instruction for AddSpPlusReg {
                     rm: rdm,
                     shift: Shift::lsl(0),
                     set_flags: false,
+                    tn,
                 }
             }
             2 => {
@@ -399,6 +443,7 @@ impl Instruction for AddSpPlusReg {
                     rm,
                     shift: Shift::lsl(0),
                     set_flags: false,
+                    tn,
                 }
             }
             3 => {
@@ -413,6 +458,7 @@ impl Instruction for AddSpPlusReg {
                     rm,
                     shift,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -440,7 +486,15 @@ impl Instruction for AddSpPlusReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "adds" } else { "add" }.into()
+        "add".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -539,6 +593,7 @@ mod tests {
                 rn,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
+                tn: 0,
             }
             .execute(&mut proc)
             .unwrap();
@@ -632,6 +687,7 @@ mod tests {
                 rm,
                 set_flags: v.set_flags,
                 shift: v.shift,
+                tn: 0,
             }
             .execute(&mut proc)
             .unwrap();
@@ -698,6 +754,7 @@ mod tests {
                 rd,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
+                tn: 0,
             }
             .execute(&mut proc)
             .unwrap();
@@ -773,6 +830,7 @@ mod tests {
                 rm,
                 shift: v.shift,
                 set_flags: v.set_flags,
+                tn: 0,
             }
             .execute(&mut proc)
             .unwrap();

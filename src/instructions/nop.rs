@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -12,7 +13,10 @@ use crate::{
 };
 
 /// NOP instruction.
-pub struct Nop {}
+pub struct Nop {
+    /// Encoding.
+    tn: usize,
+}
 
 impl Instruction for Nop {
     fn patterns() -> &'static [Pattern] {
@@ -31,8 +35,9 @@ impl Instruction for Nop {
         ]
     }
 
-    fn try_decode(_tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(Self {})
+    fn try_decode(tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert!((tn == 1) || (tn == 2));
+        Ok(Self { tn })
     }
 
     fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
@@ -41,6 +46,10 @@ impl Instruction for Nop {
 
     fn name(&self) -> String {
         "nop".into()
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

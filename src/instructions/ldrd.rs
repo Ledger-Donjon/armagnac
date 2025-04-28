@@ -147,8 +147,13 @@ impl Instruction for LdrdLit {
         "ldrd".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).wrapping_add_or_sub(self.imm32, self.add);
-        format!("{}, {}, [pc, #{}]", self.rt, self.rt2, address)
+    fn args(&self, _pc: u32) -> String {
+        //let address = pc.wrapping_add(4).wrapping_add_or_sub(self.imm32, self.add);
+        format!(
+            "{}, {}, {}",
+            self.rt,
+            self.rt2,
+            indexing_args(RegisterIndex::Pc, self.imm32, true, self.add, false)
+        )
     }
 }

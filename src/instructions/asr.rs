@@ -1,7 +1,8 @@
 //! Implements ASR (Arithmetic Shift Right) instruction.
 
 use super::ArmVersion::{V6M, V7M, V8M};
-use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern};
+use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -21,6 +22,8 @@ pub struct AsrImm {
     shift: u8,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AsrImm {
@@ -46,6 +49,7 @@ impl Instruction for AsrImm {
                 rm: ins.reg3(3),
                 shift: Shift::from_bits(2, ins.imm5(6)).n as u8,
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rm = ins.reg4(0);
@@ -57,6 +61,7 @@ impl Instruction for AsrImm {
                     rm,
                     shift: imm5 as u8,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -74,7 +79,15 @@ impl Instruction for AsrImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "asrs" } else { "asr" }.into()
+        "asr".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -92,6 +105,8 @@ pub struct AsrReg {
     rm: RegisterIndex,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AsrReg {
@@ -119,6 +134,7 @@ impl Instruction for AsrReg {
                     rn: rdn,
                     rm: ins.reg3(3),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -131,6 +147,7 @@ impl Instruction for AsrReg {
                     rn,
                     rm,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -149,7 +166,15 @@ impl Instruction for AsrReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "asrs" } else { "asr" }.into()
+        "asr".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

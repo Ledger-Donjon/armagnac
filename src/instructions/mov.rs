@@ -6,6 +6,7 @@ use super::{
     Pattern,
 };
 use crate::arith::{shift_c, Shift, ShiftType};
+use crate::qualifier_wide_match;
 use crate::{
     arith::thumb_expand_imm_optc,
     arm::{ArmProcessor, RunError},
@@ -26,6 +27,8 @@ pub struct MovImm {
     set_flags: bool,
     /// Carry.
     carry: Option<bool>,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for MovImm {
@@ -56,6 +59,7 @@ impl Instruction for MovImm {
                 imm32: ins.imm8(0),
                 set_flags: !state.in_it_block(),
                 carry: None,
+                tn,
             },
             2 => {
                 let rd = ins.reg4(8);
@@ -67,6 +71,7 @@ impl Instruction for MovImm {
                     imm32,
                     set_flags: ins.bit(20),
                     carry,
+                    tn,
                 }
             }
             3 => {
@@ -79,6 +84,7 @@ impl Instruction for MovImm {
                     imm32,
                     set_flags: false,
                     carry: None,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -94,7 +100,15 @@ impl Instruction for MovImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "movs" } else { "mov" }.into()
+        if self.tn == 3 { "movw" } else { "mov" }.into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -110,6 +124,8 @@ pub struct MovReg {
     rm: RegisterIndex,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for MovReg {
@@ -143,6 +159,7 @@ impl Instruction for MovReg {
                     rd,
                     rm: ins.reg4(3),
                     set_flags: false,
+                    tn,
                 }
             }
             2 => {
@@ -151,6 +168,7 @@ impl Instruction for MovReg {
                     rd: ins.reg3(0),
                     rm: ins.reg3(3),
                     set_flags: true,
+                    tn,
                 }
             }
             3 => {
@@ -161,7 +179,12 @@ impl Instruction for MovReg {
                 unpredictable(
                     !set_flags && (rd.is_pc() || rm.is_pc() || (rd.is_sp() && rm.is_sp())),
                 )?;
-                Self { rd, rm, set_flags }
+                Self {
+                    rd,
+                    rm,
+                    set_flags,
+                    tn,
+                }
             }
             _ => panic!(),
         })
@@ -182,7 +205,15 @@ impl Instruction for MovReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "movs" } else { "mov" }.into()
+        "mov".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -272,7 +303,11 @@ impl Instruction for MovRegShiftReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "movs" } else { "mov" }.into()
+        "mov".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {

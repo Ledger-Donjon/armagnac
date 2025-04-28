@@ -5,8 +5,6 @@
 //! in the [and] module by the [and::AndImm] for the Immediate variant and [and::AndReg] for the
 //! Register variant.
 
-use std::rc::Rc;
-
 use crate::{
     arm::{ArmProcessor, ArmVersion, RunError},
     condition::Condition,
@@ -14,6 +12,7 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
+use std::rc::Rc;
 
 pub mod adc;
 pub mod add;
@@ -111,6 +110,12 @@ pub struct Pattern {
     pub expression: &'static str,
 }
 
+pub enum Qualifier {
+    None,
+    Narrow,
+    Wide,
+}
+
 /// All instructions must implement this trait in order to be integrated into the emulator.
 pub trait Instruction {
     /// Returns a list of string patterns the instruction can match.
@@ -183,6 +188,20 @@ pub trait Instruction {
     /// may appear when the instruction updates the processor condition flags.
     fn name(&self) -> String;
 
+    /// Returns assembly qualifiers, such as "n" (narrow) or "w" (wide). This is used for printing
+    /// instruction mnemonic.
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::None
+    }
+
+    /// Returns whether this instruction updates flags or not. This is used for printing
+    /// instruction mnemonic.
+    ///
+    /// Blanket implementation returns false.
+    fn sets_flags(&self) -> bool {
+        false
+    }
+
     /// Formats and returns arguments strings to be shown in the instruction mnemonic.
     ///
     /// Here is a typical example:
@@ -201,6 +220,12 @@ pub trait Instruction {
     ///
     /// Some formatting helper methods are provided and can be used: see [rdn_args_string],
     /// [indexing_args] or [crate::arith::Shift::arg_string].
+    ///
+    /// We have chosen to follow formatting output of `llvm-objdump` even when it might be
+    /// different from the Arm Architecture Reference Manual. Doing this makes easier the
+    /// generation of test vectors for formatting by relying on `llvm-objdump` as a reference
+    /// we can trust. Currently, following disassembly options is passed to `llvm-objdump`:
+    /// `--no-print-imm-hex`
     fn args(&self, pc: u32) -> String;
 }
 
@@ -250,8 +275,14 @@ impl InstructionSize {
         }
     }
 
+    /// Size of instruction in bits.
     pub fn bit_count(&self) -> usize {
         (*self as usize) * 8
+    }
+
+    /// Size of instruction in bytes.
+    pub fn byte_count(&self) -> usize {
+        *self as usize
     }
 }
 
@@ -341,6 +372,16 @@ impl DecodeHelper for u32 {
     }
 }
 
+#[macro_export]
+macro_rules! qualifier_wide_match {
+    ($tn:expr, $tns:pat) => {
+        match $tn {
+            $tns => crate::instructions::Qualifier::Wide,
+            _ => crate::instructions::Qualifier::None,
+        }
+    };
+}
+
 /// Returns "{rd}" if rd is equal to rn, else "{rd}, {rn}".
 ///
 /// This is a convenient method used for many instruction arguments formatting.
@@ -408,16 +449,28 @@ impl AddOrSub for u32 {
 }
 
 pub trait Mnemonic {
-    fn mnemonic(&self, pc: u32) -> String;
+    fn mnemonic(&self, pc: u32, cond: Option<Condition>) -> String;
 }
 
 impl Mnemonic for Rc<dyn Instruction> {
-    fn mnemonic(&self, pc: u32) -> String {
+    fn mnemonic(&self, pc: u32, cond: Option<Condition>) -> String {
+        let mut name = self.name();
+        if self.sets_flags() {
+            name += "s";
+        }
+        if let Some(cond) = cond {
+            name += &cond.to_string()
+        }
+        match self.qualifier() {
+            Qualifier::None => {}
+            Qualifier::Narrow => name += ".n",
+            Qualifier::Wide => name += ".w",
+        }
         let args = self.args(pc);
         if args.len() > 0 {
-            format!("{:<6} {}", self.name(), self.args(pc))
+            format!("{:<8} {}", name, self.args(pc))
         } else {
-            self.name()
+            name
         }
     }
 }

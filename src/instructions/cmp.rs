@@ -1,10 +1,11 @@
 //! Implements CMP (Compare) instruction.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -19,6 +20,8 @@ pub struct CmpImm {
     rn: RegisterIndex,
     /// Second operand immediate value.
     imm32: u32,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for CmpImm {
@@ -42,10 +45,12 @@ impl Instruction for CmpImm {
             1 => Self {
                 rn: ins.reg3(8),
                 imm32: ins & 0xff,
+                tn,
             },
             2 => Self {
                 rn: ins.reg4(16),
                 imm32: thumb_expand_imm((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff)?,
+                tn,
             },
             _ => panic!(),
         })
@@ -65,6 +70,10 @@ impl Instruction for CmpImm {
         "cmp".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!("{}, #{}", self.rn, self.imm32)
     }
@@ -78,6 +87,8 @@ pub struct CmpReg {
     rm: RegisterIndex,
     /// Shift to apply to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for CmpReg {
@@ -107,6 +118,7 @@ impl Instruction for CmpReg {
                 rn: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rn = (ins.imm1(7) << 3) | ins.imm3(0);
@@ -119,6 +131,7 @@ impl Instruction for CmpReg {
                     rn,
                     rm,
                     shift: Shift::lsl(0),
+                    tn,
                 }
             }
             3 => {
@@ -129,6 +142,7 @@ impl Instruction for CmpReg {
                     rn,
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -149,6 +163,10 @@ impl Instruction for CmpReg {
 
     fn name(&self) -> String {
         "cmp".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {

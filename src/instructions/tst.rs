@@ -1,10 +1,11 @@
 //! Implements TST (Test) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -52,6 +53,10 @@ impl Instruction for TstImm {
         "tst".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::Wide
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!("{}, #{}", self.rn, self.imm32)
     }
@@ -65,6 +70,8 @@ pub struct TstReg {
     rm: RegisterIndex,
     /// Shift to be applied to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for TstReg {
@@ -89,6 +96,7 @@ impl Instruction for TstReg {
                 rn: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -98,6 +106,7 @@ impl Instruction for TstReg {
                     rn,
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -114,6 +123,10 @@ impl Instruction for TstReg {
 
     fn name(&self) -> String {
         "tst".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

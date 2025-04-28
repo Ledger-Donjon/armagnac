@@ -1,10 +1,12 @@
 //! Implements UXTH (Unsigned Extend Halfword) instruction.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::arith::Shift;
+use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
     arm::{ArmProcessor, RunError},
@@ -21,6 +23,8 @@ pub struct Uxth {
     rm: RegisterIndex,
     /// Rotation applied to Rm.
     rotation: u8,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Uxth {
@@ -45,6 +49,7 @@ impl Instruction for Uxth {
                 rd: ins.reg3(0),
                 rm: ins.reg3(3),
                 rotation: 0,
+                tn,
             },
             2 => {
                 let rd = ins.reg4(8);
@@ -54,6 +59,7 @@ impl Instruction for Uxth {
                     rd,
                     rm,
                     rotation: (ins.imm2(4) << 3) as u8,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -70,13 +76,17 @@ impl Instruction for Uxth {
         "uxth".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
+    }
+
     fn args(&self, _pc: u32) -> String {
-        let ror_str = if self.rotation != 0 {
-            format!(", ROR #{}", self.rotation)
-        } else {
-            "".into()
-        };
-        format!("{}, {}{}", self.rd, self.rm, ror_str)
+        format!(
+            "{}, {}{}",
+            self.rd,
+            self.rm,
+            Shift::ror(self.rotation as u32).arg_string()
+        )
     }
 }
 
@@ -97,6 +107,7 @@ mod tests {
             rd: RegisterIndex::R0,
             rm: RegisterIndex::R1,
             rotation: 0,
+            tn: 0,
         };
 
         ins.execute(&mut proc).unwrap();

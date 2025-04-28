@@ -1,10 +1,12 @@
 //! Implements LDRH (Load Register Halfword) instruction.
 
+use super::Qualifier;
 use super::{ldr::LdrImm, other, undefined, AddOrSub, Instruction};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -51,6 +53,7 @@ impl Instruction for LdrhImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             }),
             2 => {
                 let rt = ins.reg4(12);
@@ -65,6 +68,7 @@ impl Instruction for LdrhImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 })
             }
             3 => {
@@ -83,6 +87,7 @@ impl Instruction for LdrhImm {
                     index: p,
                     add: u,
                     wback: w,
+                    tn,
                 })
             }
             _ => panic!(),
@@ -111,6 +116,10 @@ impl Instruction for LdrhImm {
 
     fn name(&self) -> String {
         "ldrh".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.0.tn, 2)
     }
 
     fn args(&self, pc: u32) -> String {
@@ -169,9 +178,14 @@ impl Instruction for LdrhLit {
         "ldrh".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        format!("{}, 0x{:0x}", self.rt, address)
+    fn qualifier(&self) -> Qualifier {
+        // llvm-objdump add .w qualifier despite Arm Architecture Reference Manual doesn't.
+        Qualifier::Wide
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        let minus = if self.add { "" } else { "-" };
+        format!("{}, [pc, #{}{}]", self.rt, minus, self.imm32)
     }
 }
 
@@ -185,6 +199,8 @@ pub struct LdrhReg {
     rm: RegisterIndex,
     /// Shift applied to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LdrhReg {
@@ -210,6 +226,7 @@ impl Instruction for LdrhReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rt = ins.reg4(12);
@@ -223,6 +240,7 @@ impl Instruction for LdrhReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -240,6 +258,10 @@ impl Instruction for LdrhReg {
 
     fn name(&self) -> String {
         "ldrh".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

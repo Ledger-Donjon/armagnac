@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -24,6 +25,8 @@ pub struct SubImm {
     imm32: u32,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for SubImm {
@@ -59,6 +62,7 @@ impl Instruction for SubImm {
                 rn: ins.reg3(3),
                 imm32: (ins >> 6) & 7,
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rdn = ins.reg3(8);
@@ -67,6 +71,7 @@ impl Instruction for SubImm {
                     rn: rdn,
                     imm32: ins & 0xff,
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             3 => {
@@ -83,6 +88,7 @@ impl Instruction for SubImm {
                     rn,
                     imm32,
                     set_flags,
+                    tn,
                 }
             }
             4 => {
@@ -97,6 +103,7 @@ impl Instruction for SubImm {
                     rn,
                     imm32,
                     set_flags: false,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -118,7 +125,20 @@ impl Instruction for SubImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "subs" } else { "sub" }.into()
+        match self.tn {
+            1 | 2 | 3 => "sub",
+            4 => "subw",
+            _ => panic!(),
+        }
+        .into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -138,6 +158,8 @@ pub struct SubReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for SubReg {
@@ -164,6 +186,7 @@ impl Instruction for SubReg {
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
+                tn,
             },
             2 => {
                 let rm = ins.reg4(0);
@@ -179,6 +202,7 @@ impl Instruction for SubReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: s,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -202,13 +226,22 @@ impl Instruction for SubReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "subs" } else { "sub" }.into()
+        "sub".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
-            "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
+            "{}, {}, {}{}",
+            self.rd,
+            self.rn,
             self.rm,
             self.shift.arg_string()
         )
@@ -223,6 +256,8 @@ pub struct SubSpMinusImm {
     imm32: u32,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for SubSpMinusImm {
@@ -252,6 +287,7 @@ impl Instruction for SubSpMinusImm {
                 rd: RegisterIndex::Sp,
                 imm32: (ins & 0x7f) << 2,
                 set_flags: false,
+                tn,
             },
             2 => {
                 let rd = ins.reg4(8);
@@ -264,6 +300,7 @@ impl Instruction for SubSpMinusImm {
                     rd,
                     imm32,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             3 => {
@@ -274,6 +311,7 @@ impl Instruction for SubSpMinusImm {
                     rd,
                     imm32,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -294,7 +332,20 @@ impl Instruction for SubSpMinusImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "subs" } else { "sub" }.into()
+        match self.tn {
+            1 | 2 => "sub",
+            3 => "subw",
+            _ => panic!(),
+        }
+        .into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> super::Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -305,3 +356,5 @@ impl Instruction for SubSpMinusImm {
         )
     }
 }
+
+// TODO: SP minus register variation

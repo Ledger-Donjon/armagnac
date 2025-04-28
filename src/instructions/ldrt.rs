@@ -48,7 +48,7 @@ impl Instruction for Ldrt {
     }
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        let address = proc[self.rn] + self.imm32;
+        let address = proc[self.rn].wrapping_add(self.imm32);
         let data = proc.read_u32_unaligned_with_priv(address, false)?;
         proc.set(self.rt, data);
         Ok(false)

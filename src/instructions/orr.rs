@@ -1,10 +1,11 @@
 //! Implements ORR (Logical OR) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -65,7 +66,11 @@ impl Instruction for OrrImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "orrs" } else { "orr" }.into()
+        "orr".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -85,6 +90,8 @@ pub struct OrrReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for OrrReg {
@@ -113,6 +120,7 @@ impl Instruction for OrrReg {
                     rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -128,6 +136,7 @@ impl Instruction for OrrReg {
                     rm,
                     shift,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -146,7 +155,15 @@ impl Instruction for OrrReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "orrs" } else { "orr" }.into()
+        "orr".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

@@ -1,7 +1,8 @@
 //! Implements AND instruction.
 
 use super::ArmVersion::{V6M, V7M, V8M};
-use super::{other, unpredictable, DecodeHelper, Instruction, Pattern};
+use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -67,7 +68,11 @@ impl Instruction for AndImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "ands" } else { "and" }.into()
+        "and".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -86,6 +91,8 @@ pub struct AndReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for AndReg {
@@ -114,6 +121,7 @@ impl Instruction for AndReg {
                     rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -129,6 +137,7 @@ impl Instruction for AndReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -147,15 +156,34 @@ impl Instruction for AndReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "ands" } else { "and" }.into()
+        "and".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!(
-            "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
-            self.rm,
-            self.shift.arg_string()
-        )
+        match self.tn {
+            1 => {
+                debug_assert_eq!(self.rd, self.rn);
+                debug_assert_eq!(self.shift, Shift::lsl(0));
+                format!("{}, {}", self.rd, self.rm)
+            }
+            2 => {
+                format!(
+                    "{}, {}, {}{}",
+                    self.rd,
+                    self.rn,
+                    self.rm,
+                    self.shift.arg_string()
+                )
+            }
+            _ => panic!(),
+        }
     }
 }

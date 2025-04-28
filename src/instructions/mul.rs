@@ -8,7 +8,6 @@ use super::{
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -80,10 +79,14 @@ impl Instruction for Mul {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "muls" } else { "mul" }.into()
+        "mul".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
+        format!("{}, {}, {}", self.rd, self.rn, self.rm)
     }
 }

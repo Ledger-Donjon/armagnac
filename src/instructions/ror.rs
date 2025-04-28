@@ -1,10 +1,11 @@
 //! Implements ROR (Rotate Right) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -65,7 +66,15 @@ impl Instruction for RorImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "rors" } else { "ror" }.into()
+        "ror".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::Wide
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -85,6 +94,8 @@ pub struct RorReg {
     rm: RegisterIndex,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for RorReg {
@@ -112,6 +123,7 @@ impl Instruction for RorReg {
                     rn: rdn,
                     rm: ins.reg3(3),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -124,6 +136,7 @@ impl Instruction for RorReg {
                     rn,
                     rm,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -142,7 +155,15 @@ impl Instruction for RorReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "rors" } else { "ror" }.into()
+        "ror".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -193,6 +214,7 @@ mod tests {
             rn: RegisterIndex::R1,
             rm: RegisterIndex::R2,
             set_flags: true,
+            tn: 0,
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0x091a2b3c);

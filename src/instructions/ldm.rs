@@ -1,11 +1,12 @@
 //! Implements LDM (Load Multiple), LDMIA (Load Multiple Increment After) and LDMFD (Load Multiple
 //! Full Descending) instructions.
 
-use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -22,6 +23,8 @@ pub struct Ldm {
     registers: MainRegisterList,
     /// Wether Rn is written back with a modified value.
     wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Ldm {
@@ -55,6 +58,7 @@ impl Instruction for Ldm {
                     rn,
                     registers,
                     wback: !registers.contains(&rn),
+                    tn,
                 }
             }
             2 => {
@@ -69,6 +73,7 @@ impl Instruction for Ldm {
                     rn,
                     registers,
                     wback,
+                    tn,
                 }
             }
             3 => {
@@ -77,6 +82,7 @@ impl Instruction for Ldm {
                     rn: RegisterIndex::Sp,
                     registers,
                     wback: true,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -106,6 +112,10 @@ impl Instruction for Ldm {
 
     fn name(&self) -> String {
         "ldm".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

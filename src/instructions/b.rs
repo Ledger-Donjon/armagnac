@@ -1,7 +1,8 @@
 //! Implements B (Branch) instruction.
 
 use super::ArmVersion::{V6M, V7M, V8M};
-use super::{undefined, unpredictable, Instruction, Pattern};
+use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::sign_extend, arm::ArmProcessor, condition::Condition, decoder::DecodeError,
     instructions::other, it_state::ItState,
@@ -13,6 +14,8 @@ pub struct B {
     cond: Option<Condition>,
     /// Offset.
     imm32: i32,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for B {
@@ -50,6 +53,7 @@ impl Instruction for B {
                 Self {
                     cond: Some(cond),
                     imm32: sign_extend((ins & 0xff) << 1, 9),
+                    tn,
                 }
             }
             2 => {
@@ -57,6 +61,7 @@ impl Instruction for B {
                 Self {
                     cond: None,
                     imm32: sign_extend((ins & 0x7ff) << 1, 12),
+                    tn,
                 }
             }
             3 => {
@@ -76,6 +81,7 @@ impl Instruction for B {
                 Self {
                     cond: Some(cond),
                     imm32,
+                    tn,
                 }
             }
             4 => {
@@ -89,7 +95,11 @@ impl Instruction for B {
                     | ((ins & 0x7ff) << 1);
                 let imm32 = sign_extend(imm25, 25);
                 unpredictable(state.in_it_block_not_last())?;
-                Self { cond: None, imm32 }
+                Self {
+                    cond: None,
+                    imm32,
+                    tn,
+                }
             }
             _ => panic!(),
         })
@@ -114,6 +124,10 @@ impl Instruction for B {
                 Condition::Always
             }
         )
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3 | 4)
     }
 
     fn args(&self, pc: u32) -> String {

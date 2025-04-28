@@ -1,10 +1,13 @@
 //! Implements STRB (Store Byte) instruction.
 
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use super::{
+    indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier,
+};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -27,6 +30,8 @@ pub struct StrbImm {
     add: bool,
     /// True to write new offset value back to Rn.
     wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrbImm {
@@ -59,6 +64,7 @@ impl Instruction for StrbImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -72,6 +78,7 @@ impl Instruction for StrbImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             3 => {
@@ -89,6 +96,7 @@ impl Instruction for StrbImm {
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
                     wback,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -110,6 +118,10 @@ impl Instruction for StrbImm {
         "strb".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}",
@@ -129,6 +141,8 @@ pub struct StrbReg {
     rm: RegisterIndex,
     /// Rm shift amount.
     shift: u8,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrbReg {
@@ -154,6 +168,7 @@ impl Instruction for StrbReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: 0,
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -166,6 +181,7 @@ impl Instruction for StrbReg {
                     rn,
                     rm,
                     shift: ((ins >> 4) & 3) as u8,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -183,6 +199,10 @@ impl Instruction for StrbReg {
 
     fn name(&self) -> String {
         "strb".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

@@ -47,11 +47,10 @@ impl Instruction for Dmb {
 
     fn args(&self, _pc: u32) -> String {
         if self.option == 0xf {
-            // Could be "sy" as well, but we prefer the short form.
-            String::new()
+            "sy".into()
         } else {
             // Other values are reserved, show them as an integer.
-            format!("#{}", self.option)
+            format!("#0x{:x}", self.option)
         }
     }
 }

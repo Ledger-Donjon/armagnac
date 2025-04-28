@@ -1,16 +1,17 @@
 //! Implements SBC (Subtract with Carry) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    instructions::{rdn_args_string, unpredictable, DecodeHelper},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -68,11 +69,15 @@ impl Instruction for SbcImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "sbcs" } else { "sbc" }.into()
+        "sbc".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.imm32)
+        format!("{}, {}, #{}", self.rd, self.rn, self.imm32)
     }
 }
 
@@ -90,6 +95,8 @@ pub struct SbcReg {
     shift: Shift,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for SbcReg {
@@ -97,7 +104,7 @@ impl Instruction for SbcReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M],
+                versions: &[V6M, V7M, V8M],
                 expression: "0100000110xxxxxx",
             },
             Pattern {
@@ -118,6 +125,7 @@ impl Instruction for SbcReg {
                     rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -131,6 +139,7 @@ impl Instruction for SbcReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -153,16 +162,32 @@ impl Instruction for SbcReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "sbcs" } else { "sbc" }.into()
+        "sbc".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!(
-            "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
-            self.rm,
-            self.shift.arg_string()
-        )
+        match self.tn {
+            1 => {
+                debug_assert_eq!(self.rd, self.rn);
+                format!("{}, {}{}", self.rd, self.rm, self.shift.arg_string())
+            }
+            2 => format!(
+                "{}, {}, {}{}",
+                self.rd,
+                self.rn,
+                self.rm,
+                self.shift.arg_string()
+            ),
+            _ => panic!(),
+        }
     }
 }
 
@@ -221,6 +246,7 @@ mod tests {
             rm: RegisterIndex::R2,
             shift: Shift::lsl(0),
             set_flags: true,
+            tn: 0,
         }
         .execute(&mut proc)
         .unwrap();
@@ -237,6 +263,7 @@ mod tests {
             rm: RegisterIndex::R2,
             shift: Shift::lsl(2),
             set_flags: true,
+            tn: 0,
         }
         .execute(&mut proc)
         .unwrap();

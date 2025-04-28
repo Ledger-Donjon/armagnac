@@ -1,10 +1,11 @@
 //! Implements REVSH (Byte-Reverse Signed Halfword) instruction.
 
-use super::{unpredictable, DecodeHelper, Instruction};
+use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -20,6 +21,8 @@ pub struct Revsh {
     rd: RegisterIndex,
     /// Operand register.
     rm: RegisterIndex,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Revsh {
@@ -43,6 +46,7 @@ impl Instruction for Revsh {
             1 => Ok(Self {
                 rd: ins.reg3(0),
                 rm: ins.reg3(3),
+                tn,
             }),
             2 => {
                 let rd = ins.reg4(8);
@@ -50,7 +54,7 @@ impl Instruction for Revsh {
                 let rm2 = ins.reg4(16);
                 unpredictable(rm1 != rm2)?;
                 unpredictable(rd.is_sp_or_pc() || rm1.is_sp_or_pc())?;
-                Ok(Self { rd, rm: rm1 })
+                Ok(Self { rd, rm: rm1, tn })
             }
             _ => panic!(),
         }
@@ -65,6 +69,10 @@ impl Instruction for Revsh {
 
     fn name(&self) -> String {
         "revsh".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -86,7 +94,7 @@ mod tests {
             proc.set(rm, v.0);
             let mut expected = proc.registers.clone();
             expected.set(rd, v.1);
-            Revsh { rd, rm }.execute(&mut proc).unwrap();
+            Revsh { rd, rm, tn: 1 }.execute(&mut proc).unwrap();
             assert_eq!(proc.registers, expected);
         }
     }

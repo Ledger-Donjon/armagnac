@@ -1,11 +1,14 @@
 //! Implements QADD8 (Saturating Add 8) instruction.
 
 use super::Instruction;
-use super::{ArmVersion::V8M, Pattern};
+use super::{
+    ArmVersion::{V7M, V8M},
+    Pattern,
+};
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    instructions::{rdn_args_string, unpredictable, DecodeHelper},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -26,7 +29,7 @@ impl Instruction for Qadd8 {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V8M],
+            versions: &[V7M, V8M],
             expression: "111110101000xxxx1111xxxx0001xxxx",
         }]
     }
@@ -60,7 +63,7 @@ impl Instruction for Qadd8 {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
+        format!("{}, {}, {}", self.rd, self.rn, self.rm)
     }
 }
 

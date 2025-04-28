@@ -1,15 +1,15 @@
 //! Implements STR (Store Register) instruction.
 
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, Instruction};
+use super::{indexing_args, other, undefined, unpredictable, AddOrSub, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    helpers::BitAccess,
     instructions::{DecodeHelper, ItState},
     registers::RegisterIndex,
 };
@@ -28,6 +28,8 @@ pub struct StrImm {
     add: bool,
     /// True to write new offset value back to Rn.
     wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrImm {
@@ -65,6 +67,7 @@ impl Instruction for StrImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             2 => Self {
                 rt: ins.reg3(8),
@@ -73,6 +76,7 @@ impl Instruction for StrImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             3 => {
                 let rn = ins.reg4(16);
@@ -86,6 +90,7 @@ impl Instruction for StrImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             4 => {
@@ -105,6 +110,7 @@ impl Instruction for StrImm {
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
                     wback,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -126,6 +132,10 @@ impl Instruction for StrImm {
         "str".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 3)
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}",
@@ -145,6 +155,8 @@ pub struct StrReg {
     rm: RegisterIndex,
     /// Shift to apply to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrReg {
@@ -170,6 +182,7 @@ impl Instruction for StrReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -182,6 +195,7 @@ impl Instruction for StrReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -199,6 +213,10 @@ impl Instruction for StrReg {
 
     fn name(&self) -> String {
         "str".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

@@ -66,7 +66,11 @@ impl Instruction for OrnImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "orns" } else { "orn" }.into()
+        "orn".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -127,7 +131,11 @@ impl Instruction for OrnReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "orns" } else { "orn" }.into()
+        "orn".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
     }
 
     fn args(&self, _pc: u32) -> String {

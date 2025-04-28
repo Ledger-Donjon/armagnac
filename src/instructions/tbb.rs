@@ -45,10 +45,10 @@ impl Instruction for Tbb {
 
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
         let halfwords = if self.is_tbh {
-            let address = proc[self.rn] + (proc[self.rm] << 1);
+            let address = proc[self.rn].wrapping_add(proc[self.rm] << 1);
             proc.read_u16_unaligned(address)? as u32
         } else {
-            let address = proc[self.rn] + proc[self.rm];
+            let address = proc[self.rn].wrapping_add(proc[self.rm]);
             proc.read_u8(address)? as u32
         };
         let address = proc.pc() + 2 * halfwords;

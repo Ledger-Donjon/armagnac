@@ -1,10 +1,12 @@
 //! Implements LDRB (Load Register Byte) instruction.
 
+use super::Qualifier;
 use super::{ldr::LdrImm, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
@@ -51,6 +53,7 @@ impl Instruction for LdrbImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             }),
             2 => {
                 let rt = ins.reg4(12);
@@ -65,6 +68,7 @@ impl Instruction for LdrbImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 })
             }
             3 => {
@@ -83,6 +87,7 @@ impl Instruction for LdrbImm {
                     index: p,
                     add: u,
                     wback: w,
+                    tn,
                 })
             }
             _ => panic!(),
@@ -105,6 +110,10 @@ impl Instruction for LdrbImm {
         "ldrb".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.0.tn, 2)
+    }
+
     fn args(&self, pc: u32) -> String {
         self.0.args(pc)
     }
@@ -122,6 +131,8 @@ pub struct LdrbReg {
     rm: RegisterIndex,
     /// Shift to be applied to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LdrbReg {
@@ -147,6 +158,7 @@ impl Instruction for LdrbReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rm = ins.reg4(0);
@@ -160,6 +172,7 @@ impl Instruction for LdrbReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -178,6 +191,10 @@ impl Instruction for LdrbReg {
 
     fn name(&self) -> String {
         "ldrb".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -236,8 +253,14 @@ impl Instruction for LdrbLit {
         "ldrb".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        format!("{}, [pc, #{}]  ; 0x{:0x}", self.rt, self.imm32, address)
+    fn qualifier(&self) -> Qualifier {
+        // llvm-objdump add .w qualifier despite Arm Architecture Reference Manual doesn't.
+        Qualifier::Wide
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        //let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
+        let minus = if self.add { "" } else { "-" };
+        format!("{}, [pc, #{}{}]", self.rt, minus, self.imm32)
     }
 }

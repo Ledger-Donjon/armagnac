@@ -1,16 +1,17 @@
 //! Implements CMN (Compare Negative) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
+    qualifier_wide_match,
     registers::RegisterIndex,
 };
 
@@ -57,6 +58,12 @@ impl Instruction for CmnImm {
         "cmn".into()
     }
 
+    fn qualifier(&self) -> Qualifier {
+        // Should be "cmn" but llvm-objdump prints "cmn.w" despite the Arm Architecture Reference
+        // Manual does not say so.
+        Qualifier::Wide
+    }
+
     fn args(&self, _pc: u32) -> String {
         format!("{}, #{}", self.rn, self.imm32)
     }
@@ -72,6 +79,8 @@ pub struct CmnReg {
     rm: RegisterIndex,
     /// Shift to apply to Rm.
     shift: Shift,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for CmnReg {
@@ -96,13 +105,14 @@ impl Instruction for CmnReg {
                 rn: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
+                tn,
             },
             2 => {
                 let rm = ins.reg4(0);
                 let rn = ins.reg4(16);
                 let shift = Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6));
                 unpredictable(rn.is_pc() || rm.is_sp_or_pc())?;
-                Self { rn, rm, shift }
+                Self { rn, rm, shift, tn }
             }
             _ => panic!(),
         })
@@ -122,6 +132,10 @@ impl Instruction for CmnReg {
 
     fn name(&self) -> String {
         "cmn".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -190,7 +204,14 @@ mod tests {
         proc.registers.psr.set(0);
         proc.set(rn, r0 as u32);
         proc.set(rm, r1);
-        CmnReg { rn, rm, shift }.execute(proc).unwrap();
+        CmnReg {
+            rn,
+            rm,
+            shift,
+            tn: 0,
+        }
+        .execute(proc)
+        .unwrap();
         assert_eq!(proc.registers.psr.z(), z);
         assert_eq!(proc.registers.psr.c(), c);
         assert_eq!(proc.registers.psr.v(), v);

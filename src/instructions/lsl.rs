@@ -1,10 +1,11 @@
 //! Implements LSL (Logical Shift Left) instruction.
 
-use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -25,6 +26,8 @@ pub struct LslImm {
     shift: u8,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LslImm {
@@ -53,6 +56,7 @@ impl Instruction for LslImm {
                     rm: ins.reg3(3),
                     shift: imm5 as u8,
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -66,6 +70,7 @@ impl Instruction for LslImm {
                     rm,
                     shift: imm5 as u8,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -84,7 +89,15 @@ impl Instruction for LslImm {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "lsls" } else { "lsl" }.into()
+        "lsl".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -102,6 +115,8 @@ pub struct LslReg {
     rm: RegisterIndex,
     /// True if condition flags are updated.
     set_flags: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for LslReg {
@@ -129,6 +144,7 @@ impl Instruction for LslReg {
                     rn: rdn,
                     rm: ins.reg3(3),
                     set_flags: !state.in_it_block(),
+                    tn,
                 }
             }
             2 => {
@@ -141,6 +157,7 @@ impl Instruction for LslReg {
                     rn,
                     rm,
                     set_flags: ins.bit(20),
+                    tn,
                 }
             }
             _ => panic!(),
@@ -160,7 +177,15 @@ impl Instruction for LslReg {
     }
 
     fn name(&self) -> String {
-        if self.set_flags { "lsls" } else { "lsl" }.into()
+        "lsl".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

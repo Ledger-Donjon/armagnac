@@ -1,10 +1,10 @@
 //! Implements TEQ (Test Equivalence) instruction.
 
-use super::Instruction;
 use super::{
     ArmVersion::{V7M, V8M},
     Pattern,
 };
+use super::{Instruction, Qualifier};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
@@ -52,6 +52,10 @@ impl Instruction for TeqImm {
 
     fn name(&self) -> String {
         "teq".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::Wide
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -102,6 +106,10 @@ impl Instruction for TeqReg {
 
     fn name(&self) -> String {
         "teq".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::Wide
     }
 
     fn args(&self, _pc: u32) -> String {

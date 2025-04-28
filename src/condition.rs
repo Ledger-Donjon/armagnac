@@ -74,8 +74,10 @@ impl Display for Condition {
         let s = match self {
             Condition::Equal => "eq",
             Condition::NotEqual => "ne",
-            Condition::CarrySet => "cs",
-            Condition::CarryClear => "cc",
+            // Could be "cs" as well, but "hs" is used by llvm-objdump
+            Condition::CarrySet => "hs",
+            // Could be "cc" as well, but "lo" is used by llvm-objdump
+            Condition::CarryClear => "lo",
             Condition::Minus => "mi",
             Condition::Plus => "pl",
             Condition::Overflow => "vs",

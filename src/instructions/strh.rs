@@ -1,10 +1,13 @@
 //! Implements STRH (Store Register Halfword) instruction.
 
-use super::{indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction};
+use super::{
+    indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier,
+};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -28,6 +31,8 @@ pub struct StrhImm {
     add: bool,
     /// True to write new offset value back to Rn.
     wback: bool,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrhImm {
@@ -60,6 +65,7 @@ impl Instruction for StrhImm {
                 index: true,
                 add: true,
                 wback: false,
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -73,6 +79,7 @@ impl Instruction for StrhImm {
                     index: true,
                     add: true,
                     wback: false,
+                    tn,
                 }
             }
             3 => {
@@ -89,6 +96,7 @@ impl Instruction for StrhImm {
                     index: p,
                     add: u,
                     wback: w,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -108,6 +116,10 @@ impl Instruction for StrhImm {
 
     fn name(&self) -> String {
         "strh".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -131,6 +143,8 @@ pub struct StrhReg {
     rm: RegisterIndex,
     /// Rm shift amount.
     shift: u8,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for StrhReg {
@@ -156,6 +170,7 @@ impl Instruction for StrhReg {
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: 0,
+                tn,
             },
             2 => {
                 let rn = ins.reg4(16);
@@ -168,6 +183,7 @@ impl Instruction for StrhReg {
                     rn,
                     rm,
                     shift: ins.imm2(4) as u8,
+                    tn,
                 }
             }
             _ => panic!(),
@@ -184,6 +200,10 @@ impl Instruction for StrhReg {
 
     fn name(&self) -> String {
         "strh".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2)
     }
 
     fn args(&self, _pc: u32) -> String {

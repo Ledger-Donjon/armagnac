@@ -1,7 +1,8 @@
 //! Implements ADR (Address to Register) instruction.
 
 use super::ArmVersion::{V6M, V7M, V8M};
-use super::{unpredictable, DecodeHelper, Instruction, Pattern};
+use super::{unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::qualifier_wide_match;
 use crate::{align::Align, registers::RegisterIndex};
 
 /// ADR instruction.
@@ -12,6 +13,8 @@ pub struct Adr {
     rd: RegisterIndex,
     /// Offset from PC.
     imm32: i32,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Adr {
@@ -44,6 +47,7 @@ impl Instruction for Adr {
             1 => Self {
                 rd: ins.reg3(8),
                 imm32: (ins.imm8(0) as i32) << 2,
+                tn,
             },
             2 | 3 => {
                 let rd = ins.reg4(8);
@@ -52,6 +56,7 @@ impl Instruction for Adr {
                 Self {
                     rd,
                     imm32: if tn == 2 { -imm12 } else { imm12 },
+                    tn,
                 }
             }
             _ => panic!(),
@@ -68,9 +73,12 @@ impl Instruction for Adr {
         "adr".into()
     }
 
-    fn args(&self, pc: u32) -> String {
-        let label = (pc as i32 + self.imm32) as u32 + 4;
-        format!("{}, 0x{:x}", self.rd, label)
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2 | 3)
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!("{}, #{}", self.rd, self.imm32)
     }
 }
 
@@ -86,7 +94,13 @@ mod tests {
         proc.set_pc(0x1000);
         proc.registers.r0 = 0;
         let rd = RegisterIndex::new_general_random();
-        Adr { rd, imm32: offset }.execute(proc).unwrap();
+        Adr {
+            rd,
+            imm32: offset,
+            tn: 0,
+        }
+        .execute(proc)
+        .unwrap();
         assert_eq!(proc[rd], (0x1000 as i32 + offset) as u32);
     }
 

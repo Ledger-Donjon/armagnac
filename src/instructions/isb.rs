@@ -43,7 +43,7 @@ impl Instruction for Isb {
     fn args(&self, _pc: u32) -> String {
         match self.option {
             0xf => "sy".into(),
-            _ => self.option.to_string(),
+            _ => format!("#0x{:x}", self.option),
         }
     }
 }

@@ -1,10 +1,11 @@
 //! Implements POP (Pop Multiple Registers) instruction.
 
-use super::{unpredictable, Instruction};
+use super::{unpredictable, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -16,6 +17,8 @@ use crate::{
 pub struct Pop {
     /// Registers to be poped from the stack.
     registers: MainRegisterList,
+    /// Encoding.
+    tn: usize,
 }
 
 impl Instruction for Pop {
@@ -46,20 +49,20 @@ impl Instruction for Pop {
                 let registers =
                     MainRegisterList::new(((((ins >> 8) & 1) << 15) | ins & 0xff) as u16);
                 unpredictable(registers.is_empty())?;
-                Self { registers }
+                Self { registers, tn }
             }
             2 => {
                 let registers = MainRegisterList::new((ins & 0xdfff) as u16);
                 unpredictable(registers.len() < 2 || (registers.has_pc() && registers.has_lr()))?;
                 unpredictable(registers.has_pc() && state.in_it_block_not_last())?;
-                Self { registers }
+                Self { registers, tn }
             }
             3 => {
                 let rt = (ins >> 12) & 0xf;
                 let registers = MainRegisterList::new((1 << rt) as u16);
                 let rt = RegisterIndex::new_main(rt);
                 unpredictable(rt.is_sp() || (rt.is_pc() && state.in_it_block_not_last()))?;
-                Self { registers }
+                Self { registers, tn }
             }
             _ => panic!(),
         })
@@ -90,6 +93,10 @@ impl Instruction for Pop {
 
     fn name(&self) -> String {
         "pop".into()
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        qualifier_wide_match!(self.tn, 2 | 3)
     }
 
     fn args(&self, _pc: u32) -> String {
