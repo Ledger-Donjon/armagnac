@@ -1,10 +1,11 @@
 //! Implements SUB (Subtract) instruction.
 
-use super::{other, unpredictable, DecodeHelper, Instruction};
+use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::arith::ShiftType;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
@@ -137,7 +138,7 @@ impl Instruction for SubImm {
         self.set_flags
     }
 
-    fn qualifier(&self) -> super::Qualifier {
+    fn qualifier(&self) -> Qualifier {
         qualifier_wide_match!(self.tn, 3)
     }
 
@@ -233,7 +234,7 @@ impl Instruction for SubReg {
         self.set_flags
     }
 
-    fn qualifier(&self) -> super::Qualifier {
+    fn qualifier(&self) -> Qualifier {
         qualifier_wide_match!(self.tn, 2)
     }
 
@@ -344,7 +345,7 @@ impl Instruction for SubSpMinusImm {
         self.set_flags
     }
 
-    fn qualifier(&self) -> super::Qualifier {
+    fn qualifier(&self) -> Qualifier {
         qualifier_wide_match!(self.tn, 2)
     }
 
@@ -357,4 +358,80 @@ impl Instruction for SubSpMinusImm {
     }
 }
 
-// TODO: SP minus register variation
+/// SUB (SP minus register) instruction.
+///
+/// Subtract.
+pub struct SubSpMinusReg {
+    /// Destination register.
+    rd: RegisterIndex,
+    /// Second operand register.
+    rm: RegisterIndex,
+    /// True if condition flags are updated.
+    set_flags: bool,
+    /// Shift applied to Rm.
+    shift: Shift,
+}
+
+impl Instruction for SubSpMinusReg {
+    fn patterns() -> &'static [Pattern] {
+        &[Pattern {
+            tn: 1,
+            versions: &[V7M, V8M],
+            expression: "11101011101x1101(0)xxxxxxxxxxxxxxx",
+        }]
+    }
+
+    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(tn, 1);
+        let rd = ins.reg4(8);
+        let rm = ins.reg4(0);
+        let set_flags = ins.bit(20);
+        other(rd.is_pc() && set_flags)?; // CMP (register)
+        let shift = Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6));
+        unpredictable(rd.is_sp() && (shift.t != ShiftType::Lsl || shift.n > 3))?;
+        unpredictable((rd.is_pc() && !set_flags) || rm.is_sp_or_pc())?;
+        Ok(Self {
+            rd,
+            rm,
+            set_flags,
+            shift,
+        })
+    }
+
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+        let carry_in = proc.registers.psr.c();
+        let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
+        let (result, carry, overflow) = add_with_carry(proc.registers.sp(), !shifted, true);
+        proc.set(self.rd, result);
+        if self.set_flags {
+            proc.registers
+                .psr
+                .set_nz(result)
+                .set_c(carry)
+                .set_v(overflow);
+        }
+        Ok(false)
+    }
+
+    fn name(&self) -> String {
+        "sub".into()
+    }
+
+    fn sets_flags(&self) -> bool {
+        self.set_flags
+    }
+
+    fn qualifier(&self) -> Qualifier {
+        Qualifier::Wide
+    }
+
+    fn args(&self, _pc: u32) -> String {
+        format!(
+            "{}, {}, {}{}",
+            self.rd,
+            RegisterIndex::Sp,
+            self.rm,
+            self.shift.arg_string()
+        )
+    }
+}

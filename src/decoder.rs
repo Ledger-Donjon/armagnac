@@ -396,6 +396,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::sub::SubImm>(version);
         dec.insert::<instructions::sub::SubReg>(version);
         dec.insert::<instructions::sub::SubSpMinusImm>(version);
+        dec.insert::<instructions::sub::SubSpMinusReg>(version);
         dec.insert::<instructions::svc::Svc>(version);
         dec.insert::<instructions::sxtb::Sxtb>(version);
         dec.insert::<instructions::sxth::Sxth>(version);
@@ -630,10 +631,7 @@ mod tests {
         BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
     };
     use crate::{
-        arm::{
-            ArmProcessor,
-            ArmVersion::{V7M, V8M},
-        },
+        arm::{ArmProcessor, ArmVersion::V7M},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
         it_state::ItState,

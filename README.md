@@ -78,7 +78,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
-- SUB (SP minus register): Subtract
 - USAT: Unsigned Saturate
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
@@ -134,7 +133,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
-- SUB (SP minus register): Subtract
 - SUB (immediate, from PC): Subtract
 - TT, TTT, TTA, TTAT: Test Target (Alternate Domain, Unprivileged)
 - USAT: Unsigned Saturate

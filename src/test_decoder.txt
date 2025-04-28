@@ -840,6 +840,11 @@ adf20c02 subw     r2, sp, #12
 adf23727 subw     r7, sp, #567
 adf27b0a subw     r10, sp, #123
 adf6ff7c subw     r12, sp, #4095
+adeb0a00 sub.w    r0, sp, r10
+adeb4207 sub.w    r7, sp, r2, lsl #1
+bdebd97a subs.w   r10, sp, r9, lsr #31
+adeb6312 sub.w    r2, sp, r3, asr #5
+bdeb073e subs.w   lr, sp, r7, lsl #12
 00df     svc      #0
 0adf     svc      #10
 3edf     svc      #62

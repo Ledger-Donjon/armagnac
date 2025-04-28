@@ -1344,12 +1344,11 @@ subw    r12, sp, #4095
 
 // SUB (SP minus register)
 // T1
-// TODO: not yet implemented by armagnac
-//sub     r0, sp, r10
-//sub     r7, sp, r2, lsl #1
-//subs    r10, sp, r9, lsr #31
-//sub     r2, sp, r3, asr #5
-//subs    r14, sp, r7, asl #12
+sub     r0, sp, r10
+sub     r7, sp, r2, lsl #1
+subs    r10, sp, r9, lsr #31
+sub     r2, sp, r3, asr #5
+subs    r14, sp, r7, asl #12
 
 // SVC
 svc     #0
