@@ -154,7 +154,7 @@ impl Instruction for LdrImm {
         format!(
             "{}, {}",
             self.rt,
-            indexing_args(self.rn, self.imm32, self.index, self.add, self.wback)
+            indexing_args(self.rn, self.imm32, false, self.index, self.add, self.wback)
         )
     }
 }
@@ -234,9 +234,11 @@ impl Instruction for LdrLit {
     }
 
     fn args(&self, _pc: u32) -> String {
-        //let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        let minus = if self.add { "" } else { "-" };
-        format!("{}, [pc, #{}{}]", self.rt, minus, self.imm32)
+        format!(
+            "{}, {}",
+            self.rt,
+            indexing_args(RegisterIndex::Pc, self.imm32, true, true, self.add, false)
+        )
     }
 }
 
@@ -341,16 +343,12 @@ impl Instruction for LdrReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        if self.shift.n == 0 {
-            format!("{}, [{}, {}]", self.rt, self.rn, self.rm)
-        } else {
-            format!(
-                "{}, [{}, {}{}]",
-                self.rt,
-                self.rn,
-                self.rm,
-                self.shift.arg_string()
-            )
-        }
+        format!(
+            "{}, [{}, {}{}]",
+            self.rt,
+            self.rn,
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }

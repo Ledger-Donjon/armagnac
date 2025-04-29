@@ -11,7 +11,6 @@ use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -98,7 +97,7 @@ impl Instruction for RsbImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, #{}", rdn_args_string(self.rd, self.rn), self.imm32)
+        format!("{}, {}, #{}", self.rd, self.rn, self.imm32)
     }
 }
 
@@ -165,8 +164,9 @@ impl Instruction for RsbReg {
 
     fn args(&self, _pc: u32) -> String {
         format!(
-            "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
+            "{}, {}, {}{}",
+            self.rd,
+            self.rn,
             self.rm,
             self.shift.arg_string()
         )

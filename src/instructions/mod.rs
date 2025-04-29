@@ -382,11 +382,13 @@ macro_rules! qualifier_wide_match {
     };
 }
 
-/// Returns "{rd}" if rd is equal to rn, else "{rd}, {rn}".
+/// Returns "{rd}" if cond is `true`, else "{rd}, {rn}".
+/// Panics if `cond` is `true` but `rd` and `rn` differ.
 ///
 /// This is a convenient method used for many instruction arguments formatting.
-pub fn rdn_args_string(rd: RegisterIndex, rn: RegisterIndex) -> String {
-    if rd == rn {
+pub fn rdn_args_string(rd: RegisterIndex, rn: RegisterIndex, cond: bool) -> String {
+    if cond {
+        assert_eq!(rd, rn);
         format!("{rd}")
     } else {
         format!("{rd}, {rn}")
@@ -400,11 +402,20 @@ pub fn rdn_args_string(rd: RegisterIndex, rn: RegisterIndex) -> String {
 /// - "[Rn, #imm]"
 /// - "[Rn], #imm"
 /// - "[Rn, #imm]!"
-pub fn indexing_args(rn: RegisterIndex, imm: u32, index: bool, add: bool, wback: bool) -> String {
+///
+/// If `imm` is null and `imm_explicit` is false, then the immediate offset is not printed.
+pub fn indexing_args(
+    rn: RegisterIndex,
+    imm: u32,
+    imm_explicit: bool,
+    index: bool,
+    add: bool,
+    wback: bool,
+) -> String {
     let neg = if add { "" } else { "-" };
     match (index, wback) {
         (true, false) => {
-            let imm = if imm != 0 {
+            let imm = if (imm != 0) || imm_explicit {
                 format!(", #{}{}", neg, imm)
             } else {
                 "".into()
@@ -575,9 +586,16 @@ mod tests {
 
     #[test]
     fn test_rdn_args_string() {
-        assert_eq!(rdn_args_string(RegisterIndex::R0, RegisterIndex::R0), "r0");
         assert_eq!(
-            rdn_args_string(RegisterIndex::R0, RegisterIndex::R1),
+            rdn_args_string(RegisterIndex::R0, RegisterIndex::R0, true),
+            "r0"
+        );
+        assert_eq!(
+            rdn_args_string(RegisterIndex::R0, RegisterIndex::R0, false),
+            "r0, r0"
+        );
+        assert_eq!(
+            rdn_args_string(RegisterIndex::R0, RegisterIndex::R1, false),
             "r0, r1"
         );
     }
@@ -585,53 +603,57 @@ mod tests {
     #[test]
     fn test_indexing_args() {
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, true, true, false),
+            indexing_args(RegisterIndex::R1, 0, false, true, true, false),
             "[r1]"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, true, false, false),
+            indexing_args(RegisterIndex::R1, 0, false, true, false, false),
             "[r1]"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, true, true, false),
+            indexing_args(RegisterIndex::R1, 0, true, true, true, false),
+            "[r1, #0]"
+        );
+        assert_eq!(
+            indexing_args(RegisterIndex::R1, 12, false, true, true, false),
             "[r1, #12]"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, true, false, false),
+            indexing_args(RegisterIndex::R1, 12, false, true, false, false),
             "[r1, #-12]"
         );
 
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, true, true, true),
+            indexing_args(RegisterIndex::R1, 0, false, true, true, true),
             "[r1, #0]!"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, true, false, true),
+            indexing_args(RegisterIndex::R1, 0, false, true, false, true),
             "[r1, #-0]!"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, true, true, true),
+            indexing_args(RegisterIndex::R1, 12, false, true, true, true),
             "[r1, #12]!"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, true, false, true),
+            indexing_args(RegisterIndex::R1, 12, false, true, false, true),
             "[r1, #-12]!"
         );
 
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, false, true, true),
+            indexing_args(RegisterIndex::R1, 0, false, false, true, true),
             "[r1], #0"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 0, false, false, true),
+            indexing_args(RegisterIndex::R1, 0, false, false, false, true),
             "[r1], #-0"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, false, true, true),
+            indexing_args(RegisterIndex::R1, 12, false, false, true, true),
             "[r1], #12"
         );
         assert_eq!(
-            indexing_args(RegisterIndex::R1, 12, false, false, true),
+            indexing_args(RegisterIndex::R1, 12, false, false, false, true),
             "[r1], #-12"
         );
     }

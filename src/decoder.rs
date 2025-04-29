@@ -678,7 +678,13 @@ mod tests {
             let mut state = proc.registers.psr.it_state();
             let cond = state.current_condition();
             let ins = decoder.try_decode(ins, size, state).unwrap();
-            assert_eq!(ins.mnemonic(pc, cond), mnemonic);
+            let got_mnemonic = ins.mnemonic(pc, cond);
+            if got_mnemonic != mnemonic {
+                println!("Mnemonic generation failed:");
+                println!("  Expected: {mnemonic}");
+                println!("  Got     : {got_mnemonic}");
+                panic!();
+            }
             state.advance();
             proc.registers.psr.set_it_state(state);
 

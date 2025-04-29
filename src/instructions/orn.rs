@@ -10,7 +10,7 @@ use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
+    instructions::{other, unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -74,7 +74,7 @@ impl Instruction for OrnImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, #{}", rdn_args_string(self.rd, self.rn), self.imm32)
+        format!("{}, {}, #{}", self.rd, self.rn, self.imm32)
     }
 }
 
@@ -140,8 +140,9 @@ impl Instruction for OrnReg {
 
     fn args(&self, _pc: u32) -> String {
         format!(
-            "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
+            "{}, {}, {}{}",
+            self.rd,
+            self.rn,
             self.rm,
             self.shift.arg_string()
         )

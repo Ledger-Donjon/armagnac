@@ -63,7 +63,7 @@ impl Instruction for Ldrht {
         format!(
             "{}, {}",
             self.rt,
-            indexing_args(self.rn, self.imm32, true, true, false)
+            indexing_args(self.rn, self.imm32, false, true, true, false)
         )
     }
 }

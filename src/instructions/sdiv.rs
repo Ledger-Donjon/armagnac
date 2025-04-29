@@ -8,7 +8,7 @@ use super::{
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    instructions::{rdn_args_string, unpredictable, DecodeHelper},
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -56,6 +56,6 @@ impl Instruction for Sdiv {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
+        format!("{}, {}, {}", self.rd, self.rn, self.rm)
     }
 }

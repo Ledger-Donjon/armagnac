@@ -133,7 +133,7 @@ impl Instruction for AddImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        let rdn = rdn_args_string(self.rd, self.rn);
+        let rdn = rdn_args_string(self.rd, self.rn, self.tn == 2);
         format!("{rdn}, #{}", self.imm32)
     }
 }
@@ -265,7 +265,7 @@ impl Instruction for AddReg {
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
+            rdn_args_string(self.rd, self.rn, self.tn == 2),
             self.rm,
             self.shift.arg_string()
         )
@@ -382,7 +382,7 @@ impl Instruction for AddSpPlusImm {
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, #{}",
-            rdn_args_string(self.rd, RegisterIndex::Sp),
+            rdn_args_string(self.rd, RegisterIndex::Sp, self.tn == 2),
             self.imm32
         )
     }
@@ -500,7 +500,7 @@ impl Instruction for AddSpPlusReg {
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, RegisterIndex::Sp),
+            rdn_args_string(self.rd, RegisterIndex::Sp, self.tn == 2),
             self.rm,
             self.shift.arg_string()
         )

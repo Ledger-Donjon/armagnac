@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V7M, V8M},
     Pattern,
 };
+use crate::instructions::indexing_args;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -59,11 +60,10 @@ impl Instruction for Ldrt {
     }
 
     fn args(&self, _pc: u32) -> String {
-        let offset = if self.imm32 != 0 {
-            format!(", #{}", self.imm32)
-        } else {
-            "".into()
-        };
-        format!("{}, [{}{}]", self.rt, self.rn, offset)
+        format!(
+            "{}, {}",
+            self.rt,
+            indexing_args(self.rn, self.imm32, false, true, true, false)
+        )
     }
 }

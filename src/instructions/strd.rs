@@ -83,7 +83,7 @@ impl Instruction for StrdImm {
             "{}, {}, {}",
             self.rt,
             self.rt2,
-            indexing_args(self.rn, self.imm32, self.index, self.add, self.wback,)
+            indexing_args(self.rn, self.imm32, false, self.index, self.add, self.wback,)
         )
     }
 }

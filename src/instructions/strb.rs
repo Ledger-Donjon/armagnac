@@ -126,7 +126,7 @@ impl Instruction for StrbImm {
         format!(
             "{}, {}",
             self.rt,
-            indexing_args(self.rn, self.imm32, self.index, self.add, self.wback,)
+            indexing_args(self.rn, self.imm32, false, self.index, self.add, self.wback,)
         )
     }
 }

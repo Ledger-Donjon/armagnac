@@ -74,7 +74,7 @@ impl Instruction for OrrImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, #{}", rdn_args_string(self.rd, self.rn), self.imm32)
+        format!("{}, {}, #{}", self.rd, self.rn, self.imm32)
     }
 }
 
@@ -169,7 +169,7 @@ impl Instruction for OrrReg {
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, self.rn),
+            rdn_args_string(self.rd, self.rn, self.tn == 1),
             self.rm,
             self.shift.arg_string()
         )

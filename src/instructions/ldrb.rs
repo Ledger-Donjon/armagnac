@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
+use crate::instructions::indexing_args;
 use crate::qualifier_wide_match;
 use crate::{
     align::Align,
@@ -260,7 +261,10 @@ impl Instruction for LdrbLit {
 
     fn args(&self, _pc: u32) -> String {
         //let address = pc.wrapping_add(4).align(4).wrapping_add(self.imm32);
-        let minus = if self.add { "" } else { "-" };
-        format!("{}, [pc, #{}{}]", self.rt, minus, self.imm32)
+        format!(
+            "{}, {}",
+            self.rt,
+            indexing_args(RegisterIndex::Pc, self.imm32, true, true, self.add, false)
+        )
     }
 }

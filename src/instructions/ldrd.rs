@@ -87,7 +87,7 @@ impl Instruction for LdrdImm {
             "{}, {}, {}",
             self.rt,
             self.rt2,
-            indexing_args(self.rn, self.imm32, self.index, self.add, self.wback)
+            indexing_args(self.rn, self.imm32, false, self.index, self.add, self.wback)
         )
     }
 }
@@ -153,7 +153,7 @@ impl Instruction for LdrdLit {
             "{}, {}, {}",
             self.rt,
             self.rt2,
-            indexing_args(RegisterIndex::Pc, self.imm32, true, self.add, false)
+            indexing_args(RegisterIndex::Pc, self.imm32, false, true, self.add, false)
         )
     }
 }

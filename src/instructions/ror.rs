@@ -167,7 +167,11 @@ impl Instruction for RorReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, {}", rdn_args_string(self.rd, self.rn), self.rm)
+        format!(
+            "{}, {}",
+            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            self.rm
+        )
     }
 }
 

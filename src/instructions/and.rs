@@ -2,13 +2,13 @@
 
 use super::ArmVersion::{V6M, V7M, V8M};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    instructions::rdn_args_string,
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -76,7 +76,7 @@ impl Instruction for AndImm {
     }
 
     fn args(&self, _pc: u32) -> String {
-        format!("{}, #{}", rdn_args_string(self.rd, self.rn), self.imm32)
+        format!("{}, {}, #{}", self.rd, self.rn, self.imm32)
     }
 }
 
@@ -168,22 +168,11 @@ impl Instruction for AndReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        match self.tn {
-            1 => {
-                debug_assert_eq!(self.rd, self.rn);
-                debug_assert_eq!(self.shift, Shift::lsl(0));
-                format!("{}, {}", self.rd, self.rm)
-            }
-            2 => {
-                format!(
-                    "{}, {}, {}{}",
-                    self.rd,
-                    self.rn,
-                    self.rm,
-                    self.shift.arg_string()
-                )
-            }
-            _ => panic!(),
-        }
+        format!(
+            "{}, {}{}",
+            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }

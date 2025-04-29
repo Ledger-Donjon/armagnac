@@ -5,7 +5,6 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
-use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -15,6 +14,7 @@ use crate::{
     it_state::ItState,
     registers::RegisterIndex,
 };
+use crate::{instructions::rdn_args_string, qualifier_wide_match};
 use core::panic;
 
 /// SBC (immediate) instruction.
@@ -174,20 +174,12 @@ impl Instruction for SbcReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        match self.tn {
-            1 => {
-                debug_assert_eq!(self.rd, self.rn);
-                format!("{}, {}{}", self.rd, self.rm, self.shift.arg_string())
-            }
-            2 => format!(
-                "{}, {}, {}{}",
-                self.rd,
-                self.rn,
-                self.rm,
-                self.shift.arg_string()
-            ),
-            _ => panic!(),
-        }
+        format!(
+            "{}, {}{}",
+            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }
 

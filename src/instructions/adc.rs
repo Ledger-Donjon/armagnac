@@ -2,6 +2,7 @@
 
 use super::ArmVersion::{V6M, V7M, V8M};
 use super::{Instruction, Pattern, Qualifier};
+use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
@@ -167,22 +168,12 @@ impl Instruction for AdcReg {
     }
 
     fn args(&self, _pc: u32) -> String {
-        match self.tn {
-            1 => {
-                debug_assert_eq!(self.rd, self.rn);
-                format!("{}, {}", self.rd, self.rm)
-            }
-            2 => {
-                format!(
-                    "{}, {}, {}{}",
-                    self.rd,
-                    self.rn,
-                    self.rm,
-                    self.shift.arg_string()
-                )
-            }
-            _ => panic!(),
-        }
+        format!(
+            "{}, {}{}",
+            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            self.rm,
+            self.shift.arg_string()
+        )
     }
 }
 
