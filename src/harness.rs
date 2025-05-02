@@ -1,5 +1,5 @@
 use crate::{
-    arm::{ArmProcessor, ArmVersion},
+    arm::{ArmProcessor, ArmVersion, Emulator},
     instructions::Mnemonic,
 };
 use object::{File, Object, ObjectSection, ObjectSymbol};
@@ -53,7 +53,7 @@ impl ElfHarness {
         self.proc.set_sp(ADDR_RAM + STACK_SIZE);
 
         loop {
-            self.proc.stepi().unwrap();
+            self.proc.next_event().unwrap();
             // Run util code branches back to initial LR
             if self.proc.pc() == 0xfffffffe {
                 // Verify stack has been poped correctly

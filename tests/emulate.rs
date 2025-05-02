@@ -1,5 +1,8 @@
 use armagnac::{
-    arm::Event::{self},
+    arm::{
+        Emulator,
+        Event::{self},
+    },
     harness::{ElfHarness, ADDR_RAM, STACK_SIZE},
 };
 
@@ -71,7 +74,7 @@ fn test_bkpt() {
     let mut breakpoint = None;
 
     loop {
-        match helper.proc.stepi() {
+        match helper.proc.next_event() {
             Ok(event) => match event {
                 Event::Break(value) => {
                     // We have only one BKPT instruction.

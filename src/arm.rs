@@ -71,6 +71,7 @@ struct CodeHook {
 }
 
 /// Possible events returned during processor execution.
+#[derive(Clone)]
 pub enum Event {
     Hook {
         address: u32,
@@ -154,7 +155,7 @@ pub enum ArmVersion {
 /// The following example will execute a tiny assembly program:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # use armagnac::arm::{ArmProcessor, ArmVersion, RunOptions, Emulator};
 /// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
 ///
 /// // Load a tiny assembly program at address 0x1000.
@@ -165,9 +166,8 @@ pub enum ArmVersion {
 /// proc.map(0x1000, &[0x05, 0x20, 0x02, 0x21, 0x42, 0x1a]);
 ///
 /// proc.set_pc(0x1000);
-/// for i in 0..3 {
-///     proc.stepi().unwrap();
-/// }
+/// // Run and limit execution to 3 instructions
+/// proc.run(RunOptions::new().gas(3)).unwrap();
 /// assert_eq!(proc.registers.r2, 3);
 /// ```
 ///
@@ -201,7 +201,6 @@ pub struct ArmProcessor {
     pub instruction_decoder: Box<dyn InstructionDecode>,
     pub cycles: u64,
     code_hooks: Vec<CodeHook>,
-    pub event_on_instruction: bool,
     /// Read and write access in peripherals may trigger actions. For instance, writing to a
     /// special register may perform a software reset. Those special actions from peripherals are
     /// stacked in this attribute during instruction emulation, and then processed one the
@@ -242,7 +241,6 @@ impl ArmProcessor {
             instruction_decoder: Box::new(BasicInstructionDecoder::new(version)),
             cycles: 0,
             code_hooks: Vec::new(),
-            event_on_instruction: false,
             memory_op_actions: Vec::new(),
             break_request: None,
             interrupt_requests: BTreeSet::new(),
@@ -878,84 +876,6 @@ impl ArmProcessor {
         self.interrupt_requests.insert(irq);
     }
 
-    pub fn stepi(&mut self) -> Result<Event, RunError> {
-        if let Some(event) = self.update_peripherals() {
-            return Ok(event);
-        }
-
-        let pc = self.pc();
-
-        if self
-            .code_hooks
-            .iter()
-            .any(|ch| ch.range.contains(&(pc as usize)))
-        {
-            return Ok(Event::Hook { address: pc });
-        }
-
-        let (ins, size) = self.decode_instruction(self.pc())?;
-        // PC is always 4 bytes ahead of currently executed instruction, so we increment PC before
-        // applying the effect of the instruction, and we go back 2 bytes if this is a 16-bit
-        // instruction.
-        self.set_pc(self.pc() + 4);
-        // Conditional execution testing.
-        // Condition is usually defined by the current IT state, excepted for conditional
-        // branch B instruction which can override it by implementing [Instruction::condition].
-        let mut it_state = self.registers.psr.it_state();
-        let condition = ins
-            .condition()
-            .or(it_state.current_condition())
-            .unwrap_or(Condition::Always);
-        // Advance IT block state. This must be done before executing the instruction, because if
-        // the current instruction is IT, it will load a new state.
-        it_state.advance();
-        self.registers.psr.set_it_state(it_state);
-
-        let mut jump = false;
-        if self.registers.psr.test(condition) {
-            jump = ins.execute(self)?;
-        }
-        if !jump && size == InstructionSize::Ins16 {
-            self.set_pc(self.pc() - 2)
-        }
-        // Handle actions that may come from memory accesses.
-        for action in self.memory_op_actions.iter() {
-            match action {
-                MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins }),
-                MemoryOpAction::Irq(irq) => {
-                    // A peripheral emitted an interrupt request, save it.
-                    self.interrupt_requests.insert(*irq);
-                }
-                MemoryOpAction::Update(_) => panic!(), // This should be filtered prior
-            }
-        }
-        self.memory_op_actions.clear();
-        self.cycles += 1;
-
-        // TODO: handle priorities
-        if let Some(irq) = self.interrupt_requests.pop_first() {
-            let max_num = self.exception_active.len();
-            let num = irq.number();
-            assert!(
-                (num as usize) < max_num,
-                "Exception number too high: got {}, max is {}",
-                num,
-                max_num - 1
-            );
-            if !self.exception_active[irq.number() as usize] {
-                self.exception_entry(irq)?;
-            }
-        }
-
-        // Handle BKPT instructions.
-        if let Some(value) = self.break_request {
-            self.break_request = None;
-            return Ok(Event::Break(value));
-        }
-
-        Ok(Event::Instruction { ins })
-    }
-
     /// Enters exception.
     ///
     /// Corresponds to the function `ExceptionEntry()` described in the ARM Architecture Reference
@@ -1049,7 +969,6 @@ impl ArmProcessor {
         self.set_sp(frame_ptr);
 
         let return_address = self.pc();
-        println!("DEBUG SET RETURN ADDRESS {:0x}", return_address);
         self.write_u32le_iface(frame_ptr, self.registers.r0)?;
         self.write_u32le_iface(frame_ptr + 0x04, self.registers.r1)?;
         self.write_u32le_iface(frame_ptr + 0x08, self.registers.r2)?;
@@ -1138,21 +1057,6 @@ impl ArmProcessor {
         Ok(())
     }
 
-    /// Run until next event and return the event
-    pub fn run(&mut self) -> Result<Event, RunError> {
-        loop {
-            let e = self.stepi()?;
-            match e {
-                Event::Instruction { ins } => {
-                    if self.event_on_instruction {
-                        return Ok(Event::Instruction { ins });
-                    }
-                }
-                _ => return Ok(e),
-            }
-        }
-    }
-
     /// Returns true if execution is privileged.
     ///
     /// Corresponds to `FindPriv()` from Arm Architecture Reference Manual.
@@ -1196,6 +1100,140 @@ impl ArmProcessor {
         } else {
             true
         }
+    }
+}
+
+/// Options passed to [Emulator::run] to configure emulation.
+#[derive(Default)]
+pub struct RunOptions {
+    /// Limit of the number of instructions to be executed.
+    gas: Option<usize>,
+}
+
+impl RunOptions {
+    pub fn new() -> Self {
+        Self { gas: None }
+    }
+
+    /// Sets a limit to the number of instructions to be executed.
+    pub fn gas(mut self, gas: usize) -> Self {
+        self.gas = Some(gas);
+        self
+    }
+}
+
+/// [ArmProcessor] implements this trait to provide an interface for running the device with
+/// possible options.
+///
+/// The most important method is [Emulator::next_event] which runs a single emulation step and
+/// returns the first event encountered. A device struct using composition with [ArmProcessor] may
+/// implement this trait and the [Emulator::next_event] method to handle, filter or forward
+/// processor events and this way build an additive layer to the processor (hooks are a good
+/// example use case). This way the new struct will automatically benefit from [Emulator::run]
+/// blanket implementation and provide the same interface as [ArmProcessor].
+pub trait Emulator {
+    /// Processes execution until next event, and returns that event.
+    fn next_event(&mut self) -> Result<Event, RunError>;
+
+    /// Runs the device until a non instruction event occurs of emulation reaches optional gas
+    /// limit.
+    fn run(&mut self, options: RunOptions) -> Result<Option<Event>, RunError> {
+        let mut ins_count = 0;
+        loop {
+            if let Some(count) = options.gas {
+                if ins_count == count {
+                    return Ok(None);
+                }
+            }
+            let event = self.next_event()?;
+            match event {
+                Event::Hook { address: _ }
+                | Event::ResetFromInstruction { ins: _ }
+                | Event::ResetFromPeripheral
+                | Event::Break(_) => return Ok(Some(event.clone())),
+                Event::Instruction { ins: _ } => ins_count += 1,
+            }
+        }
+    }
+}
+
+impl Emulator for ArmProcessor {
+    fn next_event(&mut self) -> Result<Event, RunError> {
+        if let Some(event) = self.update_peripherals() {
+            return Ok(event);
+        }
+
+        let pc = self.pc();
+
+        if self
+            .code_hooks
+            .iter()
+            .any(|ch| ch.range.contains(&(pc as usize)))
+        {
+            return Ok(Event::Hook { address: pc });
+        }
+
+        let (ins, size) = self.decode_instruction(self.pc())?;
+        // PC is always 4 bytes ahead of currently executed instruction, so we increment PC before
+        // applying the effect of the instruction, and we go back 2 bytes if this is a 16-bit
+        // instruction.
+        self.set_pc(self.pc() + 4);
+        // Conditional execution testing.
+        // Condition is usually defined by the current IT state, excepted for conditional
+        // branch B instruction which can override it by implementing [Instruction::condition].
+        let mut it_state = self.registers.psr.it_state();
+        let condition = ins
+            .condition()
+            .or(it_state.current_condition())
+            .unwrap_or(Condition::Always);
+        // Advance IT block state. This must be done before executing the instruction, because if
+        // the current instruction is IT, it will load a new state.
+        it_state.advance();
+        self.registers.psr.set_it_state(it_state);
+
+        let mut jump = false;
+        if self.registers.psr.test(condition) {
+            jump = ins.execute(self)?;
+        }
+        if !jump && size == InstructionSize::Ins16 {
+            self.set_pc(self.pc() - 2)
+        }
+        // Handle actions that may come from memory accesses.
+        for action in self.memory_op_actions.iter() {
+            match action {
+                MemoryOpAction::Reset => return Ok(Event::ResetFromInstruction { ins }),
+                MemoryOpAction::Irq(irq) => {
+                    // A peripheral emitted an interrupt request, save it.
+                    self.interrupt_requests.insert(*irq);
+                }
+                MemoryOpAction::Update(_) => panic!(), // This should be filtered prior
+            }
+        }
+        self.memory_op_actions.clear();
+        self.cycles += 1;
+
+        // TODO: handle priorities
+        if let Some(irq) = self.interrupt_requests.pop_first() {
+            let max_num = self.exception_active.len();
+            let num = irq.number();
+            assert!(
+                (num as usize) < max_num,
+                "Exception number too high: got {}, max is {}",
+                num,
+                max_num - 1
+            );
+            if !self.exception_active[irq.number() as usize] {
+                self.exception_entry(irq)?;
+            }
+        }
+
+        // Handle BKPT instructions.
+        if let Some(value) = self.break_request {
+            self.break_request = None;
+            return Ok(Event::Break(value));
+        }
+
+        Ok(Event::Instruction { ins })
     }
 }
 
