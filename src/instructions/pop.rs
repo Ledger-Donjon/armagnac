@@ -37,7 +37,7 @@ impl Instruction for Pop {
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M],
+                versions: &[V7M, V8M],
                 expression: "1111100001011101xxxx101100000100",
             },
         ]

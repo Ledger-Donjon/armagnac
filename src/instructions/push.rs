@@ -2,7 +2,7 @@
 
 use super::{stmdb::Stmdb, unpredictable, Instruction};
 use super::{
-    ArmVersion::{V6M, V7M},
+    ArmVersion::{V6M, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -24,17 +24,17 @@ impl Instruction for Push {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M],
+                versions: &[V6M, V7M, V8M],
                 expression: "1011010xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M],
+                versions: &[V7M, V8M],
                 expression: "1110100100101101(0)x(0)xxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M],
+                versions: &[V7M, V8M],
                 expression: "1111100001001101xxxx110100000100",
             },
         ]
