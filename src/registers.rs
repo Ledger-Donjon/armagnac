@@ -168,6 +168,14 @@ impl RegisterIndex {
     pub fn is_sp_or_pc(&self) -> bool {
         (*self == Self::Sp) || (*self == Self::Pc)
     }
+
+    /// Returns `true` if register is a low register (R0 to R7).
+    pub fn is_low(&self) -> bool {
+        matches!(
+            self,
+            Self::R0 | Self::R1 | Self::R2 | Self::R3 | Self::R4 | Self::R5 | Self::R6 | Self::R7
+        )
+    }
 }
 
 impl From<u32> for RegisterIndex {
@@ -951,9 +959,18 @@ impl Index<RegisterIndex> for CoreRegisters {
 
 #[cfg(test)]
 mod tests {
+    use super::{MainRegisterList, ProgramStatusRegister};
     use crate::registers::RegisterIndex;
 
-    use super::{MainRegisterList, ProgramStatusRegister};
+    #[test]
+    fn test_register_index_is_low() {
+        for i in 0..=15 {
+            assert_eq!(RegisterIndex::new_main(i).is_low(), i <= 7);
+        }
+        for i in (0..=3).chain(5..=9).chain(16..=20) {
+            assert!(!RegisterIndex::new_sys(i).is_low());
+        }
+    }
 
     #[test]
     fn test_main_register_list_iterator() {
