@@ -23,9 +23,7 @@ let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
 proc.map(0x1000, &[0x05, 0x20, 0x02, 0x21, 0x42, 0x1a]);
 
 proc.set_pc(0x1000);
-for i in 0..3 {
-    proc.stepi().unwrap();
-}
+proc.run(RunOptions::new().gas(3)).unwrap();
 assert_eq!(proc.registers.r2, 3);
 ```
 

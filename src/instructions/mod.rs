@@ -104,31 +104,21 @@ pub mod umull;
 pub mod uxtb;
 pub mod uxth;
 
+/// Defines how to match an instruction encoding.
 pub struct Pattern {
+    /// Instruction encoding: 1 for T1, 2 for T2, etc.
     pub tn: usize,
+    /// Arm architecture versions supporting the current instruction encoding.
     pub versions: &'static [ArmVersion],
-    pub expression: &'static str,
-}
-
-pub enum Qualifier {
-    None,
-    Narrow,
-    Wide,
-}
-
-/// All instructions must implement this trait in order to be integrated into the emulator.
-pub trait Instruction {
-    /// Returns a list of string patterns the instruction can match.
+    /// Regular expression used to test if the corresponding instruction matches bytes being
+    /// decoded.
     ///
-    /// Patterns must define each bit of the instruction with following possible symbols:
+    /// Pattern expression must define each bit of the instruction with following possible symbols:
     /// - "0" when a bit must be zero,
     /// - "1" when a bit must be one,
     /// - "x" for bits part of instruction arguments (registers indexes, immediate values, etc.),
     /// - "(0)" for bits part of instruction arguments, but expected to be zero,
     /// - "(1)" for bits part of instruction arguments, but expected to be one.
-    ///
-    /// In the returned array, element 0 is the pattern for T1 encoding, element 1 for T2 encoding,
-    /// etc.
     ///
     /// Patterns format matches the patterns indicated in the ARM Architecture Reference Manual,
     /// making easy to define them with little room for mistakes.
@@ -136,6 +126,25 @@ pub trait Instruction {
     /// Patterns can have 16 or 32 symbols. If not, the instruction decoder is expected to panic.
     ///
     /// For instance, the pattern "0001110xxxxxxxxx" matches the ADD instruction T1 encoding.
+    pub expression: &'static str,
+}
+
+/// Possible qualifiers used in instruction mnemonics.
+/// Returned by [Instruction::qualifier].
+pub enum Qualifier {
+    /// Mnemonic has no qualifier.
+    None,
+    /// Mnemonic has ".n" narrow qualifier.
+    Narrow,
+    /// Mnemonic has ".w" wide qualifier.
+    Wide,
+}
+
+/// All instructions must implement this trait in order to be integrated into the emulator.
+pub trait Instruction {
+    /// Returns a list patterns the instruction can match. Each pattern is defined by its encoding
+    /// index, the architectures supporting the instruction/encoding, and a regular expression for
+    /// matching the bytes to be decoded.
     fn patterns() -> &'static [Pattern]
     where
         Self: Sized;
@@ -182,10 +191,13 @@ pub trait Instruction {
     /// eventually an execution error such has invalid memory access for instance.
     fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError>;
 
-    /// Returns name of the instruction to be shown in its mnemonic.
+    /// Returns the name of the instruction, in lowercase, to be shown in its mnemonic.
     ///
-    /// Returned name can be dynamic depending on the instruction effect. In particular, 's' suffix
-    /// may appear when the instruction updates the processor condition flags.
+    /// For some instructions, the name can be dynamic. A good example is the Branch instruction
+    /// which includes the branching condition (e.g. "beq", "bne", ...).
+    ///
+    /// Returned string does not include "s" suffix when instruction updates the condition flags,
+    /// and does not include optional qualifier suffixes (typically ".w" wide qualifier).
     fn name(&self) -> String;
 
     /// Returns assembly qualifiers, such as "n" (narrow) or "w" (wide). This is used for printing
@@ -217,6 +229,9 @@ pub trait Instruction {
     /// #     }
     /// # }
     /// ```
+    ///
+    /// The current PC value is passed as parameter for instructions whose effect is relative to
+    /// the PC value, though it can be ignored otherwise.
     ///
     /// Some formatting helper methods are provided and can be used: see [rdn_args_string],
     /// [indexing_args] or [crate::arith::Shift::arg_string].

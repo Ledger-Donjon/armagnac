@@ -143,6 +143,7 @@ pub enum ArmVersion {
     /// Implemented by:
     /// - Cortex-M23
     /// - Cortex-M33
+    /// - Cortex-M35P
     V8M,
 }
 
@@ -829,11 +830,8 @@ impl ArmProcessor {
         self.registers.pc
     }
 
-    /// Sets Program Counter (r15) value
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - New Program Counter value
+    /// Sets Program Counter (r15) value. This is equivalent to modifying [CoreRegisters::pc] in
+    /// [Self::registers].
     pub fn set_pc(&mut self, value: u32) {
         self.registers.pc = value;
     }
