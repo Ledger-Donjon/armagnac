@@ -176,3 +176,152 @@ impl Instruction for AndReg {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        arith::Shift,
+        arm::{ArmProcessor, ArmVersion::V7M},
+        instructions::{
+            and::{AndImm, AndReg},
+            Instruction,
+        },
+        registers::RegisterIndex,
+    };
+
+    #[test]
+    fn test_and_imm() {
+        struct Test {
+            initial_rn: u32,
+            imm32: u32,
+            set_flags: bool,
+            carry: Option<bool>,
+            expected_rd: u32,
+            expected_flags: u8,
+        }
+
+        let vectors = [
+            Test {
+                initial_rn: 0x12345678,
+                imm32: 0,
+                set_flags: true,
+                carry: None,
+                expected_rd: 0,
+                expected_flags: 0b01000,
+            },
+            Test {
+                initial_rn: 0x55aa55aa,
+                imm32: 0xaa55aa00,
+                set_flags: false,
+                carry: Some(true),
+                expected_rd: 0,
+                expected_flags: 0b00000,
+            },
+            Test {
+                initial_rn: 0x12345678,
+                imm32: 0x87654321,
+                set_flags: true,
+                carry: None,
+                expected_rd: 0x02244220,
+                expected_flags: 0b00000,
+            },
+            Test {
+                initial_rn: 0x92345678,
+                imm32: 0x87654321,
+                set_flags: true,
+                carry: Some(true),
+                expected_rd: 0x82244220,
+                expected_flags: 0b10100,
+            },
+        ];
+
+        for v in vectors {
+            let mut proc = ArmProcessor::new(V7M, 0);
+            let rd = RegisterIndex::new_general_random();
+            let rn = RegisterIndex::new_general_random();
+            proc.set(rn, v.initial_rn);
+            let mut expected = proc.registers.clone();
+            expected.set(rd, v.expected_rd);
+            expected.psr.set_flags(v.expected_flags);
+            AndImm {
+                rd,
+                rn,
+                imm32: v.imm32,
+                set_flags: v.set_flags,
+                carry: v.carry,
+            }
+            .execute(&mut proc)
+            .unwrap();
+            assert_eq!(proc.registers, expected);
+        }
+    }
+
+    #[test]
+    fn test_and_reg() {
+        struct Test {
+            initial_rn: u32,
+            initial_rm: u32,
+            shift: Shift,
+            set_flags: bool,
+            expected_rd: u32,
+            expected_flags: u8,
+        }
+
+        let vectors = [
+            Test {
+                initial_rn: 0x12345678,
+                initial_rm: 0,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_rd: 0,
+                expected_flags: 0b01000,
+            },
+            Test {
+                initial_rn: 0x92345678,
+                initial_rm: 0x87654321,
+                shift: Shift::lsl(0),
+                set_flags: false,
+                expected_rd: 0x82244220,
+                expected_flags: 0b00000,
+            },
+            Test {
+                initial_rn: 0x12345678,
+                initial_rm: 0x87654321,
+                shift: Shift::lsl(0),
+                set_flags: true,
+                expected_rd: 0x02244220,
+                expected_flags: 0b00000,
+            },
+            Test {
+                initial_rn: 0xaaaaaaaa,
+                initial_rm: 0xaaaa5555,
+                shift: Shift::lsl(1),
+                set_flags: true,
+                expected_rd: 0xaaaa,
+                expected_flags: 0b00100,
+            },
+        ];
+
+        for v in vectors {
+            let mut proc = ArmProcessor::new(V7M, 0);
+            let rd = RegisterIndex::new_general_random();
+            let (rn, rm) = RegisterIndex::pick_two_general_distinct();
+            proc.set(rn, v.initial_rn);
+            proc.set(rm, v.initial_rm);
+            let mut expected = proc.registers.clone();
+            expected.set(rd, v.expected_rd);
+            expected.psr.set_flags(v.expected_flags);
+            AndReg {
+                rd,
+                rn,
+                rm,
+                shift: v.shift,
+                set_flags: v.set_flags,
+                tn: 0,
+            }
+            .execute(&mut proc)
+            .unwrap();
+            assert_eq!(proc.registers, expected);
+        }
+    }
+}
