@@ -935,6 +935,11 @@ a8fb0e39 umull    r3, r9, r8, lr
 a7fb0375 umull    r7, r5, r7, r3
 abfb0790 umull    r9, r0, r11, r7
 a6fb05e1 umull    lr, r1, r6, r5
+8af30100 usat     r0, #1, r10
+87f38504 usat     r4, #5, r7, lsl #2
+aef3c818 usat     r8, #8, lr, asr #7
+82f31f4c usat     r12, #31, r2, lsl #16
+a0f3c07e usat     lr, #0, r0, asr #31
 f8b2     uxtb     r0, r7
 e1b2     uxtb     r1, r4
 d2b2     uxtb     r2, r2

@@ -1492,6 +1492,14 @@ umull   r7, r5, r7, r3
 umull   r9, r0, r11, r7
 umull   r14, r1, r6, r5
 
+// USAT
+// T1
+usat    r0, 1, r10
+usat    r4, 5, r7, lsl #2
+usat    r8, 8, r14, asr #7
+usat    r12, 31, r2, lsl #16
+usat    r14, 0, r0, asr #31
+
 // UXTB
 // T1
 uxtb.n  r0, r7 

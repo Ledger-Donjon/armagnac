@@ -74,7 +74,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
-- USAT: Unsigned Saturate
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
 - YIELD
@@ -131,7 +130,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - STRT: Store Register Unprivileged
 - SUB (immediate, from PC): Subtract
 - TT, TTT, TTA, TTAT: Test Target (Alternate Domain, Unprivileged)
-- USAT: Unsigned Saturate
 - VLLDM: Floating-point Lazy Load Multiple
 - VLSTM: Floating-point Lazy Store Multiple
 - VSBC: Whole Vector Subtract With Carry

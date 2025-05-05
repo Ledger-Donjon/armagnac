@@ -37,6 +37,21 @@ pub fn signed_sat_q(i: i64, n: u8) -> (i64, bool) {
     }
 }
 
+/// Returns `i` as a `n` bit integer value with saturating casting instead of wrapping.
+///
+/// Corresponds to `UnsignedSatQ()` specified in the ARM Technical Reference Manual.
+pub fn unsigned_sat_q(i: i64, n: u8) -> (i64, bool) {
+    debug_assert!(n <= 32);
+    let x = (1i64 << n) - 1;
+    if i > x {
+        (x, true)
+    } else if i < 0 {
+        (0, true)
+    } else {
+        (i, false)
+    }
+}
+
 /// Returns the arithmetic shift right of `value` and the carry output.
 pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
     assert!((shift > 0) && (shift < 32));
@@ -324,7 +339,8 @@ pub fn thumb_expand_imm(imm12: u32) -> Result<u32, ArithError> {
 #[cfg(test)]
 mod tests {
     use crate::arith::{
-        add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, rrx_c, sign_extend, signed_sat_q, Shift,
+        add_with_carry, asr_c, lsl_c, lsr_c, ror, ror_c, rrx_c, sign_extend, signed_sat_q,
+        unsigned_sat_q, Shift,
     };
 
     use super::{shift_c, ShiftType};
@@ -364,10 +380,32 @@ mod tests {
             (-2147483648, 32, -2147483648, false),
             (-2147483649, 32, -2147483648, true),
             (i64::MAX, 32, 0x7fffffff, true),
-            (-i64::MAX, 32, -0x80000000, true),
+            (i64::MIN, 32, -0x80000000, true),
         ];
         for v in vectors {
             assert_eq!(signed_sat_q(v.0, v.1), (v.2, v.3));
+        }
+    }
+
+    #[test]
+    fn test_unsigned_sat_q() {
+        let vectors = [
+            (254, 8, 254, false),
+            (255, 8, 255, false),
+            (256, 8, 255, true),
+            (257, 8, 255, true),
+            (65535, 16, 65535, false),
+            (65536, 16, 65535, true),
+            (4294967295, 32, 4294967295, false),
+            (4294967296, 32, 4294967295, true),
+            (i64::MAX, 32, 0xffffffff, true),
+            (0, 8, 0, false),
+            (-1, 16, 0, true),
+            (-100, 32, 0, true),
+            (i64::MIN, 32, 0, true),
+        ];
+        for v in vectors {
+            assert_eq!(unsigned_sat_q(v.0, v.1), (v.2, v.3));
         }
     }
 

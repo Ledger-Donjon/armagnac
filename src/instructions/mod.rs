@@ -78,8 +78,8 @@ pub mod revsh;
 pub mod ror;
 pub mod rrx;
 pub mod rsb;
-pub mod sadd8;
 pub mod sadd16;
+pub mod sadd8;
 pub mod sbc;
 pub mod sbfx;
 pub mod sdiv;
@@ -103,6 +103,7 @@ pub mod udf;
 pub mod udiv;
 pub mod umlal;
 pub mod umull;
+pub mod usat;
 pub mod uxtb;
 pub mod uxth;
 
