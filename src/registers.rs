@@ -1,6 +1,8 @@
 //! Defines ARM processor core registers.
 
-use crate::{condition::Condition, helpers::BitAccess, it_state::ItState};
+use crate::{
+    condition::Condition, helpers::BitAccess, instructions::DecodeHelper, it_state::ItState,
+};
 use core::panic;
 use std::{
     fmt::{self, Debug, Display},
@@ -504,6 +506,17 @@ impl ProgramStatusRegister {
     pub fn set_flags(&mut self, flags: u8) {
         debug_assert!(flags < 32);
         self.0 = self.0 & 0x07ffffff | ((flags as u32) << 27);
+    }
+
+    /// Returns Greater than or Equal flags (DSP extension).
+    pub fn ge(&self) -> u8 {
+        self.0.imm4(16) as u8
+    }
+
+    /// Sets Greater than or Equal flags (DSP extension).
+    pub fn set_ge(&mut self, value: u8) {
+        debug_assert!(value <= 0xf);
+        self.0 = (self.0 & 0x000f0000) | ((value as u32 & 0xf) << 16);
     }
 
     pub fn ici_it(&self) -> u8 {

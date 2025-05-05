@@ -1088,6 +1088,14 @@ rsbs    r12, r7, r10, lsl #31
 rsb     r5, r14, r3, asr #1
 rsbs    r1, r9, r5, asl #4
 
+// SADD8
+// T1
+sadd8   r0, r3, r12
+sadd8   r8, r10, r1
+sadd8   r14, r7, r0
+sadd8   r2, r2, r8
+sadd8   r3, r9, r7
+
 // SBC (immediate)
 // T1
 sbc     r0, r0, #0

@@ -78,6 +78,7 @@ pub mod revsh;
 pub mod ror;
 pub mod rrx;
 pub mod rsb;
+pub mod sadd8;
 pub mod sbc;
 pub mod sbfx;
 pub mod sdiv;
