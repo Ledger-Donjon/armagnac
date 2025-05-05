@@ -413,6 +413,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::umlal::Umlal>(version);
         dec.insert::<instructions::umull::Umull>(version);
         dec.insert::<instructions::usat::Usat>(version);
+        dec.insert::<instructions::usat16::Usat16>(version);
         dec.insert::<instructions::uxtb::Uxtb>(version);
         dec.insert::<instructions::uxth::Uxth>(version);
         dec

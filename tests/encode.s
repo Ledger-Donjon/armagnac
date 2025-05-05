@@ -1500,6 +1500,14 @@ usat    r8, 8, r14, asr #7
 usat    r12, 31, r2, lsl #16
 usat    r14, 0, r0, asr #31
 
+// USAT16
+// T1
+usat16  r0, 1, r10
+usat16  r4, 5, r7
+usat16  r8, 8, r14
+usat16  r12, 15, r2
+usat16  r14, 0, r0
+
 // UXTB
 // T1
 uxtb.n  r0, r7 

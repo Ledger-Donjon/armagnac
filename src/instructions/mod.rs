@@ -104,6 +104,7 @@ pub mod udiv;
 pub mod umlal;
 pub mod umull;
 pub mod usat;
+pub mod usat16;
 pub mod uxtb;
 pub mod uxth;
 

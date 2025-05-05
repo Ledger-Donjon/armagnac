@@ -232,7 +232,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - UQSUB8: Unsigned Saturating Subtract 8
 - USAD8: Unsigned Sum of Absolute Differences
 - USADA8: Unsigned Sum of Absolute Differences and Accumulate
-- USAT16: Unsigned Saturate 16
 - USAX: Unsigned Subtract and Add with Exchange
 - USUB16: Unsigned Subtract 16
 - USUB8: Unsigned Subtract 8

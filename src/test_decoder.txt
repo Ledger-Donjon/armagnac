@@ -940,6 +940,11 @@ a6fb05e1 umull    lr, r1, r6, r5
 aef3c818 usat     r8, #8, lr, asr #7
 82f31f4c usat     r12, #31, r2, lsl #16
 a0f3c07e usat     lr, #0, r0, asr #31
+aaf30100 usat16   r0, #1, r10
+a7f30504 usat16   r4, #5, r7
+aef30808 usat16   r8, #8, lr
+a2f30f0c usat16   r12, #15, r2
+a0f3000e usat16   lr, #0, r0
 f8b2     uxtb     r0, r7
 e1b2     uxtb     r1, r4
 d2b2     uxtb     r2, r2

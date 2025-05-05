@@ -8,7 +8,7 @@ use crate::{
         ArmVersion::{V7M, V8M},
         RunError,
     },
-    instructions::{unpredictable, DecodeHelper},
+    instructions::{other, unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -42,6 +42,9 @@ impl Instruction for Usat {
         _state: ItState,
     ) -> Result<Self, crate::decoder::DecodeError> {
         debug_assert_eq!(tn, 1);
+        let sh = ins.imm1(21);
+        let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
+        other((sh == 1) && (imm5 == 0))?;
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
@@ -49,7 +52,7 @@ impl Instruction for Usat {
             rd,
             saturate_to: ins.imm5(0) as u8,
             rn,
-            shift: Shift::from_bits(ins.imm1(21) << 1, (ins.imm3(12) << 2) | ins.imm2(6)),
+            shift: Shift::from_bits(sh << 1, imm5),
         })
     }
 
@@ -80,15 +83,13 @@ impl Instruction for Usat {
 
 #[cfg(test)]
 mod tests {
+    use super::Usat;
     use crate::{
         arith::Shift,
         arm::{ArmProcessor, ArmVersion::V7M},
         instructions::Instruction,
-        mpu::v7m::Register,
         registers::RegisterIndex,
     };
-
-    use super::Usat;
 
     #[test]
     fn test_usat() {
