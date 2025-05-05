@@ -64,7 +64,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PLI: Preload Instruction
 - QASX: Saturating Add and Subtract with Exchange
 - QSAX: Saturating Subtract and Add with Exchange
-- SADD16: Signed Add 16
 - SASX: Signed Add and Subtract with Exchange
 - SMLAL: Signed Multiply Accumulate Long
 - SMULL: Signed Multiply Long
@@ -189,7 +188,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - PKHBT, PKHTB: Pack Halfword
 - QASX: Saturating Add and Subtract with Exchange
 - QSAX: Saturating Subtract and Add with Exchange
-- SADD16: Signed Add 16
 - SASX: Signed Add and Subtract with Exchange
 - SEL: Select Bytes
 - SHADD16: Signed Halving Add 16

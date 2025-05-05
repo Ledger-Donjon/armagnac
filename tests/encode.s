@@ -1096,6 +1096,14 @@ sadd8   r14, r7, r0
 sadd8   r2, r2, r8
 sadd8   r3, r9, r7
 
+// SADD16
+// T1
+sadd16  r0, r3, r12
+sadd16  r8, r10, r1
+sadd16  r14, r7, r0
+sadd16  r2, r2, r8
+sadd16  r3, r9, r7
+
 // SBC (immediate)
 // T1
 sbc     r0, r0, #0
