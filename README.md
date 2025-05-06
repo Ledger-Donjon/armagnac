@@ -48,6 +48,7 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 
 - CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
+- CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
 - LDC, LDC2: Load Coprossessor
 - LDREX: Load Register Exclusive
@@ -59,14 +60,12 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - MCRR, MCRR2: Move to Compressor from two ARM Registers
 - MRC, MRC2: Move to Register from Coprocessor
 - MRRC, MRRC2: Move to two Registers from Compressor
-- PKHBT, PKHTB: Pack Halfword
 - PLD: Preload Data
 - PLI: Preload Instruction
-- QASX: Saturating Add and Subtract with Exchange
-- QSAX: Saturating Subtract and Add with Exchange
-- SASX: Signed Add and Subtract with Exchange
+- PSSBB: Physical Speculative Store Bypass Barrier
 - SMLAL: Signed Multiply Accumulate Long
 - SMULL: Signed Multiply Long
+- SSBB: Speculative Store Bypass Barrier
 - STC, STC2: Store Coprocessor
 - STRBT: Store Register Byte Unprivileged
 - STREX: Store Register Exclusive
@@ -77,6 +76,71 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
 - YIELD
+
+### Unimplemented instructions for ArmV7E-M
+
+In addition to ArmV7-M, Here is the list of instructions specific to ArmV7E-M that are not implemented yet.
+
+- PKHBT, PKHTB: Pack Halfword
+- QASX: Saturating Add and Subtract with Exchange
+- QSAX: Saturating Subtract and Add with Exchange
+- SASX: Signed Add and Subtract with Exchange
+- SEL: Select Bytes
+- SHADD16: Signed Halving Add 16
+- SHADD8: Signed Halving Add 8
+- SHASX: Signed Halving Add and Subtract with Exchange
+- SHSAX: Signed Halving Subtract and Add with Exchange
+- SHSUB16: Signed Halving Subtract 16
+- SHSUB8: Signed Halving Subtract 8
+- SMLABB, SMLABT, SMLATB, SMLATT: Signed Multiply Accumutate (halfwords)
+- SMLAD, SMLADX: Signed Multiply Accumutate Dual
+- SMLAL: Signed Multiply Accumutate Long
+- SMLALBB, SMLALBT, SMLALTB, SMLALTT: Signed Multiply Accumulate Long (halfwords)
+- SMLALD, SMLALDX: Signed Multiply Accumulate Long Dual
+- SMLAWB, SMLAWT: Signed Multiply Accumulate (word by halfword)
+- SMLSD, SMLSDX: Signed Multiply Subtract Dual
+- SMLSLD, SMLSLDX: Signed Multiply Subtract Long Dual
+- SMMLA, SMMLAR: Signed Most Significant Word Multiply Accumulate
+- SMMLS, SMMLSR: Signed Most Significant Word Multiply Subtract
+- SMMUL, SMMULR: Signed Most Significant Word Multiply
+- SMUAD, SMUADX: Signed Dual Multiply Add
+- SMULBB, SMULBT, SMULTB, SMULTT: Signed Multiply (halfwords)
+- SMULL: Signed Multiply Long
+- SMULWB, SMULWT: Signed Multiply (word by halfword)
+- SMUSD, SMUSDX: Signed Dual Multiply Subtract
+- SSAT16: Signed Saturate 16
+- SSAX: Signed Subtract and Add with Exchange
+- SSUB16: Signed Subtract 16
+- SSUB8: Signed Subtract 8
+- SXTAB: Signed Extend and Add Byte
+- SXTAB16: Signed Extend and Add Byte 16
+- SXTAH: Signed Extend and Add Halfword
+- SXTB16: Signed Extend Byte 16
+- UADD16: Unsigned Add 16
+- UADD8: Unsigned Add 8
+- UASX: Unsigned Add and Subtract with Exchange
+- UHADD16: Unsigned Halving Add 16
+- UHADD8: Unsigned Halving Add 8
+- UHASX: Unsigned Halfving Add and Subtract with Exchange
+- UHSAX: Unsigned Halfving Subtract and Add with Exchange
+- UHSUB16: Unsigned Halving Subtract 16
+- UHSUB8: Unsigned Halving Subtract 8
+- UMAAL: Unsigned Multiply Accumulate Accumulate Long
+- UQADD16: Unsigned Saturating Add 16
+- UQADD8: Unsigned Saturating Add 8
+- UQASX: Unsigned Saturating Add and Subtract with Exchange
+- UQSAX: Unsigned Saturating Subtract and Add with Exchange
+- UQSUB16: Unsigned Saturating Subtract 16
+- UQSUB8: Unsigned Saturating Subtract 8
+- USAD8: Unsigned Sum of Absolute Differences
+- USADA8: Unsigned Sum of Absolute Differences and Accumulate
+- USAX: Unsigned Subtract and Add with Exchange
+- USUB16: Unsigned Subtract 16
+- USUB8: Unsigned Subtract 8
+- UXTAB: Unsigned Extend and Add Byte
+- UXTAB16: Unsigned Extend and Add Byte 16
+- UXTAH: Unsigned Extend and Add Halfword
+- UXTB16: Unsigned Extend Byte 16
 
 ### Unimplemented instructions for ArmV8-M
 

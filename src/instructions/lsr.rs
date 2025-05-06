@@ -2,7 +2,7 @@
 
 use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::qualifier_wide_match;
@@ -35,12 +35,12 @@ impl Instruction for LsrImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00001xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101010010x1111(0)xxxxxxxxx01xxxx",
             },
         ]
@@ -119,12 +119,12 @@ impl Instruction for LsrReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000011xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11111010001xxxxx1111xxxx0000xxxx",
             },
         ]

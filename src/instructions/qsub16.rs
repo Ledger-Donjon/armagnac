@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V8M},
     Pattern,
 };
 use crate::{
@@ -29,7 +29,7 @@ impl Instruction for Qsub16 {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7EM, V8M],
             expression: "111110101101xxxx1111xxxx0001xxxx",
         }]
     }
@@ -65,7 +65,7 @@ impl Instruction for Qsub16 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, ArmVersion::V7EM},
         instructions::{qsub16::Qsub16, Instruction},
         registers::RegisterIndex,
     };
@@ -107,7 +107,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(V7EM, 0);
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);

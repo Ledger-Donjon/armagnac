@@ -138,6 +138,14 @@ pub enum ArmVersion {
     /// - Cortex-M3
     /// - SecurCore SC300
     V7M,
+    /// ARMv7E-M
+    ///
+    /// Architecture built on ARMv7-M with DSP extension.
+    ///
+    /// Implemented by:
+    /// - Cortex-M4
+    /// - Cortex-M7
+    V7EM,
     /// ARMv8-M
     ///
     /// Implemented by:
@@ -251,7 +259,7 @@ impl ArmProcessor {
         processor.map_iface(0xe000e000, system_control).unwrap();
         match version {
             ArmVersion::V6M => {}
-            ArmVersion::V7M => processor
+            ArmVersion::V7M | ArmVersion::V7EM => processor
                 .map_iface(0xe000ed90, Rc::new(RefCell::new(MpuV7M::new())))
                 .unwrap(),
             ArmVersion::V8M => {

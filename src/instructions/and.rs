@@ -1,6 +1,6 @@
 //! Implements AND instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
@@ -31,7 +31,7 @@ impl Instruction for AndImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x00000xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
@@ -100,12 +100,12 @@ impl Instruction for AndReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000000xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101010000xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]

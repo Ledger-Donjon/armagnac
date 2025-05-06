@@ -2,7 +2,7 @@
 
 use super::{other, unpredictable, DecodeHelper, Instruction};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::arith::{shift_c, Shift, ShiftType};
@@ -36,17 +36,17 @@ impl Instruction for MovImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00100xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x00010x11110xxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x100100xxxx0xxxxxxxxxxxxxxx",
             },
         ]
@@ -134,17 +134,17 @@ impl Instruction for MovReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000110xxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0000000000xxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101010010x1111(0)000xxxx0000xxxx",
             },
         ]

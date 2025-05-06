@@ -2,7 +2,7 @@
 
 use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::qualifier_wide_match;
@@ -29,12 +29,12 @@ impl Instruction for CmpImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00101xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x011011xxxx0xxx1111xxxxxxxx",
             },
         ]
@@ -96,17 +96,17 @@ impl Instruction for CmpReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001010xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000101xxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111010111011xxxx(0)xxx1111xxxxxxxx",
             },
         ]

@@ -1,7 +1,7 @@
 //! Implements TEQ (Test Equivalence) instruction.
 
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
 use super::{Instruction, Qualifier};
@@ -30,7 +30,7 @@ impl Instruction for TeqImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x001001xxxx0xxx1111xxxxxxxx",
         }]
     }
@@ -79,7 +79,7 @@ impl Instruction for TeqReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "111010101001xxxx(0)xxx1111xxxxxxxx",
         }]
     }

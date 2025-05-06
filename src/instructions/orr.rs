@@ -1,7 +1,7 @@
 //! Implements ORR (Logical OR) instruction.
 
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use super::{Instruction, Qualifier};
@@ -34,7 +34,7 @@ impl Instruction for OrrImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x00010xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
@@ -99,12 +99,12 @@ impl Instruction for OrrReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001100xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101010010xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]

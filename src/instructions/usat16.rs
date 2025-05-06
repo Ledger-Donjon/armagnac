@@ -4,7 +4,7 @@ use crate::{
     arith::unsigned_sat_q,
     arm::{
         ArmProcessor,
-        ArmVersion::{V7M, V8M},
+        ArmVersion::{V7EM, V8M},
         RunError,
     },
     decoder::DecodeError,
@@ -31,7 +31,7 @@ impl Instruction for Usat16 {
     fn patterns() -> &'static [super::Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7EM, V8M],
             expression: "11110(0)111010xxxx0000xxxx00(0)(0)xxxx",
         }]
     }
@@ -75,7 +75,7 @@ impl Instruction for Usat16 {
 mod tests {
     use super::Usat16;
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, ArmVersion::V7EM},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -93,7 +93,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(V7EM, 0);
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.0);

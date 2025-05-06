@@ -1,6 +1,6 @@
 //! Implements B (Branch) instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -23,22 +23,22 @@ impl Instruction for B {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1101xxxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "11100xxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110xxxxxxxxxxx10x0xxxxxxxxxxxx",
             },
             Pattern {
                 tn: 4,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110xxxxxxxxxxx10x1xxxxxxxxxxxx",
             },
         ]

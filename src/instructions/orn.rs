@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -35,7 +35,7 @@ impl Instruction for OrnImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x00011xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
@@ -98,7 +98,7 @@ impl Instruction for OrnReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11101010011xxxxx(0)xxxxxxxxxxxxxxx",
         }]
     }

@@ -2,7 +2,7 @@
 
 use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::arith::Shift;
@@ -32,12 +32,12 @@ impl Instruction for Uxth {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1011001010xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11111010000111111111xxxx1(0)xxxxxx",
             },
         ]

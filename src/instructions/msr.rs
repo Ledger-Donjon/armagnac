@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -26,7 +26,7 @@ impl Instruction for Msr {
         // TODO: For ArmV8-M encoding can accept a mask. This is not implemented yet.
         &[Pattern {
             tn: 1,
-            versions: &[V6M, V7M, V8M],
+            versions: &[V6M, V7M, V7EM, V8M],
             expression: "11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx",
         }]
     }

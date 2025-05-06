@@ -1,6 +1,6 @@
 //! Implements ADD instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -33,22 +33,22 @@ impl Instruction for AddImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001110xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00110xxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x01000xxxxx0xxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 4,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x100000xxxx0xxxxxxxxxxxxxxx",
             },
         ]
@@ -159,17 +159,17 @@ impl Instruction for AddReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001100xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000100xxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101011000xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
@@ -289,22 +289,22 @@ impl Instruction for AddSpPlusImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10101xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "101100000xxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x01000x11010xxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 4,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x10000011010xxxxxxxxxxxxxxx",
             },
         ]
@@ -407,17 +407,17 @@ impl Instruction for AddSpPlusReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000100x1101xxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "010001001xxxx101",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101011000x11010xxxxxxxxxxxxxxx",
             },
         ]

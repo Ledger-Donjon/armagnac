@@ -2,7 +2,7 @@
 
 use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::arith::ShiftType;
@@ -35,22 +35,22 @@ impl Instruction for SubImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001111xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00111xxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x01101xxxxx0xxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 4,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x101010xxxx0xxxxxxxxxxxxxxx",
             },
         ]
@@ -172,12 +172,12 @@ impl Instruction for SubReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001101xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101011101xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
@@ -270,17 +270,17 @@ impl Instruction for SubSpMinusImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "101100001xxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x01101x1101xxxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11110x10101011010xxxxxxxxxxxxxxx",
             },
         ]
@@ -380,7 +380,7 @@ impl Instruction for SubSpMinusReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11101011101x1101(0)xxxxxxxxxxxxxxx",
         }]
     }

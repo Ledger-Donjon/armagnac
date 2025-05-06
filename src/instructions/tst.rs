@@ -1,7 +1,7 @@
 //! Implements TST (Test) instruction.
 
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use super::{Instruction, Qualifier};
@@ -29,7 +29,7 @@ impl Instruction for TstImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x000001xxxx0xxx1111xxxxxxxx",
         }]
     }
@@ -79,12 +79,12 @@ impl Instruction for TstReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001000xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111010100001xxxx(0)xxx1111xxxxxxxx",
             },
         ]

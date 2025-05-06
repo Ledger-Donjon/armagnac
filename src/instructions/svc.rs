@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -23,7 +23,7 @@ impl Instruction for Svc {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V6M, V7M, V8M],
+            versions: &[V6M, V7M, V7EM, V8M],
             expression: "11011111xxxxxxxx",
         }]
     }

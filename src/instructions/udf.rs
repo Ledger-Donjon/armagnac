@@ -1,6 +1,6 @@
 //! Implements UDF (Undefined) instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{DecodeHelper, Instruction, Pattern};
 use crate::arm::{ArmProcessor, RunError};
 use crate::decoder::DecodeError;
@@ -18,12 +18,12 @@ impl Instruction for Udf {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "11011110xxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "111101111111xxxx1010xxxxxxxxxxxx",
             },
         ]

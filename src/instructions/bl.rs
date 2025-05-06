@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -14,16 +14,17 @@ use crate::{
 };
 
 /// BL instruction.
+#[derive(Clone, Copy)]
 pub struct Bl {
     /// Offset.
-    imm32: i32,
+    pub imm32: i32,
 }
 
 impl Instruction for Bl {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V6M, V7M, V8M],
+            versions: &[V6M, V7M, V7EM, V8M],
             expression: "11110xxxxxxxxxxx11x1xxxxxxxxxxxx",
         }]
     }

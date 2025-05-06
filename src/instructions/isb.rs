@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -20,7 +20,7 @@ impl Instruction for Isb {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V6M, V7M, V8M],
+            versions: &[V6M, V7M, V7EM, V8M],
             expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0110xxxx",
         }]
     }

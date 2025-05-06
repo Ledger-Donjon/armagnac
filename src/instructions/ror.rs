@@ -1,7 +1,7 @@
 //! Implements ROR (Rotate Right) instruction.
 
 use super::{
-    ArmVersion::{V6M, V7M},
+    ArmVersion::{V6M, V7EM, V7M},
     Pattern,
 };
 use super::{Instruction, Qualifier};
@@ -34,7 +34,7 @@ impl Instruction for RorImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M],
+            versions: &[V7M, V7EM],
             expression: "11101010010x1111(0)xxxxxxxxx11xxxx",
         }]
     }
@@ -103,12 +103,12 @@ impl Instruction for RorReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M],
+                versions: &[V6M, V7M, V7EM],
                 expression: "0100000111xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M],
+                versions: &[V7M, V7EM],
                 expression: "11111010011xxxxx1111xxxx0000xxxx",
             },
         ]

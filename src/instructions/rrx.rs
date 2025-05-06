@@ -1,6 +1,9 @@
 //! Implements RRX (Rotate Right with Extend) instruction.
 
-use super::{ArmVersion::V7M, Pattern};
+use super::{
+    ArmVersion::{V7EM, V7M},
+    Pattern,
+};
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -29,7 +32,7 @@ impl Instruction for Rrx {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M],
+            versions: &[V7M, V7EM],
             expression: "11101010010x1111(0)000xxxx0011xxxx",
         }]
     }

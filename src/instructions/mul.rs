@@ -2,7 +2,7 @@
 
 use super::{unpredictable, DecodeHelper, Instruction};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -29,12 +29,12 @@ impl Instruction for Mul {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001101xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110110000xxxx1111xxxx0000xxxx",
             },
         ]

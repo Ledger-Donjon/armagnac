@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -24,7 +24,7 @@ impl Instruction for Rbit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "111110101001xxxx1111xxxx1010xxxx",
         }]
     }

@@ -1,7 +1,7 @@
 //! Implements BKPT (Breakpoint) instruction.
 
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Instruction, Pattern,
 };
 use crate::{
@@ -27,7 +27,7 @@ impl Instruction for Bkpt {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V6M, V7M, V8M],
+            versions: &[V6M, V7M, V7EM, V8M],
             expression: "10111110xxxxxxxx",
         }]
     }

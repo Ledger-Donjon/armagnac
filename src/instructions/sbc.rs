@@ -1,7 +1,7 @@
 //! Implements SBC (Subtract with Carry) instruction.
 
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use super::{Instruction, Qualifier};
@@ -35,7 +35,7 @@ impl Instruction for SbcImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x01011xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
@@ -104,12 +104,12 @@ impl Instruction for SbcReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000110xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101011011xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]

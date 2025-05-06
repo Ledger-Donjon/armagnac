@@ -5,7 +5,7 @@ use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
     arm::{
         ArmProcessor,
-        ArmVersion::{V7M, V8M},
+        ArmVersion::{V7EM, V7M, V8M},
         RunError,
     },
     instructions::{other, unpredictable, DecodeHelper},
@@ -31,7 +31,7 @@ impl Instruction for Usat {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110(0)1110x0xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }

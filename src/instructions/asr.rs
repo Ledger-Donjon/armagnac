@@ -1,6 +1,6 @@
 //! Implements ASR (Arithmetic Shift Right) instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -31,12 +31,12 @@ impl Instruction for AsrImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00010xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101010010x1111(0)xxxxxxxxx10xxxx",
             },
         ]
@@ -114,12 +114,12 @@ impl Instruction for AsrReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000100xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11111010010xxxxx1111xxxx0000xxxx",
             },
         ]

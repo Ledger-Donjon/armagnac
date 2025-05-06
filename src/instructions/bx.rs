@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -28,7 +28,7 @@ impl Instruction for Bx {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M],
+                versions: &[V6M, V7M, V7EM],
                 expression: "010001110xxxx(0)(0)(0)",
             },
             Pattern {

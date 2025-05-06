@@ -3,7 +3,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -33,7 +33,7 @@ impl Instruction for Stmdb {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "1110100100x0xxxx(0)x(0)xxxxxxxxxxxxx",
             },
             Pattern {

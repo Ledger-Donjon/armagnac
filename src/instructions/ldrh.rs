@@ -3,7 +3,7 @@
 use super::Qualifier;
 use super::{ldr::LdrImm, other, undefined, AddOrSub, Instruction};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::instructions::indexing_args;
@@ -29,17 +29,17 @@ impl Instruction for LdrhImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10001xxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110001011xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 3,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110000011xxxxxxxx1xxxxxxxxxxx",
             },
         ]
@@ -142,7 +142,7 @@ impl Instruction for LdrhLit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11111000x0111111xxxxxxxxxxxxxxxx",
         }]
     }
@@ -212,12 +212,12 @@ impl Instruction for LdrhReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101101xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110000011xxxxxxxx000000xxxxxx",
             },
         ]

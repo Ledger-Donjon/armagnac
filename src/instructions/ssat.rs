@@ -2,7 +2,7 @@
 
 use super::Instruction;
 use super::{
-    ArmVersion::{V7M, V8M},
+    ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
 use crate::{
@@ -34,7 +34,7 @@ impl Instruction for Ssat {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110(0)1100x0xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }

@@ -1,6 +1,6 @@
 //! Implements SADD8 (Signed Add 8) instruction.
 
-use super::ArmVersion::{V7M, V8M};
+use super::ArmVersion::{V7EM, V8M};
 use super::{Instruction, Pattern};
 use crate::arm::{ArmProcessor, RunError};
 use crate::decoder::DecodeError;
@@ -24,7 +24,7 @@ impl Instruction for Sadd8 {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7EM, V8M],
             expression: "111110101000xxxx1111xxxx0000xxxx",
         }]
     }
@@ -74,7 +74,7 @@ impl Instruction for Sadd8 {
 #[cfg(test)]
 mod tests {
     use crate::arm::ArmProcessor;
-    use crate::arm::ArmVersion::V7M;
+    use crate::arm::ArmVersion::V7EM;
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 
@@ -90,7 +90,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(V7EM, 0);
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.0);

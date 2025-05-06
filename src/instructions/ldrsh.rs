@@ -2,7 +2,7 @@
 
 use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier};
 use super::{
-    ArmVersion::{V6M, V7M, V8M},
+    ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
 use crate::qualifier_wide_match;
@@ -42,12 +42,12 @@ impl Instruction for LdrshImm {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110011011xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110010011xxxxxxxx1xxxxxxxxxxx",
             },
         ]
@@ -140,7 +140,7 @@ impl Instruction for LdrshLit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11111001x0111111xxxxxxxxxxxxxxxx",
         }]
     }
@@ -204,12 +204,12 @@ impl Instruction for LdrshReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101111xxxxxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "111110010011xxxxxxxx000000xxxxxx",
             },
         ]

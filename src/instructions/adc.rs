@@ -1,6 +1,6 @@
 //! Implements ADC (Add with Carry) instruction.
 
-use super::ArmVersion::{V6M, V7M, V8M};
+use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::{Instruction, Pattern, Qualifier};
 use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
@@ -32,7 +32,7 @@ impl Instruction for AdcImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             tn: 1,
-            versions: &[V7M, V8M],
+            versions: &[V7M, V7EM, V8M],
             expression: "11110x01010xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
@@ -101,12 +101,12 @@ impl Instruction for AdcReg {
         &[
             Pattern {
                 tn: 1,
-                versions: &[V6M, V7M, V8M],
+                versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000101xxxxxx",
             },
             Pattern {
                 tn: 2,
-                versions: &[V7M, V8M],
+                versions: &[V7M, V7EM, V8M],
                 expression: "11101011010xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
