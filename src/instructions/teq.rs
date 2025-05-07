@@ -122,7 +122,7 @@ mod tests {
     use super::TeqImm;
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, ArmVersion},
+        arm::{ArmProcessor, Config},
         instructions::{teq::TeqReg, Instruction},
         registers::RegisterIndex,
     };
@@ -164,7 +164,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, 0x12345678);
             proc.registers.psr.set_c(v.initial_c);
@@ -213,7 +213,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, 0x12345678);
             proc.set(rm, v.initial_rm);

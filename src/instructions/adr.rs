@@ -85,7 +85,7 @@ impl Instruction for Adr {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{adr::Adr, Instruction},
         registers::RegisterIndex,
     };
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_adr() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         test_adr_vec(&mut proc, 0);
         test_adr_vec(&mut proc, -16);
         test_adr_vec(&mut proc, 16);

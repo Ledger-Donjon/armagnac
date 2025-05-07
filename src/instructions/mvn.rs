@@ -154,12 +154,15 @@ impl Instruction for MvnReg {
 mod tests {
     use super::MvnReg;
     use crate::{
-        arith::Shift, arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex,
+        arith::Shift,
+        arm::{ArmProcessor, Config},
+        instructions::Instruction,
+        registers::RegisterIndex,
     };
 
     #[test]
     fn test_mvn_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r0 = 0x10;
         proc.registers.r1 = 0x11;
         let ins = MvnReg {

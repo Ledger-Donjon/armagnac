@@ -6,7 +6,7 @@
 mod align;
 mod arith;
 pub mod arm;
-mod condition;
+pub mod condition;
 pub mod decoder;
 pub mod harness;
 pub mod helpers;

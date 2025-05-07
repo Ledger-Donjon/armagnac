@@ -78,7 +78,7 @@ impl Instruction for Bfi {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, RunError},
+        arm::{ArmProcessor, Config, RunError},
         instructions::{bfi::Bfi, Instruction},
         registers::RegisterIndex,
     };
@@ -94,7 +94,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let (rd, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rd, 0x12b456f8);
             proc.set(rn, 0x87654321);
@@ -112,7 +112,7 @@ mod tests {
         }
 
         // Check that msb < lsb leads to error.
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         let rd = RegisterIndex::new_general_random();
         let rn = RegisterIndex::new_general_random();
         assert_eq!(

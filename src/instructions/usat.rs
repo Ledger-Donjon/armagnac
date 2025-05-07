@@ -86,7 +86,7 @@ mod tests {
     use super::Usat;
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -104,7 +104,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.0);

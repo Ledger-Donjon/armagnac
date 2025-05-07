@@ -1,7 +1,4 @@
-use crate::{
-    arm::{ArmProcessor, ArmVersion, Emulator},
-    instructions::Mnemonic,
-};
+use crate::arm::{ArmProcessor, Config, Emulator};
 use object::{File, Object, ObjectSection, ObjectSymbol};
 use std::collections::BTreeMap;
 
@@ -27,7 +24,7 @@ impl ElfHarness {
             .map(|s| (s.name().unwrap().into(), s.address() as u32))
             .collect();
 
-        let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+        let mut proc = ArmProcessor::new(Config::v7m());
         proc.map_ram(ADDR_RAM, 1024).unwrap();
 
         // Map program section as read-only RAM memories

@@ -82,14 +82,14 @@ impl Instruction for Rev {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{rev::Rev, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_rev() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         let ins = Rev {
             rd: RegisterIndex::R0,

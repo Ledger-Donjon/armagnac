@@ -277,12 +277,15 @@ impl Instruction for LdrsbReg {
 mod tests {
     use super::{LdrsbImm, LdrsbLit, LdrsbReg};
     use crate::{
-        arith::Shift, arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex,
+        arith::Shift,
+        arm::{ArmProcessor, Config},
+        instructions::Instruction,
+        registers::RegisterIndex,
     };
 
     #[test]
     fn test_ldrsb_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v7m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 
@@ -317,7 +320,7 @@ mod tests {
 
     #[test]
     fn test_ldrsb_lit() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 
@@ -334,7 +337,7 @@ mod tests {
 
     #[test]
     fn test_ldrsb_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x12b456f8).unwrap();
 

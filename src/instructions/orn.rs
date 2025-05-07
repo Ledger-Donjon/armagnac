@@ -154,14 +154,14 @@ mod tests {
     use super::OrnImm;
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{orn::OrnReg, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_orn_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         OrnImm {
             rd: RegisterIndex::R0,
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_orn_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 0x00ff00ff;
         OrnReg {

@@ -84,7 +84,10 @@ impl Instruction for Ssat {
 mod tests {
     use super::Ssat;
     use crate::{
-        arith::Shift, arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex,
+        arith::Shift,
+        arm::{ArmProcessor, Config},
+        instructions::Instruction,
+        registers::RegisterIndex,
     };
 
     #[test]
@@ -106,7 +109,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let (rd, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.0);
             proc.registers.psr.set_q(v.4);

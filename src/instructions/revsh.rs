@@ -83,13 +83,17 @@ impl Instruction for Revsh {
 #[cfg(test)]
 mod tests {
     use super::Revsh;
-    use crate::{arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex};
+    use crate::{
+        arm::{ArmProcessor, Config},
+        instructions::Instruction,
+        registers::RegisterIndex,
+    };
 
     #[test]
     fn test_revsh() {
         let vectors = [(0x12345678, 0x00007856), (0x12b456f8, 0xfffff856)];
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let (rd, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.0);
             let mut expected = proc.registers.clone();

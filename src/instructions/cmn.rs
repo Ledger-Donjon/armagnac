@@ -149,7 +149,7 @@ mod tests {
 
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{cmn::CmnImm, Instruction},
         registers::RegisterIndex,
     };
@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn cmn_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         cmm_imm_vec(&mut proc, -4, false, true, false);
         cmm_imm_vec(&mut proc, -5, true, true, false);
         cmm_imm_vec(&mut proc, -6, false, false, false);
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn cmn_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         cmn_reg_vec(&mut proc, -4, 5, Shift::lsl(0), false, true, false);
         cmn_reg_vec(&mut proc, -5, 5, Shift::lsl(0), true, true, false);
         cmn_reg_vec(&mut proc, -6, 5, Shift::lsl(0), false, false, false);

@@ -635,7 +635,7 @@ mod tests {
         BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
     };
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7EM},
+        arm::{ArmProcessor, ArmVersion::V7EM, Config},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
         it_state::ItState,
@@ -652,7 +652,7 @@ mod tests {
         let file = File::open("src/test_decoder.txt").unwrap();
         let buf_reader = BufReader::new(file);
         let decoder = BasicInstructionDecoder::new(V7EM);
-        let mut proc = ArmProcessor::new(V7EM, 0);
+        let mut proc = ArmProcessor::new(Config::v7em());
         let mut pc = 0x1000;
 
         for line in buf_reader.lines().map(|l| l.unwrap()) {

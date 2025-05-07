@@ -706,17 +706,17 @@ pub enum Mode {
 /// Registers can be accessed directly, e.g.:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion};
-/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// # use armagnac::arm::{ArmProcessor, Config};
+/// let mut proc = ArmProcessor::new(Config::v7m());
 /// proc.registers.r0 = 0x1234;
 /// ```
 ///
 /// Or using indexing (read-only):
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # use armagnac::arm::{ArmProcessor, Config};
 /// # use armagnac::registers::RegisterIndex;
-/// # let proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// # let proc = ArmProcessor::new(Config::v7m());
 /// let index = RegisterIndex::R0;
 /// let value = proc.registers[index];
 /// // Or shorter form:
@@ -729,9 +729,9 @@ pub enum Mode {
 /// [CoreRegisters::set]:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion};
+/// # use armagnac::arm::{ArmProcessor, Config};
 /// # use armagnac::registers::RegisterIndex;
-/// # let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// # let mut proc = ArmProcessor::new(Config::v7m());
 /// let index = RegisterIndex::R0;
 /// proc.registers.set(index, 0x1234);
 /// // Or shorter form:
@@ -742,8 +742,8 @@ pub enum Mode {
 /// of the program status register (or flags registers):
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion};
-/// # let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// # use armagnac::arm::{ArmProcessor, Config};
+/// # let mut proc = ArmProcessor::new(Config::v7m());
 /// if proc.registers.psr.c() {
 ///     println!("Carry flag is set!")
 /// }

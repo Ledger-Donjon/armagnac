@@ -93,14 +93,14 @@ impl Instruction for Uxth {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{uxth::Uxth, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn uxth() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12b456f8;
 
         let mut ins = Uxth {

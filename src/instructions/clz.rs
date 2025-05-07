@@ -59,7 +59,7 @@ impl Instruction for Clz {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion},
+        arm::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -80,7 +80,7 @@ mod tests {
             (0x00000000, 32),
         ];
         for v in vectors {
-            let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rm = RegisterIndex::new_general_random();
             let rd = RegisterIndex::new_general_random();
             proc.set(rm, v.0);

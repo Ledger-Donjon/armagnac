@@ -73,12 +73,10 @@ impl Instruction for Sadd8 {
 
 #[cfg(test)]
 mod tests {
-    use crate::arm::ArmProcessor;
-    use crate::arm::ArmVersion::V7EM;
+    use super::Sadd8;
+    use crate::arm::{ArmProcessor, Config};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
-
-    use super::Sadd8;
 
     #[test]
     fn test_sadd8() {
@@ -90,7 +88,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7EM, 0);
+            let mut proc = ArmProcessor::new(Config::v7em());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.0);

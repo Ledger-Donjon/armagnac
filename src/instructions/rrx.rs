@@ -75,7 +75,7 @@ impl Instruction for Rrx {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, Config},
         instructions::{rrx::Rrx, Instruction},
         registers::RegisterIndex,
     };
@@ -122,7 +122,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rm = RegisterIndex::new_general_random();
             proc.set(rm, v.initial_rm);

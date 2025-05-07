@@ -73,7 +73,7 @@ impl Instruction for Bfc {
 mod tests {
     use super::Bfc;
     use crate::{
-        arm::{ArmProcessor, RunError},
+        arm::{ArmProcessor, Config, RunError},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -94,7 +94,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             proc.set(rd, 0xffffffff);
             Bfc {
@@ -108,7 +108,7 @@ mod tests {
         }
 
         // Check that msb < lsb leads to error.
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         let rd = RegisterIndex::new_general_random();
         assert_eq!(
             Bfc {

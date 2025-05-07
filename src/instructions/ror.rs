@@ -179,7 +179,7 @@ impl Instruction for RorReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{
             ror::{RorImm, RorReg},
             Instruction,
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn test_ror_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         let mut ins = RorImm {
             rd: RegisterIndex::R0,
@@ -210,7 +210,7 @@ mod tests {
 
     #[test]
     fn test_ror_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 1;
         let ins = RorReg {

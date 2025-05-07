@@ -79,7 +79,11 @@ impl Instruction for Sbfx {
 #[cfg(test)]
 mod tests {
     use super::Sbfx;
-    use crate::{arm::ArmProcessor, instructions::Instruction, registers::RegisterIndex};
+    use crate::{
+        arm::{ArmProcessor, Config},
+        instructions::Instruction,
+        registers::RegisterIndex,
+    };
 
     fn test_sbfx_vec(proc: &mut ArmProcessor, r1: u32, lsb: u8, widthm1: u8, expected_r0: u32) {
         proc.registers.r0 = 0;
@@ -97,7 +101,7 @@ mod tests {
 
     #[test]
     fn test_sbfx() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         let magic = 0x12b456f8;
         test_sbfx_vec(&mut proc, magic, 0, 0, 0);
         test_sbfx_vec(&mut proc, magic, 3, 0, 0xffffffff);

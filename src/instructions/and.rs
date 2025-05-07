@@ -181,7 +181,7 @@ impl Instruction for AndReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, Config},
         instructions::{
             and::{AndImm, AndReg},
             Instruction,
@@ -236,7 +236,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.initial_rn);
@@ -303,7 +303,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.initial_rn);

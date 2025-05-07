@@ -68,14 +68,14 @@ impl Instruction for Umull {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{umull::Umull, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_umull() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r2 = 0x12345678;
         proc.registers.r3 = 0x87654321;
         let ins = Umull {

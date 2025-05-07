@@ -187,7 +187,7 @@ impl Instruction for SbcReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{
             sbc::{SbcImm, SbcReg},
             Instruction,
@@ -197,7 +197,7 @@ mod tests {
 
     #[test]
     fn test_sbc_imm() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 1000;
         SbcImm {
             rd: RegisterIndex::R0,
@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_sbc_reg() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 1000;
         proc.registers.r2 = 99;
         SbcReg {

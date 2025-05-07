@@ -70,7 +70,7 @@ impl Instruction for Qsub8 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7EM},
+        arm::{ArmProcessor, Config},
         instructions::{qsub8::Qsub8, Instruction},
         registers::RegisterIndex,
     };
@@ -112,7 +112,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(V7EM, 0);
+            let mut proc = ArmProcessor::new(Config::v7em());
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);

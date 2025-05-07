@@ -512,7 +512,7 @@ mod tests {
     use super::AddImm;
     use crate::{
         arith::Shift,
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Instruction,
@@ -583,7 +583,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let rn = RegisterIndex::new_general_random();
             let rd = RegisterIndex::new_general_random();
             proc.set(rn, v.rn_value);
@@ -674,7 +674,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rd, 0);
@@ -746,7 +746,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;
             let mut expected_registers = proc.registers.clone();
@@ -819,7 +819,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+            let mut proc = ArmProcessor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             let rm = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;

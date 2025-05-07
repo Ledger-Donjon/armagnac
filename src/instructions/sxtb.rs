@@ -96,14 +96,14 @@ impl Instruction for Sxtb {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::ArmProcessor,
+        arm::{ArmProcessor, Config},
         instructions::{sxtb::Sxtb, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_sxtb() {
-        let mut proc = ArmProcessor::new(crate::arm::ArmVersion::V8M, 0);
+        let mut proc = ArmProcessor::new(Config::v8m());
         proc.registers.r1 = 0x12b456f8;
 
         let mut ins = Sxtb {

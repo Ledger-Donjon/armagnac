@@ -61,13 +61,13 @@ impl Instruction for Bkpt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, Config},
         instructions::{bkpt::Bkpt, Instruction},
     };
 
     #[test]
     fn test_bkpt() {
-        let mut proc = ArmProcessor::new(V7M, 0);
+        let mut proc = ArmProcessor::new(Config::v7m());
         assert_eq!(proc.break_request, None);
         Bkpt { imm8: 0xa5 }.execute(&mut proc).unwrap();
         assert_eq!(proc.break_request, Some(0xa5));

@@ -59,14 +59,14 @@ impl Instruction for Dmb {
 mod tests {
     use super::Dmb;
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M},
+        arm::{ArmProcessor, Config},
         instructions::Instruction,
     };
 
     #[test]
     fn test_dmb() {
         // Check that the instruction does nothing.
-        let mut proc = ArmProcessor::new(V7M, 0);
+        let mut proc = ArmProcessor::new(Config::v7m());
         let expected = proc.registers.clone();
         for option in 0..=0xf {
             Dmb { option }.execute(&mut proc).unwrap();

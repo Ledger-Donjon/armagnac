@@ -164,8 +164,8 @@ pub enum ArmVersion {
 /// The following example will execute a tiny assembly program:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, ArmVersion, RunOptions, Emulator};
-/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// # use armagnac::arm::{ArmProcessor, Config,  RunOptions, Emulator};
+/// let mut proc = ArmProcessor::new(Config::v7m());
 ///
 /// // Load a tiny assembly program at address 0x1000.
 /// // This creates a RAM memory of 6 bytes.
@@ -185,10 +185,10 @@ pub enum ArmVersion {
 /// initialization time:
 ///
 /// ```
-/// use armagnac::arm::{ArmProcessor, ArmVersion};
+/// use armagnac::arm::{ArmProcessor, Config, ArmVersion};
 /// use armagnac::decoder::{Lut16AndGrouped32InstructionDecoder};
 ///
-/// let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+/// let mut proc = ArmProcessor::new(Config::v7m());
 /// proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new(ArmVersion::V7M));
 /// ```
 ///
@@ -236,11 +236,18 @@ type InstructionBox = Rc<dyn Instruction>;
 impl ArmProcessor {
     /// Creates a new Arm processor.
     ///
-    /// The `external_exception_count` argument is the number of platform specific exceptions. You
-    /// may use 0 by default if no mapped peripheral may trigger such an interruption.
-    pub fn new(version: ArmVersion, external_exception_count: usize) -> Self {
-        let exception_count = 16usize.checked_add(external_exception_count).unwrap();
+    /// A [`Config`] is passed for initialization.
+    ///
+    /// If the Arm architecture version is not defined in the configuration, this method panics.
+    ///
+    /// ```
+    /// # use armagnac::arm::{ArmProcessor, Config};
+    /// let processor = ArmProcessor::new(Config::v7m());
+    /// ```
+    pub fn new(config: Config) -> Self {
+        let exception_count = 16usize.checked_add(config.external_exceptions).unwrap();
         let system_control = Rc::new(RefCell::new(SystemControl::new()));
+        let version = config.version;
         let mut processor = Self {
             version,
             registers: CoreRegisters::new(),
@@ -257,7 +264,7 @@ impl ArmProcessor {
             tolerate_pop_stack_unaligned_pc: false,
         };
         processor.map_iface(0xe000e000, system_control).unwrap();
-        match version {
+        match processor.version {
             ArmVersion::V6M => {}
             ArmVersion::V7M | ArmVersion::V7EM => processor
                 .map_iface(0xe000ed90, Rc::new(RefCell::new(MpuV7M::new())))
@@ -1106,6 +1113,50 @@ impl ArmProcessor {
         } else {
             true
         }
+    }
+}
+
+/// Configuration builder used to build instances of [`ArmProcessor`].
+pub struct Config {
+    /// Arm architecture version. Must be defined.
+    version: ArmVersion,
+    /// Number of platform specific exceptions.
+    external_exceptions: usize,
+}
+
+impl Config {
+    pub fn v6m() -> Self {
+        Self {
+            version: ArmVersion::V6M,
+            external_exceptions: 0,
+        }
+    }
+
+    pub fn v7m() -> Self {
+        Self {
+            version: ArmVersion::V7M,
+            ..Self::v6m()
+        }
+    }
+
+    pub fn v7em() -> Self {
+        Self {
+            version: ArmVersion::V7EM,
+            ..Self::v6m()
+        }
+    }
+
+    pub fn v8m() -> Self {
+        Self {
+            version: ArmVersion::V8M,
+            ..Self::v6m()
+        }
+    }
+
+    /// Sets the number of platform specific exceptions.
+    pub fn external_exceptions(mut self, count: usize) -> Self {
+        self.external_exceptions = count;
+        self
     }
 }
 

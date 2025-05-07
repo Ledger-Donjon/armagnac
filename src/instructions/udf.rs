@@ -58,13 +58,13 @@ impl Instruction for Udf {
 mod tests {
     use super::Udf;
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7M, RunError},
+        arm::{ArmProcessor, Config, RunError},
         instructions::Instruction,
     };
 
     #[test]
     fn test_udf() {
-        let mut proc = ArmProcessor::new(V7M, 0);
+        let mut proc = ArmProcessor::new(Config::v7m());
         let result = Udf { imm16: 0 }.execute(&mut proc);
         assert_eq!(result, Err(RunError::InstructionUndefined));
     }

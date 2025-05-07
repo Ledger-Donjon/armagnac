@@ -60,7 +60,7 @@ impl Instruction for Movt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, ArmVersion},
+        arm::{ArmProcessor, Config},
         instructions::{movt::Movt, Instruction},
         registers::RegisterIndex,
     };
@@ -73,7 +73,7 @@ mod tests {
             (RegisterIndex::R2, 0xffff, 0xffff4321),
         ];
         for v in vectors {
-            let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+            let mut proc = ArmProcessor::new(Config::v7m());
             proc.set(v.0, 0x87654321);
             let mut expected = proc.registers.clone();
             Movt {

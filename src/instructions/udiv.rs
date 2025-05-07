@@ -8,7 +8,7 @@ use super::{
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
-    instructions::{rdn_args_string, unpredictable, DecodeHelper, ItState},
+    instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
 };
 
