@@ -411,28 +411,34 @@ impl ProgramStatusRegister {
         self.0 = self.0 & !Self::EPSR_MASK | value & Self::EPSR_MASK;
     }
 
+    /// Returns Negative condition flag.
     pub fn n(&self) -> bool {
         self.0.bit(31)
     }
 
+    /// Sets Negative condition flag.
     pub fn set_n(&mut self, n: bool) -> &mut Self {
         self.0.set_bit(31, n);
         self
     }
 
+    /// Returns Zero condition flag.
     pub fn z(&self) -> bool {
         self.0.bit(30)
     }
 
+    /// Sets Zero condition flag.
     pub fn set_z(&mut self, z: bool) -> &mut Self {
         self.0.set_bit(30, z);
         self
     }
 
+    /// Returns Carry condition flag.
     pub fn c(&self) -> bool {
         self.0.bit(29)
     }
 
+    /// Sets Carry condition flag.
     pub fn set_c(&mut self, c: bool) -> &mut Self {
         self.0.set_bit(29, c);
         self
@@ -450,19 +456,23 @@ impl ProgramStatusRegister {
         self
     }
 
+    /// Returns Overflow condition flag.
     pub fn v(&self) -> bool {
         self.0.bit(28)
     }
 
+    /// Sets Overflow condition flag.
     pub fn set_v(&mut self, v: bool) -> &mut Self {
         self.0.set_bit(28, v);
         self
     }
 
+    /// Returns Saturation result bit.
     pub fn q(&self) -> bool {
         self.0.bit(27)
     }
 
+    /// Sets Saturation result bit.
     pub fn set_q(&mut self, q: bool) -> &mut Self {
         self.0.set_bit(27, q);
         self

@@ -14,8 +14,8 @@ Currently, emulation speed is typically 8 million instructions per second. There
 The following basic example runs a tiny assembly program and reads the processor R2 register value at the end.
 
 ```rust
-use armagnac::arm::{ArmProcessor, ArmVersion};
-let mut proc = ArmProcessor::new(ArmVersion::V7M, 0);
+use armagnac::arm::{ArmProcessor, Config};
+let mut proc = ArmProcessor::new(Config::v7m());
 
 // mov r0, #5
 // mov r1, #2
