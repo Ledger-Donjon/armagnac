@@ -1146,6 +1146,14 @@ sbfx    r14, r0, #31, #1
 // SEV
 //sev
 
+// SMLAL
+// T1
+smlal   r0, r5, r7, r14
+smlal   r10, r14, r0, r9
+smlal   r12, r9, r12, r5
+smlal   r7, r1, r11, r10
+smlal   r5, r4, r3, r6
+
 // SSAT
 // T1
 ssat    r0, #1, r3

@@ -696,6 +696,11 @@ ae41     sbcs     r6, r5
 47f3c439 sbfx     r9, r7, #15, #5
 42f3864a sbfx     r10, r2, #18, #7
 40f3c07e sbfx     lr, r0, #31, #1
+c7fb0e05 smlal    r0, r5, r7, lr
+c0fb09ae smlal    r10, lr, r0, r9
+ccfb05c9 smlal    r12, r9, r12, r5
+cbfb0a71 smlal    r7, r1, r11, r10
+c3fb0654 smlal    r5, r4, r3, r6
 03f30000 ssat     r0, #1, r3
 00f31f0a ssat     r10, #32, r0
 0af3040e ssat     lr, #5, r10

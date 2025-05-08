@@ -63,7 +63,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PLD: Preload Data
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
-- SMLAL: Signed Multiply Accumulate Long
 - SMULL: Signed Multiply Long
 - SSBB: Speculative Store Bypass Barrier
 - STC, STC2: Store Coprocessor
@@ -94,7 +93,6 @@ In addition to ArmV7-M, Here is the list of instructions specific to ArmV7E-M th
 - SHSUB8: Signed Halving Subtract 8
 - SMLABB, SMLABT, SMLATB, SMLATT: Signed Multiply Accumutate (halfwords)
 - SMLAD, SMLADX: Signed Multiply Accumutate Dual
-- SMLAL: Signed Multiply Accumutate Long
 - SMLALBB, SMLALBT, SMLALTB, SMLALTT: Signed Multiply Accumulate Long (halfwords)
 - SMLALD, SMLALDX: Signed Multiply Accumulate Long Dual
 - SMLAWB, SMLAWT: Signed Multiply Accumulate (word by halfword)
@@ -175,7 +173,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
 - SG: Secure Gateway
-- SMLAL: Signed Multiply Accumulate Long
 - SMULL: Signed Multiply Long
 - SSAT16: Signed Saturate 16
 - SSBB: Speculative Store Bypass Barrier

@@ -93,6 +93,18 @@ impl RegisterIndex {
         (Self::new_main(first), Self::new_main(second))
     }
 
+    /// Generate four distinct random register indexes from R0 to R12 (general purpose registers).
+    /// This is used by tests only.
+    #[cfg(test)]
+    pub fn pick_four_general_distinct() -> (Self, Self, Self, Self) {
+        let mut rng = rand::rng();
+        let regs: Vec<_> = rand::seq::index::sample(&mut rng, 13, 4)
+            .into_iter()
+            .map(|i| Self::new_main(i as u32))
+            .collect();
+        (regs[0], regs[1], regs[2], regs[3])
+    }
+
     pub fn new_sys(index: u32) -> Self {
         match index {
             0 => Self::Apsr,
