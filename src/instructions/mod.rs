@@ -109,6 +109,7 @@ pub mod usat;
 pub mod usat16;
 pub mod uxtb;
 pub mod uxth;
+pub mod r#yield;
 
 /// Defines how to match an instruction encoding.
 pub struct Pattern {

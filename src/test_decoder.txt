@@ -975,4 +975,5 @@ a1b2     uxth     r1, r4
 1ffaa8f7 uxth.w   r7, r8, ror #16
 1ffabaf9 uxth.w   r9, r10, ror #24
 1ffabbfc uxth.w   r12, r11, ror #24
-0000     movs     r0, r0
+10bf     yield
+aff30180 yield.w

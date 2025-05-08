@@ -1552,6 +1552,12 @@ uxth.w  r7, r8, ror #16
 uxth.w  r9, r10, ror #24
 uxth.w  r12, r11, ror #24
 
+// YIELD
+// T1
+yield
+// T2
+yield.w
+
 .org 0x1001000
 label_far_s25:
 

@@ -40,7 +40,6 @@ Here is a list of instructions that are not implemented yet for ArmV6-M archiect
 
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
-- YIELD
 
 ### Unimplemented instructions for ArmV7-M
 
@@ -73,7 +72,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - STRT: Store Register Unprivileged
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
-- YIELD
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -194,7 +192,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - WFE: Wait For Event
 - WFI: Wait For Interrupt
 - WLS, DLS, WLSTP, DLSTP: While Loop Start, Do Loop Start, While Loop Start with Tail Predication, Do Loop Start with Tail Predication
-- YIELD
 
 ### Unimplemented instructions for ArmV8-M Floating-point extension
 

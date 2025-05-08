@@ -416,6 +416,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::usat16::Usat16>(version);
         dec.insert::<instructions::uxtb::Uxtb>(version);
         dec.insert::<instructions::uxth::Uxth>(version);
+        dec.insert::<instructions::r#yield::Yield>(version);
         dec
     }
 
