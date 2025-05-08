@@ -3,7 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{DecodeHelper, Instruction, Pattern};
-use crate::arm::{ArmProcessor, RunError};
+use crate::arm::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::it_state::ItState;
 
@@ -42,7 +42,7 @@ impl Instruction for Udf {
         })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         return Err(RunError::InstructionUndefined);
     }
 

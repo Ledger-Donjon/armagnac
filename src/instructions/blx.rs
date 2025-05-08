@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -48,7 +49,7 @@ impl Instruction for Blx {
         Ok(Self { rm, ns: ins.bit(2) })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if self.ns {
             // ArmV8-M only, to be implemented.
             todo!()
@@ -56,7 +57,7 @@ impl Instruction for Blx {
         let target = proc[self.rm];
         proc.set_lr((proc.pc().wrapping_sub(2)) | 1);
         proc.blx_write_pc(target);
-        Ok(true)
+        Ok(Effect::Branch)
     }
 
     fn name(&self) -> String {

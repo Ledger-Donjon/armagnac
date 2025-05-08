@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -65,7 +66,7 @@ impl Instruction for LdrdImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -76,7 +77,7 @@ impl Instruction for LdrdImm {
         if self.wback {
             proc.set(self.rn, offset_addr);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -132,7 +133,7 @@ impl Instruction for LdrdLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if proc.pc() % 4 != 0 {
             return Err(RunError::InstructionUnpredictable);
         }
@@ -141,7 +142,7 @@ impl Instruction for LdrdLit {
         proc.set(self.rt, value);
         let value = proc.read_u32_aligned(address.wrapping_add(4))?;
         proc.set(self.rt2, value);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

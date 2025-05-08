@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -46,13 +47,13 @@ impl Instruction for Mla {
         Ok(Self { rd, rn, rm, ra })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let op1 = proc[self.rn] as i32;
         let op2 = proc[self.rm] as i32;
         let addend = proc[self.ra] as i32;
         let result = op1.wrapping_mul(op2).wrapping_add(addend);
         proc.set(self.rd, result as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

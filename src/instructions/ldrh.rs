@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::qualifier_wide_match;
 use crate::{
@@ -96,7 +97,7 @@ impl Instruction for LdrhImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
@@ -113,7 +114,7 @@ impl Instruction for LdrhImm {
         } else {
             proc.set(self.0.rt, data as u32)
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -160,7 +161,7 @@ impl Instruction for LdrhLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let addr = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u16_unaligned(addr)?;
@@ -173,7 +174,7 @@ impl Instruction for LdrhLit {
         } else {
             proc.set(self.rt, data as u32)
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -252,13 +253,13 @@ impl Instruction for LdrhReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);
         let data = proc.read_u16_unaligned(address)?;
         proc.set(self.rt, data as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

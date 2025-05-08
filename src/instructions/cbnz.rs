@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -43,12 +44,12 @@ impl Instruction for Cbnz {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if (proc[self.rn] == 0) ^ self.non_zero {
             proc.set_pc(proc.pc().wrapping_add(self.imm32));
-            Ok(true)
+            Ok(Effect::Branch)
         } else {
-            Ok(false)
+            Ok(Effect::None)
         }
     }
 

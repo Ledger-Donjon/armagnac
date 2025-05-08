@@ -5,7 +5,7 @@ use crate::{
     arm::{
         ArmProcessor,
         ArmVersion::{V7EM, V8M},
-        RunError,
+        Effect, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
@@ -49,7 +49,7 @@ impl Instruction for Usat16 {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let (result1, sat1) = unsigned_sat_q(rn as i16 as i64, self.saturate_to);
         let (result2, sat2) = unsigned_sat_q((rn >> 16) as u16 as i16 as i64, self.saturate_to);
@@ -60,7 +60,7 @@ impl Instruction for Usat16 {
         if sat1 || sat2 {
             proc.registers.psr.set_q(true);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

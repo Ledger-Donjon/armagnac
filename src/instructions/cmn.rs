@@ -6,6 +6,7 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
+use crate::arm::Effect;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -45,14 +46,14 @@ impl Instruction for CmnImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], self.imm32, false);
         proc.registers
             .psr
             .set_nz(result)
             .set_c(carry)
             .set_v(overflow);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -124,7 +125,7 @@ impl Instruction for CmnReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, false);
@@ -133,7 +134,7 @@ impl Instruction for CmnReg {
             .set_nz(result)
             .set_c(carry)
             .set_v(overflow);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

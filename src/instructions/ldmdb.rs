@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -52,17 +53,17 @@ impl Instruction for Ldmdb {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
         let wback_address = proc[self.rn].wrapping_sub(4 * self.registers.len() as u32);
         let mut address = wback_address;
-        let mut jump = false;
+        let mut action = Effect::None;
         for reg in self.registers.iter() {
             let value = proc.read_u32_aligned(address)?;
             if reg.is_pc() {
                 proc.bx_write_pc(value)?;
-                jump = true;
+                action = Effect::Branch;
             } else {
                 proc.set(reg, value);
             }
@@ -71,7 +72,7 @@ impl Instruction for Ldmdb {
         if self.wback && !self.registers.contains(&self.rn) {
             proc.set(self.rn, wback_address);
         }
-        Ok(jump)
+        Ok(action)
     }
 
     fn name(&self) -> String {

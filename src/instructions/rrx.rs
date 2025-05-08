@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V7EM, V7M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arith::{shift_c, Shift},
     arm::{ArmProcessor, RunError},
@@ -50,14 +51,14 @@ impl Instruction for Rrx {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], Shift::rrx(), carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

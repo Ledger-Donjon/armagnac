@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -49,12 +50,12 @@ impl Instruction for Ubfx {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let msb = self.lsb + self.width_minus_1;
         debug_assert!(msb <= 31);
         let result = proc[self.rn] << (31 - msb) >> (31 - msb + self.lsb);
         proc.set(self.rd, result);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -65,7 +66,7 @@ impl Instruction for Push {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // PUSH is equivalent to STMDB if Rn is SP and wback is true.
         // We use the STMDB implementation.
         let stmdb = Stmdb {

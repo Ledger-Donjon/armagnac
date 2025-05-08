@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -40,7 +41,7 @@ impl Instruction for Rbit {
         Ok(Self { rd, rm: rm1 })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let mut a = proc[self.rm];
         let mut b = 0;
         for _ in 0..32 {
@@ -48,7 +49,7 @@ impl Instruction for Rbit {
             a >>= 1;
         }
         proc.set(self.rd, b);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

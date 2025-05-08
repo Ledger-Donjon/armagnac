@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -72,7 +73,7 @@ impl Instruction for Stmdb {
         }
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // SP and PC cannot be pushed.
         // Instruction decoder should prevent this to happen
         debug_assert!(!self.registers.has_sp() && !self.registers.has_pc());
@@ -84,7 +85,7 @@ impl Instruction for Stmdb {
         if self.wback {
             proc.set(self.rn, addr);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
@@ -50,13 +51,13 @@ impl Instruction for MvnImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let result = !self.imm32;
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c_opt(self.carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -123,7 +124,7 @@ impl Instruction for MvnReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = !shifted;
@@ -131,7 +132,7 @@ impl Instruction for MvnReg {
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

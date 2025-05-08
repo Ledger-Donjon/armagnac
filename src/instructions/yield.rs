@@ -8,7 +8,7 @@ use crate::{
     arm::{
         ArmProcessor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
-        RunError,
+        Effect, RunError,
     },
     decoder::DecodeError,
     it_state::ItState,
@@ -44,8 +44,8 @@ impl Instruction for Yield {
         Ok(Self { encoding })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        Ok(false)
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

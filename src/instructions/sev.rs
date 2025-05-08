@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -36,7 +37,7 @@ impl Instruction for Sev {
         Ok(Self {})
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         todo!()
     }
 

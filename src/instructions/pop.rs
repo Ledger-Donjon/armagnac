@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
@@ -78,7 +79,7 @@ impl Instruction for Pop {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let mut addr = proc.sp();
         // Note: In the ARM Architecture Reference manual, the reference implementation for POP
         // updates the SP register at the end of the procedure. However, if PC is in the registers
@@ -87,18 +88,18 @@ impl Instruction for Pop {
         // I believe the specification is wrong here, moving the update of SP before seems to fix
         // that.
         *proc.registers.sp_mut() += 4 * self.registers.len() as u32;
-        let mut jump = false;
+        let mut action = Effect::None;
         for reg in self.registers.iter() {
             let val = proc.read_u32_aligned(addr)?;
             if reg.is_pc() {
-                jump = true;
+                action = Effect::Branch;
                 proc.load_write_pc(val)?
             } else {
                 proc.set(reg, val);
             }
             addr = addr.wrapping_add(4);
         }
-        Ok(jump)
+        Ok(action)
     }
 
     fn name(&self) -> String {

@@ -3,6 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
@@ -112,13 +113,13 @@ impl Instruction for AddImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (r, c, v) = add_with_carry(proc[self.rn], self.imm32, false);
         proc.set(self.rd, r);
         if self.set_flags {
             proc.registers.psr.set_nz(r).set_c(c).set_v(v);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -235,19 +236,19 @@ impl Instruction for AddReg {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc[self.rn], shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(r);
-            Ok(true)
+            Ok(Effect::Branch)
         } else {
             proc.set(self.rd, r);
             if self.set_flags {
                 proc.registers.psr.set_nz(r).set_c(c).set_v(v);
             }
-            Ok(false)
+            Ok(Effect::None)
         }
     }
 
@@ -355,7 +356,7 @@ impl Instruction for AddSpPlusImm {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
         proc.set(self.rd, result);
         if self.set_flags {
@@ -365,7 +366,7 @@ impl Instruction for AddSpPlusImm {
                 .set_c(carry)
                 .set_v(overflow);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -466,13 +467,13 @@ impl Instruction for AddSpPlusReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
-            Ok(true)
+            Ok(Effect::Branch)
         } else {
             proc.set(self.rd, result);
             if self.set_flags {
@@ -482,7 +483,7 @@ impl Instruction for AddSpPlusReg {
                     .set_c(carry)
                     .set_v(overflow);
             }
-            Ok(false)
+            Ok(Effect::None)
         }
     }
 

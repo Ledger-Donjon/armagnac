@@ -4,7 +4,7 @@ use super::{
     Encoding::{self, T1},
     Instruction, Pattern,
 };
-use crate::registers::RegisterIndex;
+use crate::{arm::Effect, registers::RegisterIndex};
 use crate::{
     arm::{
         ArmProcessor,
@@ -52,11 +52,11 @@ impl Instruction for Smull {
         Ok(Self { rdlo, rdhi, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let result = (proc[self.rn] as i32 as i64) * (proc[self.rm] as i32 as i64);
         proc.set(self.rdhi, (result >> 32) as u32);
         proc.set(self.rdlo, result as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

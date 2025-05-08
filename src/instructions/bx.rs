@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -49,14 +50,14 @@ impl Instruction for Bx {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if self.ns {
             // ArmV8-M only, to be implemented.
             todo!()
         }
         let target = proc[self.rm];
         proc.bx_write_pc(target)?;
-        Ok(true)
+        Ok(Effect::Branch)
     }
 
     fn name(&self) -> String {

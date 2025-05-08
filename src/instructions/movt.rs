@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -43,10 +44,10 @@ impl Instruction for Movt {
         Ok(Self { rd, imm16 })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rd = proc[self.rd];
         proc.set(self.rd, ((self.imm16 as u32) << 16) | rd & 0x0000ffff);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

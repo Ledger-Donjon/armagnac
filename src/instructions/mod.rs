@@ -6,7 +6,7 @@
 //! Register variant.
 
 use crate::{
-    arm::{ArmProcessor, ArmVersion, RunError},
+    arm::{ArmProcessor, ArmVersion, Effect, RunError},
     condition::Condition,
     decoder::DecodeError,
     it_state::ItState,
@@ -194,9 +194,13 @@ pub trait Instruction {
 
     /// Execute the instruction and updates given `proc` processor state.
     ///
-    /// Returns `Ok(true)` if the instruction has branching effect, `Ok(false)` if not, or
-    /// eventually an execution error such has invalid memory access for instance.
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError>;
+    /// The instruction may request special treatment by returning some effect. In particular,
+    /// instructions modifying the PC register shall return `Ok(Effect::Branch)` to prevent PC
+    /// being automatically incremented following instruction execution.
+    ///
+    /// The execution of an instruction may also result in an error, for instance if an invalid
+    /// memory access is performed.
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError>;
 
     /// Returns the name of the instruction, in lowercase, to be shown in its mnemonic.
     ///

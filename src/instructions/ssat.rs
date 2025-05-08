@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arith::{shift_c, signed_sat_q, Shift},
     arm::{ArmProcessor, RunError},
@@ -55,7 +56,7 @@ impl Instruction for Ssat {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // Shift can only be LSL or ASR, so we don't have to take carry in.
         let operand = shift_c(proc[self.rn], self.shift, false).0;
         let (result, sat) = signed_sat_q(operand as i32 as i64, self.saturate_to);
@@ -63,7 +64,7 @@ impl Instruction for Ssat {
         if sat {
             proc.registers.psr.set_q(true);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

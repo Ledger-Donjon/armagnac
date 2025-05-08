@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
@@ -72,7 +73,7 @@ impl Instruction for RsbImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(!proc[self.rn], self.imm32, true);
         proc.set(self.rd, result);
         if self.set_flags {
@@ -82,7 +83,7 @@ impl Instruction for RsbImm {
                 .set_c(carry)
                 .set_v(overflow);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -139,7 +140,7 @@ impl Instruction for RsbReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let rn = proc[self.rn];
@@ -152,7 +153,7 @@ impl Instruction for RsbReg {
                 .set_c(carry)
                 .set_v(overflow);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

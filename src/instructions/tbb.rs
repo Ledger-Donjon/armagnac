@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -44,7 +45,7 @@ impl Instruction for Tbb {
         Ok(Self { rn, rm, is_tbh })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let halfwords = if self.is_tbh {
             let address = proc[self.rn].wrapping_add(proc[self.rm] << 1);
             proc.read_u16_unaligned(address)? as u32
@@ -54,7 +55,7 @@ impl Instruction for Tbb {
         };
         let address = proc.pc() + 2 * halfwords;
         proc.set_pc(address);
-        Ok(true)
+        Ok(Effect::Branch)
     }
 
     fn name(&self) -> String {

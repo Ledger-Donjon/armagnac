@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -43,9 +44,9 @@ impl Instruction for Clz {
         Ok(Self { rd, rm: rm1 })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         proc.set(self.rd, proc[self.rm].leading_zeros());
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

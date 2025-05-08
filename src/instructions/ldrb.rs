@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::qualifier_wide_match;
 use crate::{
@@ -96,7 +97,7 @@ impl Instruction for LdrbImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
@@ -105,7 +106,7 @@ impl Instruction for LdrbImm {
         if self.0.wback {
             proc.set(self.0.rn, offset_addr);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -181,14 +182,14 @@ impl Instruction for LdrbReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let addr = proc[self.rn].wrapping_add(offset);
         let data = proc.read_u8(addr)?;
         proc.set(self.rt, data as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -243,12 +244,12 @@ impl Instruction for LdrbLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u8(address)?;
         proc.set(self.rt, data as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

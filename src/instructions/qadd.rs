@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
@@ -45,7 +46,7 @@ impl Instruction for Qadd {
         Ok(Self { rd, rm, rn })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rm = proc[self.rm] as i32 as i64;
         let rn = proc[self.rn] as i32 as i64;
         let (result, sat) = signed_sat_q(rm + rn, 32);
@@ -53,7 +54,7 @@ impl Instruction for Qadd {
         if sat {
             proc.registers.psr.set_q(true);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

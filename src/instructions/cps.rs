@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -48,7 +49,7 @@ impl Instruction for Cps {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if proc.is_privileged() {
             if self.enable {
                 if self.affect_pri {
@@ -66,7 +67,7 @@ impl Instruction for Cps {
                 }
             }
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

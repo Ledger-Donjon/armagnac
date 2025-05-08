@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -49,10 +50,10 @@ impl Instruction for Mls {
         Ok(Self { rd, rn, rm, ra })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let result = proc[self.ra] - proc[self.rn].wrapping_mul(proc[self.rm]);
         proc.set(self.rd, result);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

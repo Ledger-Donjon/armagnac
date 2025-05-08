@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::qualifier_wide_match;
 use crate::{
@@ -123,7 +124,7 @@ impl Instruction for LdrImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let addr = if self.index { offset_addr } else { rn };
@@ -140,7 +141,7 @@ impl Instruction for LdrImm {
         } else {
             proc.set(self.rt, data)
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -210,7 +211,7 @@ impl Instruction for LdrLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let addr = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u32_unaligned(addr)?;
@@ -223,7 +224,7 @@ impl Instruction for LdrLit {
         } else {
             proc.set(self.rt, data)
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -313,7 +314,7 @@ impl Instruction for LdrReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(offset, self.add);
@@ -325,14 +326,14 @@ impl Instruction for LdrReg {
         if self.rt.is_pc() {
             if address & 3 == 0 {
                 proc.bx_write_pc(data)?;
-                return Ok(true);
+                return Ok(Effect::Branch);
             } else {
                 return Err(RunError::InstructionUnpredictable);
             }
         } else {
             proc.set(self.rt, data)
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

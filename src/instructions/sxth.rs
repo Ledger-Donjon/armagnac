@@ -7,6 +7,7 @@ use super::{
     Pattern,
 };
 use crate::arith::Shift;
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
@@ -70,10 +71,10 @@ impl Instruction for Sxth {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rotated = ror(proc[self.rm], self.rotation as u32);
         proc.set(self.rd, (((rotated & 0xffff) as i16) as i32) as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

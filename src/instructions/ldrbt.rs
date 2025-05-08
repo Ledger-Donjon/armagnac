@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::{
     arm::{ArmProcessor, RunError},
@@ -49,11 +50,11 @@ impl Instruction for Ldrbt {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let address = proc[self.rn].wrapping_add(self.imm32);
         let data = proc.read_u8_with_priv(address, false)?;
         proc.set(self.rt, data as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

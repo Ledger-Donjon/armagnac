@@ -3,6 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3};
 use super::{unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
+use crate::arm::{Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{align::Align, registers::RegisterIndex};
 
@@ -64,10 +65,10 @@ impl Instruction for Adr {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
         let result = proc.pc().align(4).wrapping_add(self.imm32 as u32);
         proc.set(self.rd, result);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

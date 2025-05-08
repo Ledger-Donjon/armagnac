@@ -6,6 +6,7 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
@@ -56,14 +57,14 @@ impl Instruction for RorImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         proc.set(self.rd, result);
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -144,7 +145,7 @@ impl Instruction for RorReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rm] & 0xff;
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rn], Shift::ror(shift_n), carry_in);
@@ -152,7 +153,7 @@ impl Instruction for RorReg {
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

@@ -2,6 +2,7 @@
 
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
+use crate::arm::Effect;
 use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
     arm::{
@@ -57,14 +58,14 @@ impl Instruction for Usat {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let operand = shift_c(proc[self.rn], self.shift, false).0;
         let (result, sat) = unsigned_sat_q(operand as i32 as i64, self.saturate_to);
         proc.set(self.rd, result as u32);
         if sat {
             proc.registers.psr.set_q(true);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

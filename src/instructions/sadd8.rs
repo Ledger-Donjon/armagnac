@@ -3,7 +3,7 @@
 use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
-use crate::arm::{ArmProcessor, RunError};
+use crate::arm::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::instructions::{unpredictable, DecodeHelper};
 use crate::it_state::ItState;
@@ -39,7 +39,7 @@ impl Instruction for Sadd8 {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rm = proc[self.rm];
         let rn = proc[self.rn];
         let sum1 = (rn as i8 as i32).wrapping_add(rm as i8 as i32);
@@ -60,7 +60,7 @@ impl Instruction for Sadd8 {
         proc.registers
             .psr
             .set_ge(ge0 | (ge1 << 1) | (ge2 << 2) | (ge3 << 3));
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

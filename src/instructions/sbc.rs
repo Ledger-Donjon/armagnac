@@ -6,6 +6,7 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
+use crate::arm::Effect;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     arm::{ArmProcessor, RunError},
@@ -55,7 +56,7 @@ impl Instruction for SbcImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry, overflow) = add_with_carry(proc[self.rn], !self.imm32, carry_in);
         proc.set(self.rd, result);
@@ -66,7 +67,7 @@ impl Instruction for SbcImm {
                 .set_c(carry)
                 .set_v(overflow);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -147,7 +148,7 @@ impl Instruction for SbcReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], !shifted, carry_in);
@@ -159,7 +160,7 @@ impl Instruction for SbcReg {
                 .set_c(carry)
                 .set_v(overflow);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

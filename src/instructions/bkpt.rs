@@ -5,6 +5,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Instruction, Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     condition::Condition,
@@ -40,9 +41,8 @@ impl Instruction for Bkpt {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
-        proc.break_request = Some(self.imm8);
-        Ok(false)
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+        Ok(Effect::Break(self.imm8))
     }
 
     fn condition(&self) -> Option<Condition> {
@@ -62,15 +62,14 @@ impl Instruction for Bkpt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config},
+        arm::{ArmProcessor, Config, Effect},
         instructions::{bkpt::Bkpt, Instruction},
     };
 
     #[test]
     fn test_bkpt() {
         let mut proc = ArmProcessor::new(Config::v7m());
-        assert_eq!(proc.break_request, None);
-        Bkpt { imm8: 0xa5 }.execute(&mut proc).unwrap();
-        assert_eq!(proc.break_request, Some(0xa5));
+        let result = Bkpt { imm8: 0xa5 }.execute(&mut proc).unwrap();
+        assert_eq!(result, Effect::Break(0xa5));
     }
 }

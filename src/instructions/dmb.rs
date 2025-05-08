@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::{Effect, RunError};
 use crate::instructions::DecodeHelper;
 
 /// DMB instruction.
@@ -38,8 +39,8 @@ impl Instruction for Dmb {
         })
     }
 
-    fn execute(&self, _proc: &mut crate::arm::ArmProcessor) -> Result<bool, crate::arm::RunError> {
-        Ok(false)
+    fn execute(&self, _proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

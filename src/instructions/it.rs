@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     condition::Condition,
@@ -47,9 +48,9 @@ impl Instruction for It {
         Some(Condition::Always)
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         proc.registers.psr.set_it_state(self.state);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

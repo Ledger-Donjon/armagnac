@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -68,7 +69,7 @@ impl Instruction for Mul {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let op1 = proc[self.rn] as i32;
         let op2 = proc[self.rm] as i32;
         let result = op1.wrapping_mul(op2) as u32;
@@ -76,7 +77,7 @@ impl Instruction for Mul {
         if self.set_flags {
             proc.registers.psr.set_nz(result);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

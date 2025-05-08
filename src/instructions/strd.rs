@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::{ArmProcessor, RunError};
+use crate::arm::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::helpers::BitAccess;
 use crate::instructions::{indexing_args, unpredictable, DecodeHelper};
@@ -61,7 +61,7 @@ impl Instruction for StrdImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -72,7 +72,7 @@ impl Instruction for StrdImm {
         if self.wback {
             proc.set(self.rn, offset_addr);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

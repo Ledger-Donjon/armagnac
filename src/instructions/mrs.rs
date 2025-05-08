@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -42,7 +43,7 @@ impl Instruction for Mrs {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let mut rd = 0;
         let sysm = self.sysm.index_sys();
         match sysm >> 3 {
@@ -79,7 +80,7 @@ impl Instruction for Mrs {
             _ => panic!(),
         }
         proc.set(self.rd, rd);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

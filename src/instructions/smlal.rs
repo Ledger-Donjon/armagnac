@@ -8,7 +8,7 @@ use crate::{
     arm::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
-        RunError,
+        Effect, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
@@ -54,12 +54,12 @@ impl Instruction for Smlal {
         Ok(Self { rdlo, rdhi, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let result = (proc[self.rn] as i32 as i64) * (proc[self.rm] as i32 as i64)
             + (((proc[self.rdhi] as u64) << 32) | proc[self.rdlo] as u64) as i64;
         proc.set(self.rdhi, (result >> 32) as u32);
         proc.set(self.rdlo, result as u32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

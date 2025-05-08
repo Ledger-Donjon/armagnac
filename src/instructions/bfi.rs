@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -53,7 +54,7 @@ impl Instruction for Bfi {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = 0xffffffffu32 >> (32 - width);
@@ -63,7 +64,7 @@ impl Instruction for Bfi {
         } else {
             return Err(RunError::Unpredictable);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

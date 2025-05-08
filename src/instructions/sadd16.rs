@@ -3,6 +3,7 @@
 use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -41,7 +42,7 @@ impl Instruction for Sadd16 {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rm = proc[self.rm];
         let rn = proc[self.rn];
         let sum1 = (rn as i16 as i32).wrapping_add(rm as i16 as i32);
@@ -53,7 +54,7 @@ impl Instruction for Sadd16 {
         let ge10 = if sum1 >= 0 { 0b0011 } else { 0 };
         let ge32 = if sum2 >= 0 { 0b1100 } else { 0 };
         proc.registers.psr.set_ge(ge10 | ge32);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

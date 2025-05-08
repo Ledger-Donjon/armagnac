@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arith::sign_extend,
     arm::{ArmProcessor, RunError},
@@ -46,12 +47,12 @@ impl Instruction for Bl {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let pc = proc.pc();
         let address = (pc as i32 + self.imm32) as u32;
         proc.set_lr(pc | 1);
         proc.set_pc(address);
-        Ok(true)
+        Ok(Effect::Branch)
     }
 
     fn name(&self) -> String {

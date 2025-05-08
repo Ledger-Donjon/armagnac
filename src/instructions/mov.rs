@@ -7,6 +7,7 @@ use super::{
     Pattern,
 };
 use crate::arith::{shift_c, Shift, ShiftType};
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::thumb_expand_imm_optc,
@@ -92,12 +93,12 @@ impl Instruction for MovImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         proc.set(self.rd, self.imm32);
         if self.set_flags {
             proc.registers.psr.set_nz(self.imm32).set_c_opt(self.carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -191,17 +192,17 @@ impl Instruction for MovReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let result = proc[self.rm];
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
-            Ok(true)
+            Ok(Effect::Branch)
         } else {
             proc.set(self.rd, result);
             if self.set_flags {
                 proc.registers.psr.set_nz(result);
             }
-            Ok(false)
+            Ok(Effect::None)
         }
     }
 
@@ -285,7 +286,7 @@ impl Instruction for MovRegShiftReg {
         }
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rs] & 0xff;
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(
@@ -300,7 +301,7 @@ impl Instruction for MovRegShiftReg {
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(carry);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

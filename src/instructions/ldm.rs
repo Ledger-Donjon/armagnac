@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
@@ -90,16 +91,16 @@ impl Instruction for Ldm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
         let mut address = proc[self.rn];
-        let mut jump = false;
+        let mut action = Effect::None;
         for reg in self.registers.iter() {
             let value = proc.read_u32_aligned(address)?;
             if reg.is_pc() {
                 proc.bx_write_pc(value)?;
-                jump = true;
+                action = Effect::Branch;
             } else {
                 proc.set(reg, value);
             }
@@ -108,7 +109,7 @@ impl Instruction for Ldm {
         if self.wback && !self.registers.contains(&self.rn) {
             proc.set(self.rn, address);
         }
-        Ok(jump)
+        Ok(action)
     }
 
     fn name(&self) -> String {

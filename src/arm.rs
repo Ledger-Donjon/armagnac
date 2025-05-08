@@ -215,9 +215,6 @@ pub struct ArmProcessor {
     /// stacked in this attribute during instruction emulation, and then processed one the
     /// instruction is completed.
     memory_op_actions: Vec<MemoryOpAction>,
-    /// Flag set by the BKPT instruction when executed, to hint that [Event::Break] should be
-    /// returned. The value stored in the flag is the 8-bit argument of the KPTR instruction.
-    pub break_request: Option<u8>,
     /// Pending interrupt requests
     interrupt_requests: BTreeSet<Irq>,
     /// System control registers peripheral.
@@ -258,7 +255,6 @@ impl ArmProcessor {
             cycles: 0,
             code_hooks: Vec::new(),
             memory_op_actions: Vec::new(),
-            break_request: None,
             interrupt_requests: BTreeSet::new(),
             system_control: system_control.clone(),
             tolerate_pop_stack_unaligned_pc: false,
@@ -1248,13 +1244,16 @@ impl Emulator for ArmProcessor {
         it_state.advance();
         self.registers.psr.set_it_state(it_state);
 
-        let mut jump = false;
-        if self.registers.psr.test(condition) {
-            jump = ins.execute(self)?;
-        }
-        if !jump && size == InstructionSize::Ins16 {
+        let effect = if self.registers.psr.test(condition) {
+            ins.execute(self)?
+        } else {
+            Effect::None
+        };
+
+        if effect != Effect::Branch && size == InstructionSize::Ins16 {
             self.set_pc(self.pc() - 2)
         }
+
         // Handle actions that may come from memory accesses.
         for action in self.memory_op_actions.iter() {
             match action {
@@ -1285,8 +1284,7 @@ impl Emulator for ArmProcessor {
         }
 
         // Handle BKPT instructions.
-        if let Some(value) = self.break_request {
-            self.break_request = None;
+        if let Effect::Break(value) = effect {
             return Ok(Event::Break(value));
         }
 
@@ -1301,6 +1299,25 @@ impl Index<RegisterIndex> for ArmProcessor {
     fn index(&self, index: RegisterIndex) -> &Self::Output {
         &self.registers[index]
     }
+}
+
+/// An instruction execution may result in some optional effect that require special treatment
+/// during execution. This enum is used to report those.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Effect {
+    /// Instruction has no particular effect. Most instructions will result in this enumeration
+    /// value when executed.
+    None,
+    /// Instruction has modified the PC register.
+    /// When this enumeration value is returned, the execution will not increment the PC after
+    /// executing the instruction.
+    Branch,
+    /// Returned by the BKPT instruction.
+    Break(u8),
+    /// Instruction requests the halt of the processor execution until an event occurs.
+    WaitForEvent,
+    /// Instruction requests the halt of the processor execution until an interrupt occurs.
+    WaitForInterrupt,
 }
 
 /// Error returned when mapping an interface would intersect with an already mapping other

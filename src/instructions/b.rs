@@ -3,6 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
+use crate::arm::{Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{
     arith::sign_extend, arm::ArmProcessor, condition::Condition, decoder::DecodeError,
@@ -106,10 +107,10 @@ impl Instruction for B {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, crate::arm::RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let address = (proc.pc() as i32 + self.imm32) as u32;
         proc.set_pc(address);
-        Ok(true)
+        Ok(Effect::Branch)
     }
 
     fn condition(&self) -> Option<Condition> {

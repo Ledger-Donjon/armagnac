@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arm::{ArmProcessor, RunError},
     decoder::DecodeError,
@@ -44,14 +45,14 @@ impl Instruction for Qsub16 {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let rm = proc[self.rm];
         let diff1 = (rn as i16).saturating_sub(rm as i16);
         let diff2 = ((rn >> 16) as i16).saturating_sub((rm >> 16) as i16);
         let result = ((diff2 as u32) << 16) | diff1 as u16 as u32;
         proc.set(self.rd, result);
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

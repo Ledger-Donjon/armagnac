@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V7EM, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::{
     arith::signed_sat_q,
     arm::{ArmProcessor, RunError},
@@ -45,14 +46,14 @@ impl Instruction for Qdadd {
         Ok(Self { rd, rm, rn })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (doubled, sat1) = signed_sat_q(2 * (proc[self.rn] as i32 as i64), 32);
         let (result, sat2) = signed_sat_q(proc[self.rm] as i32 as i64 + doubled, 32);
         proc.set(self.rd, result as u32);
         if sat1 || sat2 {
             proc.registers.psr.set_q(true);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

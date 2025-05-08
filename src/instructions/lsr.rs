@@ -7,6 +7,7 @@ use super::{
     Pattern,
 };
 
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
@@ -74,7 +75,7 @@ impl Instruction for LsrImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shift = Shift::lsr(self.shift as u32);
         let (result, c) = shift_c(proc[self.rm], shift, carry_in);
@@ -82,7 +83,7 @@ impl Instruction for LsrImm {
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(c);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
@@ -161,7 +162,7 @@ impl Instruction for LsrReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rm] & 0xff;
         let carry_in = proc.registers.psr.c();
         let shift = Shift::lsr(shift_n);
@@ -170,7 +171,7 @@ impl Instruction for LsrReg {
         if self.set_flags {
             proc.registers.psr.set_nz(result).set_c(c);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {

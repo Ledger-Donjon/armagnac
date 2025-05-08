@@ -7,6 +7,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arm::{ArmProcessor, RunError},
@@ -73,7 +74,7 @@ impl Instruction for Stm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<bool, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         // The ordering of register stores must respect the ARM specification, because memory
         // operations may not be commutative if address targets a peripheral.
         let mut address = proc[self.rn];
@@ -91,7 +92,7 @@ impl Instruction for Stm {
             rn = rn.wrapping_add(4 * (self.registers.len() as u32));
             proc.set(self.rn, rn);
         }
-        Ok(false)
+        Ok(Effect::None)
     }
 
     fn name(&self) -> String {
