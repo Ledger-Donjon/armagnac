@@ -1154,6 +1154,14 @@ smlal   r12, r9, r12, r5
 smlal   r7, r1, r11, r10
 smlal   r5, r4, r3, r6
 
+// SMULL
+// T1
+smull   r0, r5, r7, r14
+smull   r10, r14, r0, r9
+smull   r12, r9, r12, r5
+smull   r7, r1, r11, r10
+smull   r5, r4, r3, r6
+
 // SSAT
 // T1
 ssat    r0, #1, r3

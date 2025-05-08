@@ -85,6 +85,7 @@ pub mod sbfx;
 pub mod sdiv;
 pub mod sev;
 pub mod smlal;
+pub mod smull;
 pub mod ssat;
 pub mod stm;
 pub mod stmdb;
