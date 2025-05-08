@@ -3,6 +3,7 @@
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V8M},
+    Encoding::{self, T1},
     Pattern,
 };
 use crate::{
@@ -29,14 +30,14 @@ pub struct Qdsub {
 impl Instruction for Qdsub {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7EM, V8M],
             expression: "111110101000xxxx1111xxxx1011xxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rm = ins.reg4(0);
         let rn = ins.reg4(16);

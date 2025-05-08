@@ -1,6 +1,7 @@
 //! Implements LDM (Load Multiple), LDMIA (Load Multiple Increment After) and LDMFD (Load Multiple
 //! Full Descending) instructions.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -24,33 +25,33 @@ pub struct Ldm {
     /// Wether Rn is written back with a modified value.
     wback: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for Ldm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "11001xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "1110100010x1xxxxxx(0)xxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V8M],
                 expression: "1011110xxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rn = ins.reg3(8);
                 let registers = MainRegisterList::new((ins & 0xff) as u16);
                 unpredictable(registers.is_empty())?;
@@ -58,10 +59,10 @@ impl Instruction for Ldm {
                     rn,
                     registers,
                     wback: !registers.contains(&rn),
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 let wback = ins.bit(21);
                 let rn = ins.reg4(16);
                 other(wback && rn.is_sp())?;
@@ -73,16 +74,16 @@ impl Instruction for Ldm {
                     rn,
                     registers,
                     wback,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let registers = MainRegisterList::new(((ins.imm1(8) << 15) | (ins.imm8(0))) as u16);
                 Self {
                     rn: RegisterIndex::Sp,
                     registers,
                     wback: true,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -115,7 +116,7 @@ impl Instruction for Ldm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

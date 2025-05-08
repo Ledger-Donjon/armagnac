@@ -1,6 +1,7 @@
 //! Implements STMDB (Store Multiple Decrement Before) and STMFD (Store Multiple Full Descending)
 //! instructions.
 
+use super::Encoding::{self, T1, T2};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -32,21 +33,21 @@ impl Instruction for Stmdb {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V7M, V7EM, V8M],
                 expression: "1110100100x0xxxx(0)x(0)xxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V8M],
                 expression: "1011010xxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        match encoding {
+            T1 => {
                 let rn = ins.reg4(16);
                 let registers = MainRegisterList::new((ins & 0x5fff) as u16);
                 let wback = ins.bit(21);
@@ -59,7 +60,7 @@ impl Instruction for Stmdb {
                     registers,
                 })
             }
-            2 => {
+            T2 => {
                 let registers = MainRegisterList::new(((ins.imm1(8) << 14) | ins.imm8(0)) as u16);
                 Ok(Self {
                     rn: RegisterIndex::Sp,

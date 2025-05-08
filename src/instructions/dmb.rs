@@ -1,5 +1,6 @@
 //! Implements DMB (Data Memory Barrier) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -20,18 +21,18 @@ pub struct Dmb {
 impl Instruction for Dmb {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)0101xxxx",
         }]
     }
 
     fn try_decode(
-        tn: usize,
+        encoding: Encoding,
         ins: u32,
         _state: crate::it_state::ItState,
     ) -> Result<Self, crate::decoder::DecodeError> {
-        debug_assert_eq!(tn, 1);
+        debug_assert_eq!(encoding, T1);
         Ok(Self {
             option: ins.imm4(0) as u8,
         })

@@ -1,6 +1,7 @@
 //! Implements UDF (Undefined) instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2};
 use super::{DecodeHelper, Instruction, Pattern};
 use crate::arm::{ArmProcessor, RunError};
 use crate::decoder::DecodeError;
@@ -17,24 +18,24 @@ impl Instruction for Udf {
     fn patterns() -> &'static [super::Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "11011110xxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "111101111111xxxx1010xxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 imm16: ins.imm8(0) as u16,
             },
-            2 => Self {
+            T2 => Self {
                 imm16: ((ins.imm4(16) << 12) | ins.imm12(0)) as u16,
             },
             _ => panic!(),

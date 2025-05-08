@@ -1,5 +1,6 @@
 //! Implements SEV (Send Event) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -18,20 +19,20 @@ impl Instruction for Sev {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1011111101000000",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000000100",
             },
         ]
     }
 
-    fn try_decode(tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert!(tn == 1 || tn == 2);
+    fn try_decode(encoding: Encoding, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert!(encoding == T1 || encoding == T2);
         Ok(Self {})
     }
 

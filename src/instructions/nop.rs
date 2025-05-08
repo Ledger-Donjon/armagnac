@@ -1,5 +1,6 @@
 //! Implements NOP (No Operation) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -15,7 +16,7 @@ use crate::{
 /// NOP instruction.
 pub struct Nop {
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for Nop {
@@ -23,21 +24,21 @@ impl Instruction for Nop {
         // TODO: encoding T2 for ArmV7-M and ArmV8-M.
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1011111100000000",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000000000",
             },
         ]
     }
 
-    fn try_decode(tn: usize, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert!((tn == 1) || (tn == 2));
-        Ok(Self { tn })
+    fn try_decode(encoding: Encoding, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert!((encoding == T1) || (encoding == T2));
+        Ok(Self { encoding })
     }
 
     fn execute(&self, _proc: &mut ArmProcessor) -> Result<bool, RunError> {
@@ -49,7 +50,7 @@ impl Instruction for Nop {
     }
 
     fn qualifier(&self) -> super::Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

@@ -1,5 +1,6 @@
 //! Implements MSR (Move to Special Register) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -25,14 +26,14 @@ impl Instruction for Msr {
     fn patterns() -> &'static [Pattern] {
         // TODO: For ArmV8-M encoding can accept a mask. This is not implemented yet.
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rn = ins.reg4(16);
         let sysm = ins.imm8(0);
         let good_sysm = matches!(sysm, 0..=3 | 5..=9 | 16..=20);

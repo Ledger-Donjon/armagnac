@@ -1,5 +1,6 @@
 //! Implements LDRD (Load Register Dual) instruction.
 
+use super::Encoding::{self, T1};
 use super::{AddOrSub, Instruction};
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -35,14 +36,14 @@ pub struct LdrdImm {
 impl Instruction for LdrdImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "1110100xx1x1xxxxxxxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let index = ins.bit(24);
         let add = ins.bit(23);
         let wback = ins.bit(21);
@@ -107,14 +108,14 @@ pub struct LdrdLit {
 impl Instruction for LdrdLit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "1110100xx1x11111xxxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let index = ins.bit(24);
         let add = ins.bit(23);
         let wback = ins.bit(21);

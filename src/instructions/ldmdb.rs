@@ -1,6 +1,7 @@
 //! Implements LDMDB (Load Multiple Decrement Before) and LDMEA (Load Multiple Empty Ascending)
 //! instructions.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -30,14 +31,14 @@ pub struct Ldmdb {
 impl Instruction for Ldmdb {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "1110100100x1xxxxxx(0)xxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let registers = MainRegisterList::new((ins & 0xdfff) as u16);
         let wback = ins.bit(21);
         let rn = ins.reg4(16);

@@ -1,5 +1,6 @@
 //! Implements SUB (Subtract) instruction.
 
+use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -27,55 +28,55 @@ pub struct SubImm {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for SubImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001111xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00111xxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x01101xxxxx0xxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 4,
+                encoding: T4,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x101010xxxx0xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(3),
                 imm32: (ins >> 6) & 7,
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rdn = ins.reg3(8);
                 Self {
                     rd: rdn,
                     rn: rdn,
                     imm32: ins & 0xff,
                     set_flags: !state.in_it_block(),
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let set_flags = ins.bit(20);
@@ -89,10 +90,10 @@ impl Instruction for SubImm {
                     rn,
                     imm32,
                     set_flags,
-                    tn,
+                    encoding,
                 }
             }
-            4 => {
+            T4 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 other(rn.is_pc())?; // ADR
@@ -104,7 +105,7 @@ impl Instruction for SubImm {
                     rn,
                     imm32,
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -126,9 +127,9 @@ impl Instruction for SubImm {
     }
 
     fn name(&self) -> String {
-        match self.tn {
-            1 | 2 | 3 => "sub",
-            4 => "subw",
+        match self.encoding {
+            T1 | T2 | T3 => "sub",
+            T4 => "subw",
             _ => panic!(),
         }
         .into()
@@ -139,13 +140,13 @@ impl Instruction for SubImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, #{}",
-            rdn_args_string(self.rd, self.rn, self.tn == 2),
+            rdn_args_string(self.rd, self.rn, self.encoding == T2),
             self.imm32
         )
     }
@@ -164,36 +165,36 @@ pub struct SubReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for SubReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001101xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101011101xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rm = ins.reg4(0);
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
@@ -207,7 +208,7 @@ impl Instruction for SubReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: s,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -239,7 +240,7 @@ impl Instruction for SubReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -262,39 +263,39 @@ pub struct SubSpMinusImm {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for SubSpMinusImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "101100001xxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x01101x1101xxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x10101011010xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: RegisterIndex::Sp,
                 imm32: (ins & 0x7f) << 2,
                 set_flags: false,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let imm32 = thumb_expand_imm(imm12)?;
@@ -305,10 +306,10 @@ impl Instruction for SubSpMinusImm {
                     rd,
                     imm32,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let imm32 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 unpredictable(rd.is_pc())?;
@@ -316,7 +317,7 @@ impl Instruction for SubSpMinusImm {
                     rd,
                     imm32,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -337,9 +338,9 @@ impl Instruction for SubSpMinusImm {
     }
 
     fn name(&self) -> String {
-        match self.tn {
-            1 | 2 => "sub",
-            3 => "subw",
+        match self.encoding {
+            T1 | T2 => "sub",
+            T3 => "subw",
             _ => panic!(),
         }
         .into()
@@ -350,13 +351,13 @@ impl Instruction for SubSpMinusImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, #{}",
-            rdn_args_string(self.rd, RegisterIndex::Sp, self.tn == 1),
+            rdn_args_string(self.rd, RegisterIndex::Sp, self.encoding == T1),
             self.imm32
         )
     }
@@ -379,14 +380,14 @@ pub struct SubSpMinusReg {
 impl Instruction for SubSpMinusReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11101011101x1101(0)xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rm = ins.reg4(0);
         let set_flags = ins.bit(20);

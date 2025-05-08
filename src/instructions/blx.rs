@@ -1,5 +1,6 @@
 //! Implements BLX (Branch with Link and Exchange) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -27,20 +28,20 @@ impl Instruction for Blx {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM],
                 expression: "010001111xxxx(0)(0)(0)",
             },
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V8M],
                 expression: "010001111xxxxx(0)(0)",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rm = ins.reg4(3);
         unpredictable(rm.is_pc())?;
         unpredictable(state.in_it_block_not_last())?;

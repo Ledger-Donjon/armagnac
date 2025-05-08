@@ -1,6 +1,7 @@
 //! Implements ADR (Address to Register) instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2, T3};
 use super::{unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{align::Align, registers::RegisterIndex};
@@ -14,24 +15,24 @@ pub struct Adr {
     /// Offset from PC.
     imm32: i32,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for Adr {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10100xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x10101011110xxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x10000011110xxxxxxxxxxxxxxx",
             },
@@ -39,24 +40,24 @@ impl Instruction for Adr {
     }
 
     fn try_decode(
-        tn: usize,
+        encoding: Encoding,
         ins: u32,
         _state: crate::it_state::ItState,
     ) -> Result<Self, crate::decoder::DecodeError> {
-        Ok(match tn {
-            1 => Self {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(8),
                 imm32: (ins.imm8(0) as i32) << 2,
-                tn,
+                encoding,
             },
-            2 | 3 => {
+            T2 | T3 => {
                 let rd = ins.reg4(8);
                 unpredictable(rd.is_sp_or_pc())?;
                 let imm12 = ((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0)) as i32;
                 Self {
                     rd,
-                    imm32: if tn == 2 { -imm12 } else { imm12 },
-                    tn,
+                    imm32: if encoding == T2 { -imm12 } else { imm12 },
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -74,7 +75,7 @@ impl Instruction for Adr {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2 | 3)
+        qualifier_wide_match!(self.encoding, T2 | T3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -86,7 +87,7 @@ impl Instruction for Adr {
 mod tests {
     use crate::{
         arm::{ArmProcessor, Config},
-        instructions::{adr::Adr, Instruction},
+        instructions::{adr::Adr, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
@@ -97,7 +98,7 @@ mod tests {
         Adr {
             rd,
             imm32: offset,
-            tn: 0,
+            encoding: DontCare,
         }
         .execute(proc)
         .unwrap();

@@ -1,5 +1,6 @@
 //! Implements STRB (Store Byte) instruction.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::{
     indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier,
 };
@@ -31,42 +32,42 @@ pub struct StrbImm {
     /// True to write new offset value back to Rn.
     wback: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for StrbImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01110xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110001000xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000000xxxxxxxx1xxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 imm32: (ins >> 6) & 0x1f,
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 undefined(rn.is_pc())?;
@@ -78,10 +79,10 @@ impl Instruction for StrbImm {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let puw = (ins >> 8) & 7;
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
@@ -96,7 +97,7 @@ impl Instruction for StrbImm {
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
                     wback,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -119,7 +120,7 @@ impl Instruction for StrbImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -142,35 +143,35 @@ pub struct StrbReg {
     /// Rm shift amount.
     shift: u8,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for StrbReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101010xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000000xxxxxxxx000000xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: 0,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let rm = ins.reg4(0);
@@ -181,7 +182,7 @@ impl Instruction for StrbReg {
                     rn,
                     rm,
                     shift: ((ins >> 4) & 3) as u8,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -202,7 +203,7 @@ impl Instruction for StrbReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

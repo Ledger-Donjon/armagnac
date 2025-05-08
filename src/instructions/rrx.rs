@@ -1,5 +1,6 @@
 //! Implements RRX (Rotate Right with Extend) instruction.
 
+use super::Encoding::{self, T1};
 use super::{
     ArmVersion::{V7EM, V7M},
     Pattern,
@@ -31,14 +32,14 @@ pub struct Rrx {
 impl Instruction for Rrx {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM],
             expression: "11101010010x1111(0)000xxxx0011xxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rm = ins.reg4(0);
         unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;

@@ -1,5 +1,6 @@
 //! Implements BL (Branch with Link) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -23,14 +24,14 @@ pub struct Bl {
 impl Instruction for Bl {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "11110xxxxxxxxxxx11x1xxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         unpredictable(state.in_it_block_not_last())?;
         let s = (ins >> 26) & 1;
         let i1 = 1 ^ ((ins >> 13) & 1) ^ s;

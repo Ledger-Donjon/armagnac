@@ -1,5 +1,6 @@
 //! Implements ORR (Logical OR) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
@@ -33,14 +34,14 @@ pub struct OrrImm {
 impl Instruction for OrrImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110x00010xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         other(rn.is_pc())?; // MOV (immediate)
@@ -91,28 +92,28 @@ pub struct OrrReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for OrrReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001100xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101010010xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rdn = ins.reg3(0);
                 Self {
                     rd: rdn,
@@ -120,10 +121,10 @@ impl Instruction for OrrReg {
                     rm: ins.reg3(3),
                     shift: Shift::lsl(0),
                     set_flags: !state.in_it_block(),
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
@@ -136,7 +137,7 @@ impl Instruction for OrrReg {
                     rm,
                     shift,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -163,13 +164,13 @@ impl Instruction for OrrReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            rdn_args_string(self.rd, self.rn, self.encoding == T1),
             self.rm,
             self.shift.arg_string()
         )

@@ -1,5 +1,6 @@
 //! Implements BKPT (Breakpoint) instruction.
 
+use super::Encoding::{self, T1};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Instruction, Pattern,
@@ -26,14 +27,14 @@ pub struct Bkpt {
 impl Instruction for Bkpt {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "10111110xxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         Ok(Self {
             imm8: ins.imm8(0) as u8,
         })

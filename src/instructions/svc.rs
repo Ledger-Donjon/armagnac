@@ -1,5 +1,6 @@
 //! Implements SVC (Supervisor Call) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -22,14 +23,14 @@ pub struct Svc {
 impl Instruction for Svc {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "11011111xxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         Ok(Self {
             imm8: ins.imm8(0) as u8,
         })

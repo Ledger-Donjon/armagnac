@@ -1,5 +1,6 @@
 //! Implements STRD (Store Register Dual) instruction.
 
+use super::Encoding::{self, T1};
 use super::{AddOrSub, Instruction};
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -33,14 +34,14 @@ pub struct StrdImm {
 impl Instruction for StrdImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "1110100xx1x0xxxxxxxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rt = ins.reg4(12);
         let rt2 = ins.reg4(8);
         let rn = ins.reg4(16);

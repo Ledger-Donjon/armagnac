@@ -110,8 +110,8 @@ pub mod uxth;
 
 /// Defines how to match an instruction encoding.
 pub struct Pattern {
-    /// Instruction encoding: 1 for T1, 2 for T2, etc.
-    pub tn: usize,
+    /// Instruction encoding as specified in the Arm Architecture Reference Manual.
+    pub encoding: Encoding,
     /// Arm architecture versions supporting the current instruction encoding.
     pub versions: &'static [ArmVersion],
     /// Regular expression used to test if the corresponding instruction matches bytes being
@@ -124,7 +124,7 @@ pub struct Pattern {
     /// - "(0)" for bits part of instruction arguments, but expected to be zero,
     /// - "(1)" for bits part of instruction arguments, but expected to be one.
     ///
-    /// Patterns format matches the patterns indicated in the ARM Architecture Reference Manual,
+    /// Patterns format matches the patterns indicated in the Arm Architecture Reference Manual,
     /// making easy to define them with little room for mistakes.
     ///
     /// Patterns can have 16 or 32 symbols. If not, the instruction decoder is expected to panic.
@@ -177,7 +177,7 @@ pub trait Instruction {
     /// unpredictable(rd.is_sp_or_pc())?;
     /// # Ok::<(), DecodeError>(())
     /// ```
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError>
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError>
     where
         Self: Sized;
 
@@ -246,6 +246,22 @@ pub trait Instruction {
     /// we can trust. Currently, following disassembly options is passed to `llvm-objdump`:
     /// `--no-print-imm-hex`
     fn args(&self, pc: u32) -> String;
+}
+
+/// Possible instruction encodings.
+///
+/// An Arm instruction can have multiple different encodings, denoted in the reference manual as
+/// 'T1', 'T2', 'A1', etc... During instruction decoding, a first pass determines to which encoding
+/// an instruction corresponds to. Then the proper decoding routine which extracts and decodes
+/// the instruction arguments, is called.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Encoding {
+    T1,
+    T2,
+    T3,
+    T4,
+    A1,
+    DontCare,
 }
 
 /// If condition passes, returns [DecodeError::Unpredictable] error.

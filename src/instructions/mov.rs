@@ -1,5 +1,6 @@
 //! Implements MOV (Move) instruction.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::{other, unpredictable, DecodeHelper, Instruction};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -28,40 +29,40 @@ pub struct MovImm {
     /// Carry.
     carry: Option<bool>,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for MovImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00100xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x00010x11110xxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x100100xxxx0xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(8),
                 imm32: ins.imm8(0),
                 set_flags: !state.in_it_block(),
                 carry: None,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let imm12 = (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
                 let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
@@ -71,10 +72,10 @@ impl Instruction for MovImm {
                     imm32,
                     set_flags: ins.bit(20),
                     carry,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let imm32 =
                     (ins.imm4(16) << 12) | (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff;
@@ -84,7 +85,7 @@ impl Instruction for MovImm {
                     imm32,
                     set_flags: false,
                     carry: None,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -100,7 +101,7 @@ impl Instruction for MovImm {
     }
 
     fn name(&self) -> String {
-        if self.tn == 3 { "movw" } else { "mov" }.into()
+        if self.encoding == T3 { "movw" } else { "mov" }.into()
     }
 
     fn sets_flags(&self) -> bool {
@@ -108,7 +109,7 @@ impl Instruction for MovImm {
     }
 
     fn qualifier(&self) -> super::Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -125,7 +126,7 @@ pub struct MovReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for MovReg {
@@ -133,45 +134,45 @@ impl Instruction for MovReg {
         // TODO: For ArmV8-M, encodings T2 and T3 can support shifts, this is not implemented yet.
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000110xxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0000000000xxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101010010x1111(0)000xxxx0000xxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rd = RegisterIndex::new_main((ins & 7) | (ins.imm1(7) << 3));
                 unpredictable(rd.is_pc() && state.in_it_block_not_last())?;
                 Self {
                     rd,
                     rm: ins.reg4(3),
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 unpredictable(state.in_it_block())?;
                 Self {
                     rd: ins.reg3(0),
                     rm: ins.reg3(3),
                     set_flags: true,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
                 let set_flags = ins.bit(20);
@@ -183,7 +184,7 @@ impl Instruction for MovReg {
                     rd,
                     rm,
                     set_flags,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -213,7 +214,7 @@ impl Instruction for MovReg {
     }
 
     fn qualifier(&self) -> super::Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -241,21 +242,21 @@ impl Instruction for MovRegShiftReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V8M],
                 expression: "010000xxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V8M],
                 expression: "111110100xxxxxxx1111xxxx0000xxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        match encoding {
+            T1 => {
                 let rdm = ins.reg3(0);
                 let op = ins.imm4(6);
                 other((op != 0b0010) && (op != 0b0011) && (op != 0b0100) && (op != 0b0111))?; // Related encodings
@@ -267,7 +268,7 @@ impl Instruction for MovRegShiftReg {
                     set_flags: !state.in_it_block(),
                 })
             }
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(16);
                 let rs = ins.reg4(0);

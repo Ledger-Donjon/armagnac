@@ -1,5 +1,6 @@
 //! Implements ORN (Logical OR NOT) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -34,14 +35,14 @@ pub struct OrnImm {
 impl Instruction for OrnImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110x00011xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         other(rn.is_pc())?; // MVN (immediate)
@@ -97,14 +98,14 @@ pub struct OrnReg {
 impl Instruction for OrnReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11101010011xxxxx(0)xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         let rm = ins.reg4(0);

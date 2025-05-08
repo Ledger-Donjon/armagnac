@@ -1,6 +1,7 @@
 //! Implements ASR (Arithmetic Shift Right) instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2};
 use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -23,35 +24,35 @@ pub struct AsrImm {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AsrImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00010xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101010010x1111(0)xxxxxxxxx10xxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::from_bits(2, ins.imm5(6)).n as u8,
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rm = ins.reg4(0);
                 let rd = ins.reg4(8);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
@@ -61,7 +62,7 @@ impl Instruction for AsrImm {
                     rm,
                     shift: imm5 as u8,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -87,7 +88,7 @@ impl Instruction for AsrImm {
     }
 
     fn qualifier(&self) -> super::Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -106,38 +107,38 @@ pub struct AsrReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AsrReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000100xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11111010010xxxxx1111xxxx0000xxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rdn = ins.reg3(0);
                 Self {
                     rd: rdn,
                     rn: rdn,
                     rm: ins.reg3(3),
                     set_flags: !state.in_it_block(),
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 let rm = ins.reg4(0);
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
@@ -147,7 +148,7 @@ impl Instruction for AsrReg {
                     rn,
                     rm,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -174,13 +175,13 @@ impl Instruction for AsrReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}",
-            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            rdn_args_string(self.rd, self.rn, self.encoding == T1),
             self.rm
         )
     }

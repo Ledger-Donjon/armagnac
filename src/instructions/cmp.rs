@@ -1,5 +1,6 @@
 //! Implements CMP (Compare) instruction.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -21,36 +22,36 @@ pub struct CmpImm {
     /// Second operand immediate value.
     imm32: u32,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for CmpImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00101xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x011011xxxx0xxx1111xxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rn: ins.reg3(8),
                 imm32: ins & 0xff,
-                tn,
+                encoding,
             },
-            2 => Self {
+            T2 => Self {
                 rn: ins.reg4(16),
                 imm32: thumb_expand_imm((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff)?,
-                tn,
+                encoding,
             },
             _ => panic!(),
         })
@@ -71,7 +72,7 @@ impl Instruction for CmpImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -88,39 +89,39 @@ pub struct CmpReg {
     /// Shift to apply to Rm.
     shift: Shift,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for CmpReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001010xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000101xxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111010111011xxxx(0)xxx1111xxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rn: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = (ins.imm1(7) << 3) | ins.imm3(0);
                 let rm = ins.imm4(3);
                 unpredictable(rn < 8 && rm < 8)?;
@@ -131,10 +132,10 @@ impl Instruction for CmpReg {
                     rn,
                     rm,
                     shift: Shift::lsl(0),
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
                 unpredictable(rn.is_pc() || rm.is_sp_or_pc())?;
@@ -142,7 +143,7 @@ impl Instruction for CmpReg {
                     rn,
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -166,7 +167,7 @@ impl Instruction for CmpReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {

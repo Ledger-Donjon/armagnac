@@ -1,5 +1,6 @@
 //! Implements STRH (Store Register Halfword) instruction.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::{
     indexing_args, other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier,
 };
@@ -32,42 +33,42 @@ pub struct StrhImm {
     /// True to write new offset value back to Rn.
     wback: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for StrhImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10000xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110001010xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000010xxxxxxxx1xxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 imm32: ins.imm5(6) << 1,
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 undefined(rt.is_pc())?;
@@ -79,10 +80,10 @@ impl Instruction for StrhImm {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let (p, u, w) = ins.puw();
@@ -96,7 +97,7 @@ impl Instruction for StrhImm {
                     index: p,
                     add: u,
                     wback: w,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -119,7 +120,7 @@ impl Instruction for StrhImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -144,35 +145,35 @@ pub struct StrhReg {
     /// Rm shift amount.
     shift: u8,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for StrhReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101001xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000010xxxxxxxx000000xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: 0,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 undefined(rn.is_pc())?;
                 let rt = ins.reg4(12);
@@ -183,7 +184,7 @@ impl Instruction for StrhReg {
                     rn,
                     rm,
                     shift: ins.imm2(4) as u8,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -203,7 +204,7 @@ impl Instruction for StrhReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

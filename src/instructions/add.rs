@@ -1,6 +1,7 @@
 //! Implements ADD instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -25,55 +26,55 @@ pub struct AddImm {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AddImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001110xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "00110xxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x01000xxxxx0xxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 4,
+                encoding: T4,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x100000xxxx0xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<AddImm, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<AddImm, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(3),
                 imm32: ins.imm3(6),
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rdn = ins.reg3(8);
                 Self {
                     rd: rdn,
                     rn: rdn,
                     imm32: ins & 0xff,
                     set_flags: !state.in_it_block(),
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let set_flags = ins.bit(20);
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
@@ -87,10 +88,10 @@ impl Instruction for AddImm {
                     rn,
                     imm32,
                     set_flags,
-                    tn,
+                    encoding,
                 }
             }
-            4 => {
+            T4 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 if rn.is_sp_or_pc() {
@@ -104,7 +105,7 @@ impl Instruction for AddImm {
                     rn,
                     imm32: (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins & 0xff,
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -121,7 +122,7 @@ impl Instruction for AddImm {
     }
 
     fn name(&self) -> String {
-        if self.tn == 4 { "addw" } else { "add" }.into()
+        if self.encoding == T4 { "addw" } else { "add" }.into()
     }
 
     fn sets_flags(&self) -> bool {
@@ -129,11 +130,11 @@ impl Instruction for AddImm {
     }
 
     fn qualifier(&self) -> super::Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
-        let rdn = rdn_args_string(self.rd, self.rn, self.tn == 2);
+        let rdn = rdn_args_string(self.rd, self.rn, self.encoding == T2);
         format!("{rdn}, #{}", self.imm32)
     }
 }
@@ -151,41 +152,41 @@ pub struct AddReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AddReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0001100xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000100xxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101011000xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rm = ins.reg4(3);
                 let rdn = RegisterIndex::new_main((ins.imm1(7) << 3) | ins.imm3(0));
                 if rdn.is_sp() || rm.is_sp() {
@@ -203,10 +204,10 @@ impl Instruction for AddReg {
                     rm,
                     shift: Shift::lsl(0),
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
@@ -227,7 +228,7 @@ impl Instruction for AddReg {
                     rm,
                     shift,
                     set_flags,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -259,13 +260,13 @@ impl Instruction for AddReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, self.rn, self.tn == 2),
+            rdn_args_string(self.rd, self.rn, self.encoding == T2),
             self.rm,
             self.shift.arg_string()
         )
@@ -281,50 +282,50 @@ pub struct AddSpPlusImm {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AddSpPlusImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10101xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "101100000xxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x01000x11010xxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 4,
+                encoding: T4,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110x10000011010xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(8),
                 imm32: ins.imm8(0) << 2,
                 set_flags: false,
-                tn,
+                encoding,
             },
-            2 => Self {
+            T2 => Self {
                 rd: RegisterIndex::Sp,
                 imm32: ins.imm7(0) << 2,
                 set_flags: false,
-                tn,
+                encoding,
             },
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let set_flags = ins.bit(20);
                 other(rd.is_pc() && set_flags)?; // CMN (immediate)
@@ -335,10 +336,10 @@ impl Instruction for AddSpPlusImm {
                     rd,
                     imm32,
                     set_flags,
-                    tn,
+                    encoding,
                 }
             }
-            4 => {
+            T4 => {
                 let rd = ins.reg4(8);
                 if rd.is_pc() {
                     return Err(DecodeError::Unpredictable);
@@ -347,7 +348,7 @@ impl Instruction for AddSpPlusImm {
                     rd,
                     imm32: (ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0),
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -368,7 +369,7 @@ impl Instruction for AddSpPlusImm {
     }
 
     fn name(&self) -> String {
-        if self.tn == 4 { "addw" } else { "add" }.into()
+        if self.encoding == T4 { "addw" } else { "add" }.into()
     }
 
     fn sets_flags(&self) -> bool {
@@ -376,13 +377,13 @@ impl Instruction for AddSpPlusImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, #{}",
-            rdn_args_string(self.rd, RegisterIndex::Sp, self.tn == 2),
+            rdn_args_string(self.rd, RegisterIndex::Sp, self.encoding == T2),
             self.imm32
         )
     }
@@ -399,43 +400,43 @@ pub struct AddSpPlusReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AddSpPlusReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01000100x1101xxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "010001001xxxx101",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101011000x11010xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rdm = RegisterIndex::new_main((ins.imm1(7) << 3) | ins.imm3(0));
                 Self {
                     rd: rdm,
                     rm: rdm,
                     shift: Shift::lsl(0),
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 let rm = ins.reg4(3);
                 other(rm.is_sp())?; // T1 encoding
                 Self {
@@ -443,10 +444,10 @@ impl Instruction for AddSpPlusReg {
                     rm,
                     shift: Shift::lsl(0),
                     set_flags: false,
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
                 let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
@@ -458,7 +459,7 @@ impl Instruction for AddSpPlusReg {
                     rm,
                     shift,
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -494,13 +495,13 @@ impl Instruction for AddSpPlusReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, RegisterIndex::Sp, self.tn == 2),
+            rdn_args_string(self.rd, RegisterIndex::Sp, self.encoding == T2),
             self.rm,
             self.shift.arg_string()
         )
@@ -515,6 +516,7 @@ mod tests {
         arm::{ArmProcessor, Config},
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
+            Encoding::DontCare,
             Instruction,
         },
         registers::RegisterIndex,
@@ -593,7 +595,7 @@ mod tests {
                 rn,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
-                tn: 0,
+                encoding: DontCare,
             }
             .execute(&mut proc)
             .unwrap();
@@ -687,7 +689,7 @@ mod tests {
                 rm,
                 set_flags: v.set_flags,
                 shift: v.shift,
-                tn: 0,
+                encoding: DontCare,
             }
             .execute(&mut proc)
             .unwrap();
@@ -754,7 +756,7 @@ mod tests {
                 rd,
                 imm32: v.imm32,
                 set_flags: v.set_flags,
-                tn: 0,
+                encoding: DontCare,
             }
             .execute(&mut proc)
             .unwrap();
@@ -830,7 +832,7 @@ mod tests {
                 rm,
                 shift: v.shift,
                 set_flags: v.set_flags,
-                tn: 0,
+                encoding: DontCare,
             }
             .execute(&mut proc)
             .unwrap();

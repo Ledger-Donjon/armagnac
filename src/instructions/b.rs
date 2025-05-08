@@ -1,6 +1,7 @@
 //! Implements B (Branch) instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2, T3, T4};
 use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
@@ -15,56 +16,56 @@ pub struct B {
     /// Offset.
     imm32: i32,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for B {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1101xxxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "11100xxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110xxxxxxxxxxx10x0xxxxxxxxxxxx",
             },
             Pattern {
-                tn: 4,
+                encoding: T4,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11110xxxxxxxxxxx10x1xxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 // May match SVC if cond is 15
                 let cond = Condition::try_from((ins >> 8) & 0xf).map_err(|_| DecodeError::Other)?;
                 undefined(cond == Condition::Always)?;
                 Self {
                     cond: Some(cond),
                     imm32: sign_extend((ins & 0xff) << 1, 9),
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 unpredictable(state.in_it_block_not_last())?;
                 Self {
                     cond: None,
                     imm32: sign_extend((ins & 0x7ff) << 1, 12),
-                    tn,
+                    encoding,
                 }
             }
-            3 => {
+            T3 => {
                 other((ins >> 23) & 7 == 7)?;
                 // cond cannot be 15 because of the previous test, so the following conversion
                 // cannot fail.
@@ -81,10 +82,10 @@ impl Instruction for B {
                 Self {
                     cond: Some(cond),
                     imm32,
-                    tn,
+                    encoding,
                 }
             }
-            4 => {
+            T4 => {
                 let s = (ins >> 26) & 1;
                 let i1 = 1 ^ ((ins >> 13) & 1) ^ s;
                 let i2 = 1 ^ ((ins >> 11) & 1) ^ s;
@@ -98,7 +99,7 @@ impl Instruction for B {
                 Self {
                     cond: None,
                     imm32,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -127,7 +128,7 @@ impl Instruction for B {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3 | 4)
+        qualifier_wide_match!(self.encoding, T3 | T4)
     }
 
     fn args(&self, pc: u32) -> String {

@@ -1,5 +1,6 @@
 //! Implements LDR (Load Register) instruction.
 
+use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, undefined, unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -33,56 +34,56 @@ pub struct LdrImm {
     /// True to write new offset value back to Rn.
     pub wback: bool,
     /// Encoding.
-    pub tn: usize,
+    pub encoding: Encoding,
 }
 
 impl Instruction for LdrImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01101xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10011xxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110001101xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 4,
+                encoding: T4,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000101xxxxxxxx1xxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rn: ins.reg3(3),
                 rt: ins.reg3(0),
                 imm32: ((ins >> 6) & 0x1f) << 2,
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             },
-            2 => Self {
+            T2 => Self {
                 rn: RegisterIndex::Sp,
                 rt: ins.reg3(8),
                 imm32: (ins & 0xff) << 2,
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             },
-            3 => {
+            T3 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 other(rn.is_pc())?; // LDR (literal)
@@ -94,10 +95,10 @@ impl Instruction for LdrImm {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 }
             }
-            4 => {
+            T4 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let puw = (ins >> 8) & 7;
@@ -115,7 +116,7 @@ impl Instruction for LdrImm {
                     index: puw & 4 != 0,
                     add: puw & 2 != 0,
                     wback,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -147,7 +148,7 @@ impl Instruction for LdrImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 3)
+        qualifier_wide_match!(self.encoding, T3)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -168,41 +169,41 @@ pub struct LdrLit {
     /// True to add offset, false to subtract.
     add: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for LdrLit {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "01001xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11111000x1011111xxxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(8),
                 imm32: (ins & 0xff) << 2,
                 add: true,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rt = ins.reg4(12);
                 unpredictable(rt.is_pc() && state.in_it_block_not_last())?;
                 Self {
                     rt,
                     imm32: ins & 0xfff,
                     add: ins.bit(23),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -230,7 +231,7 @@ impl Instruction for LdrLit {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -259,28 +260,28 @@ pub struct LdrReg {
     /// True to write new offset value back to Rn.
     wback: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for LdrReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101100xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000101xxxxxxxx000000xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
@@ -288,9 +289,9 @@ impl Instruction for LdrReg {
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rt = ins.reg4(12);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
@@ -305,7 +306,7 @@ impl Instruction for LdrReg {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -339,7 +340,7 @@ impl Instruction for LdrReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

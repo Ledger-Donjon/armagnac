@@ -1,5 +1,6 @@
 //! Implements UMLAL (Unsigned Multiply Accumulate Long) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -32,14 +33,14 @@ pub struct Umlal {
 impl Instruction for Umlal {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "111110111110xxxxxxxxxxxx0000xxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rdlo = ins.reg4(12);
         let rdhi = ins.reg4(8);
         let rn = ins.reg4(16);

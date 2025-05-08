@@ -1,5 +1,6 @@
 //! Implements SSAT (Signed Saturate) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -33,14 +34,14 @@ pub struct Ssat {
 impl Instruction for Ssat {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110(0)1100x0xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let imm5 = (ins.imm3(12) << 2) | (ins.imm2(6));
         other(ins.bit(21) && (imm5 == 0))?; // SSAT16 if DSP extension, undefined otherwise.
         let rd = ins.reg4(8);

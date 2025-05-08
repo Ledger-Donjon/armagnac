@@ -1,5 +1,6 @@
 //! Implements LDRH (Load Register Halfword) instruction.
 
+use super::Encoding::{self, T1, T2, T3};
 use super::Qualifier;
 use super::{ldr::LdrImm, other, undefined, AddOrSub, Instruction};
 use super::{
@@ -28,35 +29,35 @@ impl Instruction for LdrhImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "10001xxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110001011xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 3,
+                encoding: T3,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000011xxxxxxxx1xxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self(LdrImm {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self(LdrImm {
                 rn: ins.reg3(3),
                 rt: ins.reg3(0),
                 imm32: ins.imm5(6) << 1,
                 index: true,
                 add: true,
                 wback: false,
-                tn,
+                encoding,
             }),
-            2 => {
+            T2 => {
                 let rt = ins.reg4(12);
                 let rn = ins.reg4(16);
                 other(rt.is_pc())?; // Unallocated memory hints
@@ -69,10 +70,10 @@ impl Instruction for LdrhImm {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 })
             }
-            3 => {
+            T3 => {
                 let rn = ins.reg4(16);
                 let rt = ins.reg4(12);
                 let (p, u, w) = ins.puw();
@@ -88,7 +89,7 @@ impl Instruction for LdrhImm {
                     index: p,
                     add: u,
                     wback: w,
-                    tn,
+                    encoding,
                 })
             }
             _ => panic!(),
@@ -120,7 +121,7 @@ impl Instruction for LdrhImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.0.tn, 2)
+        qualifier_wide_match!(self.0.encoding, T2)
     }
 
     fn args(&self, pc: u32) -> String {
@@ -141,14 +142,14 @@ pub struct LdrhLit {
 impl Instruction for LdrhLit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11111000x0111111xxxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rt = ins.reg4(12);
         other(rt.is_pc())?; // Unallocated memory hints
         unpredictable(rt.is_sp())?;
@@ -204,35 +205,35 @@ pub struct LdrhReg {
     /// Shift applied to Rm.
     shift: Shift,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for LdrhReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101101xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110000011xxxxxxxx000000xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rt = ins.reg4(12);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
@@ -244,7 +245,7 @@ impl Instruction for LdrhReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -265,7 +266,7 @@ impl Instruction for LdrhReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

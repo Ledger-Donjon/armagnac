@@ -1,5 +1,6 @@
 //! Implements USAT (Unsigned Saturate) instruction.
 
+use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
 use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
@@ -30,18 +31,18 @@ pub struct Usat {
 impl Instruction for Usat {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110(0)1110x0xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }
 
     fn try_decode(
-        tn: usize,
+        encoding: Encoding,
         ins: u32,
         _state: ItState,
     ) -> Result<Self, crate::decoder::DecodeError> {
-        debug_assert_eq!(tn, 1);
+        debug_assert_eq!(encoding, T1);
         let sh = ins.imm1(21);
         let imm5 = (ins.imm3(12) << 2) | ins.imm2(6);
         other((sh == 1) && (imm5 == 0))?;

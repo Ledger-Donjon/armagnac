@@ -1,5 +1,6 @@
 //! Implements UBFX (Unsigned Bit Field Extract) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -26,14 +27,14 @@ pub struct Ubfx {
 impl Instruction for Ubfx {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110(0)111100xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         let lsb = ((ins.imm3(12) << 2) | ins.imm2(6)) as u8;

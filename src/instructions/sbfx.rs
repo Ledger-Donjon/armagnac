@@ -1,5 +1,6 @@
 //! Implements SBFX (Signed Bit Field Extract) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -31,14 +32,14 @@ pub struct Sbfx {
 impl Instruction for Sbfx {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110(0)110100xxxx0xxxxxxxxx(0)xxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         unpredictable(rd.is_sp_or_pc() | rn.is_sp_or_pc())?;

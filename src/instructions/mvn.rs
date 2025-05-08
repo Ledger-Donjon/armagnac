@@ -1,5 +1,6 @@
 //! Implements MVN (Move Not) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::{unpredictable, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -31,14 +32,14 @@ pub struct MvnImm {
 impl Instruction for MvnImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110x00011x11110xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let imm12 = (ins.imm1(26) << 11) | ((ins.imm3(12)) << 8) | ins.imm8(0);
         let (imm32, carry) = thumb_expand_imm_optc(imm12)?;
         Ok(Self {
@@ -78,35 +79,35 @@ pub struct MvnReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for MvnReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001111xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101010011x1111(0)xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
@@ -115,7 +116,7 @@ impl Instruction for MvnReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -142,7 +143,7 @@ impl Instruction for MvnReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -156,7 +157,7 @@ mod tests {
     use crate::{
         arith::Shift,
         arm::{ArmProcessor, Config},
-        instructions::Instruction,
+        instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
@@ -170,7 +171,7 @@ mod tests {
             rm: RegisterIndex::R1,
             shift: Shift::lsl(0),
             set_flags: false,
-            tn: 0,
+            encoding: DontCare,
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0xffffffee);

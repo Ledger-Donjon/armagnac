@@ -1,5 +1,6 @@
 //! Implements MUL (Multiply) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::{unpredictable, DecodeHelper, Instruction};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -28,21 +29,21 @@ impl Instruction for Mul {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100001101xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110110000xxxx1111xxxx0000xxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rdm = ins.reg3(0);
                 Self {
                     rd: rdm,
@@ -51,7 +52,7 @@ impl Instruction for Mul {
                     set_flags: !state.in_it_block(),
                 }
             }
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);

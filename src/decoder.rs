@@ -13,7 +13,7 @@
 use crate::{
     arith::ArithError,
     arm::ArmVersion,
-    instructions::{self, Instruction, InstructionSize},
+    instructions::{self, Encoding, Instruction, InstructionSize},
     it_state::ItState,
 };
 use std::{fmt::Display, rc::Rc};
@@ -90,7 +90,7 @@ impl From<ArithError> for DecodeError {
 }
 
 type InstructionDecodingFunction =
-    fn(usize, u32, ItState) -> Result<Rc<dyn Instruction>, DecodeError>;
+    fn(Encoding, u32, ItState) -> Result<Rc<dyn Instruction>, DecodeError>;
 
 /// An instruction pattern which can be used to test if an opcode matches a
 /// given instruction.
@@ -249,9 +249,7 @@ impl Display for InstructionPattern {
 #[derive(Clone)]
 pub struct BasicDecoderEntry {
     /// All possible patterns which can match for the given instruction.
-    /// Pattern number of index 0 corresponds to T1 encoding, pattern of index 1 to T2 encoding,
-    /// etc.
-    pub patterns: Vec<(usize, InstructionPattern)>,
+    pub patterns: Vec<(Encoding, InstructionPattern)>,
     /// Decoding function of the instruction.
     pub decoder: InstructionDecodingFunction,
 }
@@ -268,11 +266,11 @@ pub struct BasicInstructionDecoder {
 }
 
 fn rc_decoder<T: 'static + Instruction>(
-    tn: usize,
+    encoding: Encoding,
     ins: u32,
     state: ItState,
 ) -> Result<Rc<dyn Instruction>, DecodeError> {
-    match T::try_decode(tn, ins, state) {
+    match T::try_decode(encoding, ins, state) {
         Ok(x) => Ok(Rc::new(x)),
         Err(e) => Err(e),
     }
@@ -423,7 +421,10 @@ impl BasicInstructionDecoder {
         let mut patterns = Vec::new();
         for pattern in T::patterns().iter() {
             if pattern.versions.iter().any(|&v| v == version) {
-                patterns.push((pattern.tn, InstructionPattern::new(pattern.expression)));
+                patterns.push((
+                    pattern.encoding,
+                    InstructionPattern::new(pattern.expression),
+                ));
             }
         }
         if patterns.len() > 0 {
@@ -514,7 +515,7 @@ pub struct GroupedInstructionDecoder {
     head_bit_count: u8,
     /// Groups of instruction and patterns.
     /// There is always `2^head_bit_count` groups.
-    entries: Vec<Vec<(InstructionPattern, usize, InstructionDecodingFunction)>>,
+    entries: Vec<Vec<(InstructionPattern, Encoding, InstructionDecodingFunction)>>,
 }
 
 impl GroupedInstructionDecoder {
@@ -540,7 +541,7 @@ impl GroupedInstructionDecoder {
     pub fn try_insert(
         &mut self,
         pattern: &InstructionPattern,
-        tn: usize,
+        encoding: Encoding,
         f: InstructionDecodingFunction,
     ) -> Result<(), ()> {
         let mut group = 0;
@@ -552,7 +553,7 @@ impl GroupedInstructionDecoder {
             };
             group = (group << 1) | bit;
         }
-        self.entries[group].push((pattern.clone(), tn, f));
+        self.entries[group].push((pattern.clone(), encoding, f));
         Ok(())
     }
 

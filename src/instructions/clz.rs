@@ -1,5 +1,6 @@
 //! Implements CLZ (Count Leading Zeros) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -26,14 +27,14 @@ pub struct Clz {
 impl Instruction for Clz {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "111110101011xxxx1111xxxx1000xxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rm1 = ins.reg4(16);
         let rm2 = ins.reg4(0);
         let rd = ins.reg4(8);

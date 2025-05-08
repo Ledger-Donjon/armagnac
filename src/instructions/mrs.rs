@@ -1,5 +1,6 @@
 //! Implements MRS (Move to Register from Special) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -23,14 +24,14 @@ pub struct Mrs {
 impl Instruction for Mrs {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V6M, V7M, V7EM, V8M],
             expression: "11110011111(0)(1)(1)(1)(1)10(0)0xxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let sysm = ins & 0xff;
         let good_sysm = matches!(sysm, 0..=3 | 5..=9 | 16..=20);

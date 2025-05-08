@@ -1,5 +1,6 @@
 //! Implements TEQ (Test Equivalence) instruction.
 
+use super::Encoding::{self, T1};
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
@@ -29,14 +30,14 @@ pub struct TeqImm {
 impl Instruction for TeqImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110x001001xxxx0xxx1111xxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rn = ins.reg4(16);
         let (imm32, carry) =
             thumb_expand_imm_optc((ins.imm1(26) << 11) | (ins.imm3(12) << 8) | ins.imm8(0))?;
@@ -78,14 +79,14 @@ pub struct TeqReg {
 impl Instruction for TeqReg {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "111010101001xxxx(0)xxx1111xxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rn = ins.reg4(16);
         let rm = ins.reg4(0);
         unpredictable(rn.is_sp_or_pc() || rm.is_sp_or_pc())?;

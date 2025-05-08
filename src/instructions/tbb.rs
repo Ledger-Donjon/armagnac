@@ -1,5 +1,6 @@
 //! Implements TBB (Table Branch Byte) instruction.
 
+use super::Encoding::{self, T1};
 use super::Instruction;
 use super::{
     ArmVersion::{V7EM, V7M, V8M},
@@ -27,14 +28,14 @@ pub struct Tbb {
 impl Instruction for Tbb {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "111010001101xxxx(1)(1)(1)(1)(0)(0)(0)(0)000xxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        debug_assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rn = ins.reg4(16);
         let rm = ins.reg4(0);
         unpredictable(rn.is_sp() || rm.is_sp_or_pc())?;

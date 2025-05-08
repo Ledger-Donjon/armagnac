@@ -1,6 +1,7 @@
 //! Implements ADC (Add with Carry) instruction.
 
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
+use super::Encoding::{self, T1, T2};
 use super::{Instruction, Pattern, Qualifier};
 use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
@@ -31,14 +32,14 @@ pub struct AdcImm {
 impl Instruction for AdcImm {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11110x01010xxxxx0xxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rn = ins.reg4(16);
         unpredictable(rd.is_sp_or_pc() || rn.is_sp_or_pc())?;
@@ -93,36 +94,36 @@ pub struct AdcReg {
     /// True if condition flags are updated.
     set_flags: bool,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for AdcReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0100000101xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11101011010xxxxx(0)xxxxxxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rn: ins.reg3(0),
                 rm: ins.reg3(3),
                 shift: Shift::lsl(0),
                 set_flags: !state.in_it_block(),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rn = ins.reg4(16);
                 let rm = ins.reg4(0);
@@ -133,7 +134,7 @@ impl Instruction for AdcReg {
                     rm,
                     shift: Shift::from_bits(ins.imm2(4), (ins.imm3(12) << 2) | ins.imm2(6)),
                     set_flags: ins.bit(20),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -164,13 +165,13 @@ impl Instruction for AdcReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
         format!(
             "{}, {}{}",
-            rdn_args_string(self.rd, self.rn, self.tn == 1),
+            rdn_args_string(self.rd, self.rn, self.encoding == T1),
             self.rm,
             self.shift.arg_string()
         )
@@ -183,7 +184,7 @@ mod tests {
     use crate::{
         arith::Shift,
         arm::{ArmProcessor, Config},
-        instructions::{adc::AdcReg, Instruction},
+        instructions::{adc::AdcReg, Encoding, Instruction},
         registers::RegisterIndex,
     };
 
@@ -353,7 +354,7 @@ mod tests {
                 rm,
                 shift: v.shift,
                 set_flags: v.set_flags,
-                tn: 0,
+                encoding: Encoding::DontCare,
             }
             .execute(&mut proc)
             .unwrap();

@@ -1,5 +1,6 @@
 //! Implements UXTB (Unsigned Extend Byte) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::{unpredictable, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -24,34 +25,34 @@ pub struct Uxtb {
     /// Rotation applied to Rm.
     rotation: u8,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for Uxtb {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "1011001011xxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "11111010010111111111xxxx1(0)xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rd: ins.reg3(0),
                 rm: ins.reg3(3),
                 rotation: 0,
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rd = ins.reg4(8);
                 let rm = ins.reg4(0);
                 unpredictable(rd.is_sp_or_pc() || rm.is_sp_or_pc())?;
@@ -59,7 +60,7 @@ impl Instruction for Uxtb {
                     rd,
                     rm,
                     rotation: (ins.imm2(4) << 3) as u8,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -77,7 +78,7 @@ impl Instruction for Uxtb {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {

@@ -1,5 +1,6 @@
 //! Implements LDRSH (Load Register Signed Halfword) instruction.
 
+use super::Encoding::{self, T1, T2};
 use super::{other, undefined, unpredictable, AddOrSub, DecodeHelper, Instruction, Qualifier};
 use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
@@ -34,28 +35,28 @@ pub struct LdrshImm {
     /// True to write new offset value back to Rn.
     pub wback: bool,
     /// Encoding.
-    pub tn: usize,
+    pub encoding: Encoding,
 }
 
 impl Instruction for LdrshImm {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110011011xxxxxxxxxxxxxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110010011xxxxxxxx1xxxxxxxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => {
                 let rn = ins.reg4(16);
                 other(rn.is_pc())?; // LDRSH (literal)
                 let rt = ins.reg4(12);
@@ -68,10 +69,10 @@ impl Instruction for LdrshImm {
                     index: true,
                     add: true,
                     wback: false,
-                    tn,
+                    encoding,
                 }
             }
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 other(rn.is_pc())?; // LDRSH (literal)
                 let rt = ins.reg4(12);
@@ -88,7 +89,7 @@ impl Instruction for LdrshImm {
                     index: p,
                     add: u,
                     wback: w,
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -112,7 +113,7 @@ impl Instruction for LdrshImm {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 1)
+        qualifier_wide_match!(self.encoding, T1)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -139,14 +140,14 @@ pub struct LdrshLit {
 impl Instruction for LdrshLit {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
-            tn: 1,
+            encoding: T1,
             versions: &[V7M, V7EM, V8M],
             expression: "11111001x0111111xxxxxxxxxxxxxxxx",
         }]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        assert_eq!(tn, 1);
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        debug_assert_eq!(encoding, T1);
         let rt = ins.reg4(12);
         other(rt.is_pc())?; // Unallocated memory hints
         unpredictable(rt.is_sp())?;
@@ -196,35 +197,35 @@ pub struct LdrshReg {
     /// Shift to be applied to Rm.
     shift: Shift,
     /// Encoding.
-    tn: usize,
+    encoding: Encoding,
 }
 
 impl Instruction for LdrshReg {
     fn patterns() -> &'static [Pattern] {
         &[
             Pattern {
-                tn: 1,
+                encoding: T1,
                 versions: &[V6M, V7M, V7EM, V8M],
                 expression: "0101111xxxxxxxxx",
             },
             Pattern {
-                tn: 2,
+                encoding: T2,
                 versions: &[V7M, V7EM, V8M],
                 expression: "111110010011xxxxxxxx000000xxxxxx",
             },
         ]
     }
 
-    fn try_decode(tn: usize, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        Ok(match tn {
-            1 => Self {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+        Ok(match encoding {
+            T1 => Self {
                 rt: ins.reg3(0),
                 rn: ins.reg3(3),
                 rm: ins.reg3(6),
                 shift: Shift::lsl(0),
-                tn,
+                encoding,
             },
-            2 => {
+            T2 => {
                 let rn = ins.reg4(16);
                 other(rn.is_pc())?; // LDRSH (literal)
                 let rt = ins.reg4(12);
@@ -236,7 +237,7 @@ impl Instruction for LdrshReg {
                     rn,
                     rm,
                     shift: Shift::lsl(ins.imm2(4)),
-                    tn,
+                    encoding,
                 }
             }
             _ => panic!(),
@@ -259,7 +260,7 @@ impl Instruction for LdrshReg {
     }
 
     fn qualifier(&self) -> Qualifier {
-        qualifier_wide_match!(self.tn, 2)
+        qualifier_wide_match!(self.encoding, T2)
     }
 
     fn args(&self, _pc: u32) -> String {
@@ -279,7 +280,7 @@ mod tests {
     use crate::{
         arith::Shift,
         arm::{ArmProcessor, Config},
-        instructions::Instruction,
+        instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
@@ -297,7 +298,7 @@ mod tests {
             index: true,
             add: true,
             wback: true,
-            tn: 0,
+            encoding: DontCare,
         };
         ins.execute(&mut proc).unwrap();
         assert_eq!(proc.registers.r0, 0xffffd678);
@@ -346,7 +347,7 @@ mod tests {
             rn: RegisterIndex::R1,
             rm: RegisterIndex::R2,
             shift: Shift::lsl(0),
-            tn: 0,
+            encoding: DontCare,
         };
 
         proc.registers.r1 = 0x1000;
