@@ -832,6 +832,8 @@ pub struct CoreRegisters {
     /// Current execution mode.
     /// Used in particular to return MSP or PSP when SP is requested.
     pub mode: Mode,
+    /// Event register.
+    pub event: bool,
 }
 
 impl CoreRegisters {
@@ -859,6 +861,7 @@ impl CoreRegisters {
             faultmask: MaskRegister::new(),
             control: ControlRegister::new(),
             mode: Mode::Thread,
+            event: false,
         }
     }
 
