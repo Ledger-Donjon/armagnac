@@ -22,9 +22,9 @@ float test_sqrt(float x) {
 }
 
 size_t test_memcpy(char* dst) {
-    size_t length = strlen(src);
-    memcpy(dst, src, length + 1);
-    return length;
+  size_t length = strlen(src);
+  memcpy(dst, src, length + 1);
+  return length;
 }
 
 float test_pow(float base, float exponent) {
