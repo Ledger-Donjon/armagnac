@@ -1564,6 +1564,12 @@ wfe
 // T2
 wfe.w
 
+// WFI
+// T1
+wfi
+// T2
+wfi.w
+
 .org 0x1001000
 label_far_s25:
 

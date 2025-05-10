@@ -41,3 +41,8 @@ unsigned int test_wfe() {
     __asm__("wfe");
     return 0xdeadbeef;
 }
+
+unsigned int test_wfi() {
+    __asm__("wfi");
+    return 0xcafeb105;
+}

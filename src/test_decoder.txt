@@ -979,4 +979,5 @@ a1b2     uxth     r1, r4
 aff30180 yield.w
 20bf     wfe
 aff30280 wfe.w
-0000     movs     r0, r0
+30bf     wfi
+aff30380 wfi.w

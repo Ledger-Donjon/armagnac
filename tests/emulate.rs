@@ -106,10 +106,12 @@ fn test_bkpt() {
 
 #[test]
 /// This test calls a simple method which just returns an integer after calling WFE (Wait For
-/// Event) instruction. The processor execution should halt until an event occurs. To test this,
-/// we setup a peripheral which requests an interrupt at cycle 1000. If WFE works correctly, the
-/// execution of the tested function should not return before cycle 1000.
-fn test_wfe() {
+/// Event) or WFI (Wait For Interrupt) instructions.
+///
+/// The processor execution should halt until an event occurs. To test this, we setup a peripheral
+/// which requests an interrupt at cycle 1000. If WFE/WFI works correctly, the execution of the
+/// tested functions should not return before cycle 1000.
+fn test_wfe_wfi() {
     struct DummyPeripheral {}
 
     impl MemoryInterface for DummyPeripheral {
@@ -118,7 +120,7 @@ fn test_wfe() {
         }
 
         fn update(&mut self, _env: &mut Env) {
-            if _env.cycles == 1000 {
+            if (_env.cycles % 1000 == 0) && (_env.cycles > 0) {
                 _env.request_interrupt(SysTick);
             }
         }
@@ -131,6 +133,12 @@ fn test_wfe() {
         .map_iface(0x10000000, Rc::new(RefCell::new(DummyPeripheral {})))
         .unwrap();
     let result = helper.call("test_wfe");
-    assert!(helper.proc.cycles >= 1000);
+    let cycles = helper.proc.cycles;
+    assert!((cycles >= 1000) && (cycles < 1100));
     assert_eq!(result, 0xdeadbeef);
+
+    let result = helper.call("test_wfi");
+    let cycles = helper.proc.cycles;
+    assert!((cycles >= 2000) && (cycles < 2100));
+    assert_eq!(result, 0xcafeb105);
 }

@@ -887,6 +887,10 @@ impl ArmProcessor {
                 num,
                 max_num - 1
             );
+            // TODO: not all exceptions may result in a WFI wakeup event.
+            if self.state == State::WaitingForInterrupt {
+                self.state = State::Running;
+            }
             if !self.exception_active[irq.number() as usize] {
                 self.exception_entry(irq)?;
             }
@@ -924,7 +928,7 @@ impl ArmProcessor {
                     self.state = State::Running;
                 }
             }
-            State::WaitingForInterrupt => todo!(),
+            State::WaitingForInterrupt => {}
         }
 
         // Handle actions that may come from memory accesses.

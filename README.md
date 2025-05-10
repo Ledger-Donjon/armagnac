@@ -5,7 +5,7 @@
 
 Armagnac is a simple ARM Thumb emulation library written in Rust which can be used to emulate simple embedded systems. The library gives high control on the processor execution, allowing to run instruction by instruction, create hooks, inspect or modify the system state on the fly. Integration of custom peripherals in the memory space is made easy, allowing custom platforms emulation. This library has little dependencies.
 
-The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet. Implementation has been mostly tested against ArmV7-M firmwares, a bit less against ArmV8-M, and ArmV6-M has not been tested. Expect bugs, rage and frustration.
+The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet for ArmV7-M and ArmV8-M (see below for more details). Implementation has been mostly tested against ArmV7-M firmwares, a bit less against ArmV8-M, and ArmV6-M has not been tested. Expect bugs, rage and frustration.
 
 Currently, emulation speed is typically 8 million instructions per second. There is no virtualization or translation to native code whatsoever. Also, there is no "unsafe" code.
 
@@ -33,12 +33,8 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 - There is not MPU support for ArmV6-M yet, only skeletons for ArmV7-M and ArmV8-M.
 - Although some MPU registers are emulated, accesses are currently not verified by the processor.
 - There is basic support for exceptions, but priorities are not enforced yet.
-
-### Unimplemented instructions for ArmV6-M
-
-Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version. Unimplemented instructions will raise an error during execution.
-
-- WFI: Wait For Interrupt
+- Only Thumb mode is supported at the moment.
+- All exceptions are considered WFI wakeup events.
 
 ### Unimplemented instructions for ArmV7-M
 
@@ -69,7 +65,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
-- WFI: Wait For Interrupt
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -187,7 +182,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - VLLDM: Floating-point Lazy Load Multiple
 - VLSTM: Floating-point Lazy Store Multiple
 - VSBC: Whole Vector Subtract With Carry
-- WFI: Wait For Interrupt
 - WLS, DLS, WLSTP, DLSTP: While Loop Start, Do Loop Start, While Loop Start with Tail Predication, Do Loop Start with Tail Predication
 
 ### Unimplemented instructions for ArmV8-M Floating-point extension

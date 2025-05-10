@@ -418,6 +418,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::uxth::Uxth>(version);
         dec.insert::<instructions::r#yield::Yield>(version);
         dec.insert::<instructions::wfe::Wfe>(version);
+        dec.insert::<instructions::wfi::Wfi>(version);
         dec
     }
 

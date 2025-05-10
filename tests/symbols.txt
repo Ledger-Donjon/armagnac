@@ -7,3 +7,4 @@ test_memcpy
 test_pow
 test_bkpt
 test_wfe
+test_wfi
