@@ -38,7 +38,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 Here is a list of instructions that are not implemented yet for ArmV6-M archiecture version. Unimplemented instructions will raise an error during execution.
 
-- WFE: Wait For Event
 - WFI: Wait For Interrupt
 
 ### Unimplemented instructions for ArmV7-M
@@ -70,7 +69,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
-- WFE: Wait For Event
 - WFI: Wait For Interrupt
 
 ### Unimplemented instructions for ArmV7E-M
@@ -189,7 +187,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - VLLDM: Floating-point Lazy Load Multiple
 - VLSTM: Floating-point Lazy Store Multiple
 - VSBC: Whole Vector Subtract With Carry
-- WFE: Wait For Event
 - WFI: Wait For Interrupt
 - WLS, DLS, WLSTP, DLSTP: While Loop Start, Do Loop Start, While Loop Start with Tail Predication, Do Loop Start with Tail Predication
 

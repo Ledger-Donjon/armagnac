@@ -1,7 +1,11 @@
 SECTIONS
 {
   . = 0x0;
-  .text : { *(.text) }
+  .text :
+  {
+      *(.vectors)
+      *(.text)
+  }
   .rodata : { *(.rodata) }
   . = ALIGN(4);
   . = 0x8000;

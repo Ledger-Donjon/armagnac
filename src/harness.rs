@@ -43,7 +43,7 @@ impl ElfHarness {
 
     /// Sets PC at given method entry and execute instructions until the function returns (or a
     /// timeout is reached).
-    pub fn call(&mut self, method: &str) {
+    pub fn call(&mut self, method: &str) -> u32 {
         let address = self.symbols[method.into()];
         self.proc.set_pc(address & 0xfffffffe); // We drop lsb (thumb mode bit)
         self.proc.registers.lr = 0xfffffffe;
@@ -55,7 +55,7 @@ impl ElfHarness {
             if self.proc.pc() == 0xfffffffe {
                 // Verify stack has been poped correctly
                 assert_eq!(self.proc.sp(), ADDR_RAM + STACK_SIZE);
-                return;
+                return self.proc.registers.r0;
             }
         }
     }

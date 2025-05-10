@@ -36,3 +36,8 @@ float test_bkpt(float x) {
   __asm__("bkpt #165");
   return sin(result);
 }
+
+unsigned int test_wfe() {
+    __asm__("wfe");
+    return 0xdeadbeef;
+}

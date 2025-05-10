@@ -1558,6 +1558,12 @@ yield
 // T2
 yield.w
 
+// WFE
+// T1
+wfe
+// T2
+wfe.w
+
 .org 0x1001000
 label_far_s25:
 

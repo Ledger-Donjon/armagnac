@@ -1,6 +1,9 @@
+vectors
+empty_irq
 test_fibonacci
 test_cos
 test_sqrt
 test_memcpy
 test_pow
 test_bkpt
+test_wfe

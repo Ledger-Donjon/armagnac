@@ -3,25 +3,24 @@
 //! [ArmProcessor] structure shall be used to define a system and emulate its processor and
 //! attached peripherals.
 
+use crate::{
+    align::Align,
+    condition::Condition,
+    decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
+    helpers::BitAccess,
+    instructions::{Instruction, InstructionSize, Mnemonic},
+    irq::Irq,
+    memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
+    mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
+    registers::{CoreRegisters, Mode, RegisterIndex},
+    system_control::SystemControl,
+};
 use core::panic;
 use std::{
     cell::RefCell,
     collections::BTreeSet,
     ops::{Index, Range},
     rc::Rc,
-};
-
-use crate::{
-    align::Align,
-    condition::Condition,
-    decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
-    helpers::BitAccess,
-    instructions::{Instruction, InstructionSize},
-    irq::Irq,
-    memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
-    mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
-    registers::{CoreRegisters, Mode, RegisterIndex},
-    system_control::SystemControl,
 };
 
 struct MemoryMap {
@@ -1166,7 +1165,8 @@ impl ArmProcessor {
         self.exception_active[number.number() as usize] = true;
         // TODO: SCS_UpdateStatusRegs()
         // TODO: ClearExclusiveLocal()
-        // TODO: SetEventRegister()
+        self.registers.event = true; // SetEventRegister()
+
         // TODO: InstructionSynchronizationBarrier()
         Ok(())
     }
@@ -1316,12 +1316,10 @@ pub trait Emulator {
 
 impl Emulator for ArmProcessor {
     fn next_event(&mut self) -> Result<Event, RunError> {
-        if let Some(event) = self.events.pop() {
-            Ok(event)
-        } else {
+        while self.events.len() == 0 {
             self.step()?;
-            Ok(self.events.pop().unwrap())
         }
+        return Ok(self.events.pop().unwrap());
     }
 }
 

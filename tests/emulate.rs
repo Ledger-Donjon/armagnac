@@ -1,9 +1,13 @@
+use std::{cell::RefCell, rc::Rc};
+
 use armagnac::{
     arm::{
-        Emulator,
+        ArmProcessor, Emulator,
         Event::{self},
     },
     harness::{ElfHarness, ADDR_RAM, STACK_SIZE},
+    irq::Irq::SysTick,
+    memory::{Env, MemoryInterface},
 };
 
 /// This test runs a call to memcpy to copy a string to a buffer.
@@ -98,4 +102,35 @@ fn test_bkpt() {
     // Check result, this won't hurt.
     let result = helper.proc.registers.r0;
     assert_eq!(f32::from_bits(result), arg.cos().sin());
+}
+
+#[test]
+/// This test calls a simple method which just returns an integer after calling WFE (Wait For
+/// Event) instruction. The processor execution should halt until an event occurs. To test this,
+/// we setup a peripheral which requests an interrupt at cycle 1000. If WFE works correctly, the
+/// execution of the tested function should not return before cycle 1000.
+fn test_wfe() {
+    struct DummyPeripheral {}
+
+    impl MemoryInterface for DummyPeripheral {
+        fn size(&self) -> u32 {
+            0
+        }
+
+        fn update(&mut self, _env: &mut Env) {
+            if _env.cycles == 1000 {
+                _env.request_interrupt(SysTick);
+            }
+        }
+    }
+
+    let elf = include_bytes!("tests.elf");
+    let mut helper = ElfHarness::new(elf);
+    helper
+        .proc
+        .map_iface(0x10000000, Rc::new(RefCell::new(DummyPeripheral {})))
+        .unwrap();
+    let result = helper.call("test_wfe");
+    assert!(helper.proc.cycles >= 1000);
+    assert_eq!(result, 0xdeadbeef);
 }
