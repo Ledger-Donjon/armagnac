@@ -40,7 +40,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. In particular, there is no support for coprocessor operations. Unimplemented instructions will raise an error during execution.
 
-- CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
@@ -135,7 +134,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - ADD (immediate, to PC): Add to PC
 - ASRS: Arithmetic Shift Right, Setting flags
 - BXAUT: Branch Exchange after Authentication
-- CDP, CDP2: Coprocessor Data Processing
 - CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint

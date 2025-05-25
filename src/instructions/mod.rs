@@ -28,6 +28,7 @@ pub mod bl;
 pub mod blx;
 pub mod bx;
 pub mod cbnz;
+pub mod cdp;
 pub mod clz;
 pub mod cmn;
 pub mod cmp;

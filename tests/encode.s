@@ -276,6 +276,20 @@ cbz     r7, label_cbnz
 nop // Without this cbz is reduced to nop
 label_cbnz:
 
+// CDP
+// T1
+cdp     p0, #0, c0, c15, c9, #0
+cdp     p3, #10, c3, c7, c3, #3
+cdp     p5, #15, c9, c6, c4, #0
+cdp     p9, #7, c15, c2, c15, #2
+cdp     p15, #11, c1, c0, c7, #7
+// T2
+cdp2    p0, #0, c0, c15, c9, #0
+cdp2    p3, #10, c3, c7, c3, #3
+cdp2    p5, #15, c9, c6, c4, #0
+cdp2    p9, #7, c15, c2, c15, #2
+cdp2    p15, #11, c1, c0, c7, #7
+
 // CLZ
 // T1
 clz     r0, r1

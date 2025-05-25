@@ -132,6 +132,16 @@ f047     blx      lr
 1047     bx       r2
 7047     bx       lr
 00bf     nop
+0fee0900 cdp      p0, #0, c0, c15, c9, #0
+a7ee6333 cdp      p3, #10, c3, c7, c3, #3
+f6ee0495 cdp      p5, #15, c9, c6, c4, #0
+72ee4ff9 cdp      p9, #7, c15, c2, c15, #2
+b0eee71f cdp      p15, #11, c1, c0, c7, #7
+0ffe0900 cdp2     p0, #0, c0, c15, c9, #0
+a7fe6333 cdp2     p3, #10, c3, c7, c3, #3
+f6fe0495 cdp2     p5, #15, c9, c6, c4, #0
+72fe4ff9 cdp2     p9, #7, c15, c2, c15, #2
+b0fee71f cdp2     p15, #11, c1, c0, c7, #7
 b1fa81f0 clz      r0, r1
 b2fa82f1 clz      r1, r2
 befa8efc clz      r12, lr
@@ -297,10 +307,6 @@ def8aaea ldr.w    lr, [lr, #2730]
 54f81f39 ldr      r3, [r4], #-31
 55f8ff4d ldr      r4, [r5, #-255]!
 5ef8ffff ldr      pc, [lr, #255]!
-00bf     nop
-00bf     nop
-00bf     nop
-00bf     nop
 00bf     nop
 00bf     nop
 00bf     nop
