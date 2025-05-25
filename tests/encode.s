@@ -435,6 +435,34 @@ ite     le
 nople
 nopgt
 
+// LDC/LDC2 (immediate)
+// T1
+ldc     p0, c2, [r0]
+ldc     p3, c15, [r7, #4]
+ldcl    p1, c8, [r7, #-128]
+ldc     p15, c0, [r5, #-1020]!
+ldcl    p3, c12, [r1], #16
+ldc     p3, c0, [r1], {85}
+ldcl    p3, c0, [r1], {255}
+// T2
+ldc2    p0, c2, [r0]
+ldc2    p3, c15, [r7, #4]
+ldc2l   p1, c8, [r7, #-128]
+ldc2    p15, c0, [r5, #-1020]!
+ldc2l   p3, c12, [r1], #16
+ldc2    p3, c0, [r1], {85}
+ldc2l   p3, c0, [r1], {255}
+
+// LDC/LDC2 (literal)
+// T1
+ldc     p0, c2, [pc]
+ldc     p3, c15, [pc, #4]
+ldcl    p1, c8, [pc, #-128]
+// T2
+ldc2    p0, c2, [pc]
+ldc2    p3, c15, [pc, #4]
+ldc2l   p1, c8, [pc, #-128]
+
 // LDM
 // T1
 ldm     r0, {r0}

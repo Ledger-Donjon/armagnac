@@ -44,7 +44,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
-- LDC, LDC2: Load Coprossessor
 - LDREX: Load Register Exclusive
 - LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword
@@ -146,7 +145,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LDAEXB: Load-Acquire Exclusive Byte
 - LDAEXH: Load-Acquire Exclusive Halfword
 - LDAH: Load-Acquire Halfword
-- LDC, LDC2: Load Coprossessor
 - LDREX: Load Register Exclusive
 - LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword

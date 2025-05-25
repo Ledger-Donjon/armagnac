@@ -37,6 +37,7 @@ pub mod dsb;
 pub mod eor;
 pub mod isb;
 pub mod it;
+pub mod ldc;
 pub mod ldm;
 pub mod ldmdb;
 pub mod ldr;

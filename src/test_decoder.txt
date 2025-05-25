@@ -249,6 +249,26 @@ b4bf     ite      lt
 d4bf     ite      le
 00bf     nople
 00bf     nopgt
+90ed0020 ldc      p0, c2, [r0]
+97ed01f3 ldc      p3, c15, [r7, #4]
+57ed2081 ldcl     p1, c8, [r7, #-128]
+35edff0f ldc      p15, c0, [r5, #-1020]!
+f1ec04c3 ldcl     p3, c12, [r1], #16
+91ec5503 ldc      p3, c0, [r1], {85}
+d1ecff03 ldcl     p3, c0, [r1], {255}
+90fd0020 ldc2     p0, c2, [r0]
+97fd01f3 ldc2     p3, c15, [r7, #4]
+57fd2081 ldc2l    p1, c8, [r7, #-128]
+35fdff0f ldc2     p15, c0, [r5, #-1020]!
+f1fc04c3 ldc2l    p3, c12, [r1], #16
+91fc5503 ldc2     p3, c0, [r1], {85}
+d1fcff03 ldc2l    p3, c0, [r1], {255}
+9fed0020 ldc      p0, c2, [pc]
+9fed01f3 ldc      p3, c15, [pc, #4]
+5fed2081 ldcl     p1, c8, [pc, #-128]
+9ffd0020 ldc2     p0, c2, [pc]
+9ffd01f3 ldc2     p3, c15, [pc, #4]
+5ffd2081 ldc2l    p1, c8, [pc, #-128]
 01c8     ldm      r0, {r0}
 0cc9     ldm      r1!, {r2, r3}
 34ca     ldm      r2, {r2, r4, r5}

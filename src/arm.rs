@@ -6,9 +6,10 @@
 use crate::{
     align::Align,
     condition::Condition,
+    coprocessor::{self, Coprocessor},
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
-    instructions::{Instruction, InstructionSize, Mnemonic},
+    instructions::{Instruction, InstructionSize},
     irq::Irq,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
     mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
@@ -221,6 +222,9 @@ pub struct ArmProcessor {
     /// System control registers peripheral.
     /// Needed for instance to fetch VTOR during an exception.
     system_control: Rc<RefCell<SystemControl>>,
+    /// Coprocessors.
+    /// If Arm profile does not support coprocessors, this vector remains empty.
+    pub coprocessors: Vec<Option<Rc<RefCell<dyn Coprocessor>>>>,
     /// When poping PC from the stack (during exception return for instance), PC should be aligned,
     /// otherwise execution is unpredictable according to the ARM specification. However, some
     /// implementation may still set LSB to 1 for Thumb mode, and this can work on some hardware.
@@ -245,9 +249,14 @@ impl ArmProcessor {
     /// let processor = ArmProcessor::new(Config::v7m());
     /// ```
     pub fn new(config: Config) -> Self {
-        let exception_count = 16usize.checked_add(config.external_exceptions).unwrap();
-        let system_control = Rc::new(RefCell::new(SystemControl::new()));
         let version = config.version;
+        let exception_count = 16usize.checked_add(config.external_exceptions).unwrap();
+        let coprocessor_count = match version {
+            ArmVersion::V6M => 0,
+            ArmVersion::V7M | ArmVersion::V7EM | ArmVersion::V8M => 16,
+        };
+        let system_control = Rc::new(RefCell::new(SystemControl::new()));
+
         let mut processor = Self {
             version,
             registers: CoreRegisters::new(),
@@ -261,9 +270,11 @@ impl ArmProcessor {
             memory_op_actions: Vec::new(),
             interrupt_requests: BTreeSet::new(),
             system_control: system_control.clone(),
+            coprocessors: (0..coprocessor_count).map(|_| None).collect(),
             tolerate_pop_stack_unaligned_pc: false,
             events: Vec::new(),
         };
+
         processor.map_iface(0xe000e000, system_control).unwrap();
         match processor.version {
             ArmVersion::V6M => {}
@@ -342,6 +353,14 @@ impl ArmProcessor {
         let ram = Rc::new(RefCell::new(RamMemory::new_zero(size as usize)));
         self.map_iface(address, ram.clone())?;
         Ok(ram)
+    }
+
+    /// Defines the implementation of one of the 16 possible coprocessors.
+    ///
+    /// Panics if index is out of range or Arm version does not support coprocessors.
+    pub fn set_coprocessor(&mut self, index: usize, coprocessor: Rc<RefCell<dyn Coprocessor>>) {
+        assert!(index < 16);
+        self.coprocessors[index] = Some(coprocessor)
     }
 
     pub fn hook_code(&mut self, range: Range<usize>) {
@@ -1218,6 +1237,31 @@ impl ArmProcessor {
         } else {
             true
         }
+    }
+
+    /// Calls for [Coprocessor::accepted] of a selected coprocessor, for a given instruction.
+    ///
+    /// If coprocessor does not accept instruction, or if coprocessor is not defined,
+    /// [None] is returned.
+    ///
+    /// If coprocessor is defined and accepts the instruction, it is returned.
+    ///
+    /// This corresponds to `Coproc_Accepted()` ins Arm Architecture Reference Manual.
+    pub fn coproc_accepted(&mut self, cp: u8, ins: u32) -> Option<Rc<RefCell<dyn Coprocessor>>> {
+        debug_assert!(cp < 16);
+        let Some(coprocessor) = self.coprocessors[cp as usize].clone() else {
+            return None;
+        };
+        if !coprocessor.borrow().accepted(ins) {
+            return None;
+        }
+        return Some(coprocessor);
+    }
+
+    /// Raise usage fault exception and sets NOCP fault flag.
+    pub fn generate_coprocessor_exception(&mut self) {
+        self.request_interrupt(Irq::UsageFault);
+        self.system_control.borrow_mut().cfsr.set_nocp(true);
     }
 }
 
