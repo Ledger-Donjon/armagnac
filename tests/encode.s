@@ -875,6 +875,20 @@ movt    r1, #0xaaaa
 movt    r2, #0x5555
 movt    r14, #65535
 
+// MRC
+// T1
+mrc     p0, #1, r0, c1, c12
+mrc     p15, #7, r12, c3, c9, #7
+mrc     p7, #0, r7, c15, c6, #1
+mrc     p1, #3, r2, c7, c3, #4
+mrc     p6, #2, apsr_nzcv, c1, c2, #3
+// T2
+mrc2    p0, #1, r0, c1, c12
+mrc2    p15, #7, r12, c3, c9, #7
+mrc2    p7, #0, r7, c15, c6, #1
+mrc2    p1, #3, r2, c7, c3, #4
+mrc2    p6, #2, apsr_nzcv, c1, c2, #3
+
 // MRS
 // T1
 mrs     r14, apsr
@@ -947,6 +961,9 @@ nop
 // T2
 nop.w
 
+.org 0x1830
+label_far_s12:
+
 // ORN (immediate)
 // T1
 orn     r0, r1, #0
@@ -963,9 +980,6 @@ orn     r1, r4, r10, lsl #1
 orn     r2, r6, r3, lsl #31
 orns    r7, r0, r14, lsr #10
 orns    r0, r14, r8, asr #5
-
-.org 0x1830
-label_far_s12:
 
 // ORR (immediate)
 // T1

@@ -540,6 +540,16 @@ c0f20000 movt     r0, #0
 caf6aa21 movt     r1, #43690
 c5f25552 movt     r2, #21845
 cff6ff7e movt     lr, #65535
+31ee1c00 mrc      p0, #1, r0, c1, c12, #0
+f3eef9cf mrc      p15, #7, r12, c3, c9, #7
+1fee3677 mrc      p7, #0, r7, c15, c6, #1
+77ee9321 mrc      p1, #3, r2, c7, c3, #4
+51ee72f6 mrc      p6, #2, apsr_nzcv, c1, c2, #3
+31fe1c00 mrc2     p0, #1, r0, c1, c12, #0
+f3fef9cf mrc2     p15, #7, r12, c3, c9, #7
+1ffe3677 mrc2     p7, #0, r7, c15, c6, #1
+77fe9321 mrc2     p1, #3, r2, c7, c3, #4
+51fe72f6 mrc2     p6, #2, apsr_nzcv, c1, c2, #3
 eff3008e mrs      lr, apsr
 eff3018c mrs      r12, iapsr
 eff3028b mrs      r11, eapsr
@@ -583,6 +593,7 @@ ff43     mvns     r7, r7
 6fea0e0a mvn.w    r10, lr
 00bf     nop
 aff30080 nop.w
+0000     movs     r0, r0
 61f00000 orn      r0, r1, #0
 62f0aa21 orn      r1, r2, #2852170240
 63f4ff72 orn      r2, r3, #510
@@ -594,7 +605,6 @@ aff30080 nop.w
 66eac372 orn      r2, r6, r3, lsl #31
 70ea9e27 orns     r7, r0, lr, lsr #10
 7eea6810 orns     r0, lr, r8, asr #5
-0000     movs     r0, r0
 41f00000 orr      r0, r1, #0
 42f0aa21 orr      r1, r2, #2852170240
 43f4ff72 orr      r2, r3, #510
