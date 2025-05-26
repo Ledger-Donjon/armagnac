@@ -48,7 +48,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - LDREXH: Load Register Exclusive Halfword
 - LDRSBT: Load Register Signed Byte Unprivileged
 - LDRSHT: Load Register Signed Halfword Unprivileged
-- MCR, MCR2: Move to Coprocessor from ARM Register
 - MCRR, MCRR2: Move to Compressor from two ARM Registers
 - MRC, MRC2: Move to Register from Coprocessor
 - MRRC, MRRC2: Move to two Registers from Compressor
@@ -150,7 +149,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LDRSHT: Load Register Signed Halfword Unprivileged
 - LSLS: Logical Shift Left, Setting flags
 - LSRS: Logical Shift Right, Setting flags
-- MCR, MCR2: Move to Coprocessor from ARM Register
 - MCRR, MCRR2: Move to Compressor from two ARM Registers
 - MRC, MRC2: Move to ARM Register from Coprocessor
 - MRRC, MRRC2: Move to two ARM Registers from Coprocessor
