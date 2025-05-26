@@ -803,6 +803,20 @@ mcr2    p3, #4, r14, c7, c1, #7
 mcr2    p15, #7, r7, c15, c7, #3
 mcr2    p2, #1, r6, c2, c15
 
+// MCRR
+// T1
+mcrr    p0, #0, r1, r14, c0
+mcrr    p5, #3, r7, r1, c9
+mcrr    p7, #7, r14, r0, c3
+mcrr    p14, #15, r10, r7, c1
+mcrr    p2, #6, r7, r9, c15
+// T2
+mcrr2   p0, #0, r1, r14, c0
+mcrr2   p5, #3, r7, r1, c9
+mcrr2   p7, #7, r14, r0, c3
+mcrr2   p14, #15, r10, r7, c1
+mcrr2   p2, #6, r7, r9, c15
+
 // MLA
 // T1
 mla     r0, r1, r2, r3
@@ -950,6 +964,9 @@ orn     r2, r6, r3, lsl #31
 orns    r7, r0, r14, lsr #10
 orns    r0, r14, r8, asr #5
 
+.org 0x1830
+label_far_s12:
+
 // ORR (immediate)
 // T1
 orr     r0, r1, #0
@@ -972,9 +989,6 @@ orr.w  r1, r6, r3, lsl #1
 orr.w  r7, r10, r14, lsl #31
 orr.w  r3, r0, r7, lsr #7
 orrs.w  r3, r0, r7, asl #3
-
-.org 0x1830
-label_far_s12:
 
 // POP
 // T1

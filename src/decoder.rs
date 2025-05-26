@@ -345,6 +345,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::lsr::LsrImm>(version);
         dec.insert::<instructions::lsr::LsrReg>(version);
         dec.insert::<instructions::mcr::Mcr>(version);
+        dec.insert::<instructions::mcrr::Mcrr>(version);
         dec.insert::<instructions::mla::Mla>(version);
         dec.insert::<instructions::mls::Mls>(version);
         dec.insert::<instructions::mov::MovImm>(version);

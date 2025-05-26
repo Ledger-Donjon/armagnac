@@ -491,6 +491,16 @@ efee777f mcr      p15, #7, r7, c15, c7, #3
 87fef1e3 mcr2     p3, #4, lr, c7, c1, #7
 effe777f mcr2     p15, #7, r7, c15, c7, #3
 22fe1f62 mcr2     p2, #1, r6, c2, c15, #0
+4eec0010 mcrr     p0, #0, r1, lr, c0
+41ec3975 mcrr     p5, #3, r7, r1, c9
+40ec73e7 mcrr     p7, #7, lr, r0, c3
+47ecf1ae mcrr     p14, #15, r10, r7, c1
+49ec6f72 mcrr     p2, #6, r7, r9, c15
+4efc0010 mcrr2    p0, #0, r1, lr, c0
+41fc3975 mcrr2    p5, #3, r7, r1, c9
+40fc73e7 mcrr2    p7, #7, lr, r0, c3
+47fcf1ae mcrr2    p14, #15, r10, r7, c1
+49fc6f72 mcrr2    p2, #6, r7, r9, c15
 01fb0230 mla      r0, r1, r2, r3
 05fb0074 mla      r4, r5, r0, r7
 07fb0809 mla      r9, r7, r8, r0
@@ -584,6 +594,7 @@ aff30080 nop.w
 66eac372 orn      r2, r6, r3, lsl #31
 70ea9e27 orns     r7, r0, lr, lsr #10
 7eea6810 orns     r0, lr, r8, asr #5
+0000     movs     r0, r0
 41f00000 orr      r0, r1, #0
 42f0aa21 orr      r1, r2, #2852170240
 43f4ff72 orr      r2, r3, #510
@@ -1017,3 +1028,4 @@ aff30180 yield.w
 aff30280 wfe.w
 30bf     wfi
 aff30380 wfi.w
+0000     movs     r0, r0

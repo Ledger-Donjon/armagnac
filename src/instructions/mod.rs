@@ -53,6 +53,7 @@ pub mod ldrt;
 pub mod lsl;
 pub mod lsr;
 pub mod mcr;
+pub mod mcrr;
 pub mod mla;
 pub mod mls;
 pub mod mov;
