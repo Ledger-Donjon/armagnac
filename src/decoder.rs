@@ -353,6 +353,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::mov::MovRegShiftReg>(version);
         dec.insert::<instructions::movt::Movt>(version);
         dec.insert::<instructions::mrc::Mrc>(version);
+        dec.insert::<instructions::mrrc::Mrrc>(version);
         dec.insert::<instructions::mrs::Mrs>(version);
         dec.insert::<instructions::msr::Msr>(version);
         dec.insert::<instructions::mul::Mul>(version);
