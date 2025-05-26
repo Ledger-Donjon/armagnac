@@ -483,12 +483,12 @@ ff40     lsrs     r7, r7
 2efa0afc lsr.w    r12, lr, r10
 04ee1510 mcr      p0, #0, r1, c4, c5, #0
 40ee500c mcr      p12, #2, r0, c0, c0, #2
-87eef1f3 mcr      p3, #4, pc, c7, c1, #7
+87eef1e3 mcr      p3, #4, lr, c7, c1, #7
 efee777f mcr      p15, #7, r7, c15, c7, #3
 22ee1f62 mcr      p2, #1, r6, c2, c15, #0
 04fe1510 mcr2     p0, #0, r1, c4, c5, #0
 40fe500c mcr2     p12, #2, r0, c0, c0, #2
-87fef1f3 mcr2     p3, #4, pc, c7, c1, #7
+87fef1e3 mcr2     p3, #4, lr, c7, c1, #7
 effe777f mcr2     p15, #7, r7, c15, c7, #3
 22fe1f62 mcr2     p2, #1, r6, c2, c15, #0
 01fb0230 mla      r0, r1, r2, r3

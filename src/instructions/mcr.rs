@@ -11,7 +11,7 @@ use crate::{
         Effect, RunError,
     },
     decoder::DecodeError,
-    instructions::DecodeHelper,
+    instructions::{unpredictable, DecodeHelper},
     it_state::ItState,
     registers::RegisterIndex,
 };
@@ -24,7 +24,7 @@ pub struct Mcr {
     coproc: u8,
     /// Coprocessor-specific opcode, from 0 to 7.
     opc1: u8,
-    /// Source Arm register.
+    /// Arm Source register.
     rt: RegisterIndex,
     /// Coprocessor destination register, from 0 to 15.
     crn: u8,
@@ -57,10 +57,12 @@ impl Instruction for Mcr {
 
     fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert!((encoding == T1) || (encoding == T2));
+        let rt = ins.reg4(12);
+        unpredictable(rt.is_sp_or_pc())?;
         Ok(Self {
             coproc: ins.imm4(8) as u8,
             opc1: ins.imm3(21) as u8,
-            rt: ins.reg4(12),
+            rt,
             crn: ins.imm4(16) as u8,
             crm: ins.imm4(0) as u8,
             opc2: ins.imm3(5) as u8,

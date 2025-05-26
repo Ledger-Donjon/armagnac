@@ -793,13 +793,13 @@ lsr.w   r12, r14, r10
 // T1
 mcr     p0, #0, r1, c4, c5
 mcr     p12, #2, r0, c0, c0, #2
-mcr     p3, #4, r15, c7, c1, #7
+mcr     p3, #4, r14, c7, c1, #7
 mcr     p15, #7, r7, c15, c7, #3
 mcr     p2, #1, r6, c2, c15
 // T2
 mcr2    p0, #0, r1, c4, c5
 mcr2    p12, #2, r0, c0, c0, #2
-mcr2    p3, #4, r15, c7, c1, #7
+mcr2    p3, #4, r14, c7, c1, #7
 mcr2    p15, #7, r7, c15, c7, #3
 mcr2    p2, #1, r6, c2, c15
 
