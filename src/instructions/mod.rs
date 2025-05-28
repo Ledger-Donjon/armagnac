@@ -69,18 +69,17 @@ pub mod orn;
 pub mod orr;
 pub mod pop;
 pub mod push;
+pub mod qadd;
 pub mod qadd16;
 pub mod qadd8;
-pub mod qadd;
 pub mod qdadd;
 pub mod qdsub;
+pub mod qsub;
 pub mod qsub16;
 pub mod qsub8;
-pub mod qsub;
-pub mod r#yield;
 pub mod rbit;
-pub mod rev16;
 pub mod rev;
+pub mod rev16;
 pub mod revsh;
 pub mod ror;
 pub mod rrx;
@@ -113,12 +112,13 @@ pub mod udf;
 pub mod udiv;
 pub mod umlal;
 pub mod umull;
-pub mod usat16;
 pub mod usat;
+pub mod usat16;
 pub mod uxtb;
 pub mod uxth;
 pub mod wfe;
 pub mod wfi;
+pub mod r#yield;
 
 /// Defines how to match an instruction encoding.
 pub struct Pattern {
@@ -427,8 +427,8 @@ impl DecodeHelper for u32 {
 macro_rules! qualifier_wide_match {
     ($tn:expr, $tns:pat) => {
         match $tn {
-            $tns => crate::instructions::Qualifier::Wide,
-            _ => crate::instructions::Qualifier::None,
+            $tns => $crate::instructions::Qualifier::Wide,
+            _ => $crate::instructions::Qualifier::None,
         }
     };
 }
@@ -529,7 +529,7 @@ impl Mnemonic for Rc<dyn Instruction> {
             Qualifier::Wide => name += ".w",
         }
         let args = self.args(pc);
-        if args.len() > 0 {
+        if !args.is_empty() {
             format!("{:<8} {}", name, self.args(pc))
         } else {
             name

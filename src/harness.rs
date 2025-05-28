@@ -17,10 +17,9 @@ impl ElfHarness {
     pub fn new(elf: &[u8]) -> Self {
         // Parse ELF file to extract all symbols.
         // Keep the symbols in a BTreeMap to simplify and discard object::File.
-        let object = File::parse(&*elf).unwrap();
+        let object = File::parse(elf).unwrap();
         let symbols = object
             .symbols()
-            .into_iter()
             .map(|s| (s.name().unwrap().into(), s.address() as u32))
             .collect();
 
@@ -44,7 +43,7 @@ impl ElfHarness {
     /// Sets PC at given method entry and execute instructions until the function returns (or a
     /// timeout is reached).
     pub fn call(&mut self, method: &str) -> u32 {
-        let address = self.symbols[method.into()];
+        let address = self.symbols[method];
         self.proc.set_pc(address & 0xfffffffe); // We drop lsb (thumb mode bit)
         self.proc.registers.lr = 0xfffffffe;
         self.proc.set_sp(ADDR_RAM + STACK_SIZE);

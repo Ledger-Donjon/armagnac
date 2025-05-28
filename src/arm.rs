@@ -6,7 +6,7 @@
 use crate::{
     align::Align,
     condition::Condition,
-    coprocessor::{self, Coprocessor},
+    coprocessor::Coprocessor,
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
@@ -1249,13 +1249,11 @@ impl ArmProcessor {
     /// This corresponds to `Coproc_Accepted()` ins Arm Architecture Reference Manual.
     pub fn coproc_accepted(&mut self, cp: u8, ins: u32) -> Option<Rc<RefCell<dyn Coprocessor>>> {
         debug_assert!(cp < 16);
-        let Some(coprocessor) = self.coprocessors[cp as usize].clone() else {
-            return None;
-        };
+        let coprocessor = self.coprocessors[cp as usize].clone()?;
         if !coprocessor.borrow().accepted(ins) {
             return None;
         }
-        return Some(coprocessor);
+        Some(coprocessor)
     }
 
     /// Raise usage fault exception and sets NOCP fault flag.
@@ -1364,10 +1362,10 @@ pub trait Emulator {
 
 impl Emulator for ArmProcessor {
     fn next_event(&mut self) -> Result<Event, RunError> {
-        while self.events.len() == 0 {
+        while self.events.is_empty() {
             self.step()?;
         }
-        return Ok(self.events.pop().unwrap());
+        Ok(self.events.pop().unwrap())
     }
 }
 

@@ -43,7 +43,7 @@ impl Instruction for Udf {
     }
 
     fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
-        return Err(RunError::InstructionUndefined);
+        Err(RunError::InstructionUndefined)
     }
 
     fn name(&self) -> String {

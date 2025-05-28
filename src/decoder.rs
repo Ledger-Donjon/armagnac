@@ -216,7 +216,7 @@ impl InstructionPattern {
         if ins & self.unp_mask != self.unp_value {
             return Err(InstructionDecodeError::Unpredictable);
         }
-        return Ok(true);
+        Ok(true)
     }
 
     /// Number of bits of the instruction code this pattern is supposed to match.
@@ -440,7 +440,7 @@ impl BasicInstructionDecoder {
                 ));
             }
         }
-        if patterns.len() > 0 {
+        if !patterns.is_empty() {
             self.entries.push(BasicDecoderEntry {
                 patterns,
                 decoder: rc_decoder::<T>,
@@ -535,14 +535,17 @@ impl GroupedInstructionDecoder {
     pub fn new(head_bit_count: u8) -> Self {
         debug_assert!((head_bit_count > 0) && (head_bit_count < 32));
         let mut entries = Vec::new();
-        entries.resize_with(1 << head_bit_count, || Vec::new());
+        entries.resize_with(1 << head_bit_count, Vec::new);
         Self {
             head_bit_count,
             entries,
         }
     }
 
-    pub fn try_from_basic_decoder(head_bit_count: u8, version: ArmVersion) -> Result<Self, ()> {
+    pub fn try_from_basic_decoder(
+        head_bit_count: u8,
+        version: ArmVersion,
+    ) -> Result<Self, GroupingError> {
         let mut result = Self::new(head_bit_count);
         let basic_decoder = BasicInstructionDecoder::new(version);
         for entry in basic_decoder.entries {
@@ -551,18 +554,23 @@ impl GroupedInstructionDecoder {
         Ok(result)
     }
 
+    /// Inserts an instruction decoding function given its corresponding pattern and encoding.
+    /// A group is determined from `pattern` and `f` is stored into that group for further fast
+    /// lookup.
+    ///
+    /// If the group the instruction belong to cannot be determined, a [GroupingError] is returned.
     pub fn try_insert(
         &mut self,
         pattern: &InstructionPattern,
         encoding: Encoding,
         f: InstructionDecodingFunction,
-    ) -> Result<(), ()> {
+    ) -> Result<(), GroupingError> {
         let mut group = 0;
         for pattern_bit in pattern.bits[0..self.head_bit_count as usize].iter() {
             let bit = match pattern_bit {
                 InstructionPatternBit::OpcodeZero => 0,
                 InstructionPatternBit::OpcodeOne => 1,
-                _ => return Err(()),
+                _ => return Err(GroupingError {}),
             };
             group = (group << 1) | bit;
         }
@@ -570,7 +578,10 @@ impl GroupedInstructionDecoder {
         Ok(())
     }
 
-    pub fn try_insert_from_decoder_entry(&mut self, entry: &BasicDecoderEntry) -> Result<(), ()> {
+    pub fn try_insert_from_decoder_entry(
+        &mut self,
+        entry: &BasicDecoderEntry,
+    ) -> Result<(), GroupingError> {
         for (tn, pattern) in entry.patterns.iter() {
             self.try_insert(pattern, *tn, entry.decoder)?
         }
@@ -596,6 +607,12 @@ impl InstructionDecode for GroupedInstructionDecoder {
         Err(InstructionDecodeError::Unknown)
     }
 }
+
+/// This error is returned when an instruction cannot be classified in a group when building a
+/// [GroupedInstructionDecoder]. This means a particular bit in an instruction
+/// pattern is not fixed to 1 or 0 and thus the group the instruction belong to cannot be decided.
+#[derive(Debug)]
+pub struct GroupingError {}
 
 /// A decoder mixing a [Lut16InstructionDecoder] for 16 bit encodings, and a
 /// [GroupedInstructionDecoder] for 32 bit encodings. This is the fastest decoder provided by

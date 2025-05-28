@@ -49,9 +49,9 @@ impl Instruction for Sadd8 {
         proc.set(
             self.rd,
             ((sum1 as u8) as u32)
-                | ((sum2 as u8) as u32) << 8
-                | ((sum3 as u8) as u32) << 16
-                | ((sum4 as u8) as u32) << 24,
+                | (((sum2 as u8) as u32) << 8)
+                | (((sum3 as u8) as u32) << 16)
+                | (((sum4 as u8) as u32) << 24),
         );
         let ge0 = (sum1 >= 0) as u8;
         let ge1 = (sum2 >= 0) as u8;

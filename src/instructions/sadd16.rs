@@ -49,7 +49,7 @@ impl Instruction for Sadd16 {
         let sum2 = ((rn >> 16) as i16 as i32).wrapping_add((rm >> 16) as i16 as i32);
         proc.set(
             self.rd,
-            ((sum1 as u16) as u32) | ((sum2 as u16) as u32) << 16,
+            ((sum1 as u16) as u32) | (((sum2 as u16) as u32) << 16),
         );
         let ge10 = if sum1 >= 0 { 0b0011 } else { 0 };
         let ge32 = if sum2 >= 0 { 0b1100 } else { 0 };

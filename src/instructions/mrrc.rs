@@ -53,7 +53,7 @@ impl Instruction for Mrrc {
         ]
     }
 
-    fn try_decode(encoding: Encoding, ins: u32, state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert!((encoding == T1) || (encoding == T2));
         let rt = ins.reg4(12);
         let rt2 = ins.reg4(16);
