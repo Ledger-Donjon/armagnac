@@ -38,7 +38,7 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 ### Unimplemented instructions for ArmV7-M
 
-Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. In particular, there is no support for coprocessor operations. Unimplemented instructions will raise an error during execution.
+Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. Unimplemented instructions will raise an error during execution.
 
 - CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
@@ -52,7 +52,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
 - SSBB: Speculative Store Bypass Barrier
-- STC, STC2: Store Coprocessor
 - STRBT: Store Register Byte Unprivileged
 - STREX: Store Register Exclusive
 - STREXB: Store Register Exclusive Byte
@@ -152,7 +151,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - SG: Secure Gateway
 - SSAT16: Signed Saturate 16
 - SSBB: Speculative Store Bypass Barrier
-- STC, STC2: Store Coprocessor
 - STL: Store-Release Word
 - STLB: Store-Release Byte
 - STLEX: Store-Release Exclusive Word

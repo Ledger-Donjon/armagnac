@@ -93,6 +93,7 @@ pub mod sev;
 pub mod smlal;
 pub mod smull;
 pub mod ssat;
+pub mod stc;
 pub mod stm;
 pub mod stmdb;
 pub mod str;

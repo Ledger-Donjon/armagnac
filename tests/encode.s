@@ -1268,6 +1268,24 @@ ssat    r14, #5, r10
 ssat    r5, #7, r8
 ssat    r2, #20, r7
 
+// STC
+// T1
+stc     p0, c2, [r0]
+stc     p3, c15, [r7, #4]
+stcl    p1, c8, [r13, #-128]
+stc     p15, c0, [r5, #-1020]!
+stcl    p3, c12, [r1], #16
+stc     p7, c0, [r12], {85}
+stcl    p1, c0, [r1], {255}
+// T2
+stc2    p0, c2, [r0]
+stc2    p3, c15, [r7, #4]
+stc2l   p1, c8, [r13, #-128]
+stc2    p15, c0, [r5, #-1020]!
+stc2l   p3, c12, [r1], #16
+stc2    p7, c0, [r12], {85}
+stc2l   p1, c0, [r1], {255}
+
 // STM
 // T1
 stm.n   r0!, {r0}

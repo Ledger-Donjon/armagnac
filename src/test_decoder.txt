@@ -777,6 +777,20 @@ c3fb0654 smlal    r5, r4, r3, r6
 0af3040e ssat     lr, #5, r10
 08f30605 ssat     r5, #7, r8
 07f31302 ssat     r2, #20, r7
+80ed0020 stc      p0, c2, [r0]
+87ed01f3 stc      p3, c15, [r7, #4]
+4ded2081 stcl     p1, c8, [sp, #-128]
+25edff0f stc      p15, c0, [r5, #-1020]!
+e1ec04c3 stcl     p3, c12, [r1], #16
+8cec5507 stc      p7, c0, [r12], {85}
+c1ecff01 stcl     p1, c0, [r1], {255}
+80fd0020 stc2     p0, c2, [r0]
+87fd01f3 stc2     p3, c15, [r7, #4]
+4dfd2081 stc2l    p1, c8, [sp, #-128]
+25fdff0f stc2     p15, c0, [r5, #-1020]!
+e1fc04c3 stc2l    p3, c12, [r1], #16
+8cfc5507 stc2     p7, c0, [r12], {85}
+c1fcff01 stc2l    p1, c0, [r1], {255}
 01c0     stm      r0!, {r0}
 9ac1     stm      r1!, {r1, r3, r4, r7}
 24c3     stm      r3!, {r2, r5}
