@@ -105,6 +105,9 @@ impl Instruction for LdcImm {
             if coprocessor.borrow().done_loading(self.ins) {
                 return Ok(Effect::None);
             }
+            if self.wback {
+                proc.set(self.rn, offset_addr);
+            }
         }
     }
 
@@ -312,6 +315,8 @@ mod tests {
         )
         .unwrap();
         proc.set(rn, 0x1000 - 100);
+        let mut expected = proc.registers.clone();
+        expected.set(rn, 0x1000);
         LdcImm {
             coproc: cp,
             crd: 0,
@@ -319,13 +324,14 @@ mod tests {
             d: false,
             index: true,
             add: true,
-            wback: false,
+            wback: true,
             imm32: 100,
             encoding: DontCare,
             ins: 0xaabbccdd,
         }
         .execute(&mut proc)
         .unwrap();
+        assert_eq!(proc.registers, expected);
         assert_eq!(
             &coprocessor.borrow().data,
             &[0x03020100, 0x07060504, 0x0b0a0908, 0x0f0e0d0c]
