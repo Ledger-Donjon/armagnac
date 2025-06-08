@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::{Effect, RunError};
+use crate::core::{ArmProcessor, Effect, RunError};
 use crate::instructions::DecodeHelper;
 
 /// DMB instruction.
@@ -31,7 +31,7 @@ impl Instruction for Dmb {
     fn try_decode(
         encoding: Encoding,
         ins: u32,
-        _state: crate::it_state::ItState,
+        _state: crate::core::ItState,
     ) -> Result<Self, crate::decoder::DecodeError> {
         debug_assert_eq!(encoding, T1);
         Ok(Self {
@@ -39,7 +39,7 @@ impl Instruction for Dmb {
         })
     }
 
-    fn execute(&self, _proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         Ok(Effect::None)
     }
 
@@ -61,7 +61,7 @@ impl Instruction for Dmb {
 mod tests {
     use super::Dmb;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::Instruction,
     };
 

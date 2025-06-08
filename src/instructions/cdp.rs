@@ -5,14 +5,14 @@ use super::{
     Instruction, Pattern,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
     decoder::DecodeError,
     instructions::DecodeHelper,
-    it_state::ItState,
 };
 
 /// CDP or CDP2 instruction.

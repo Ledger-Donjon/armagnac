@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

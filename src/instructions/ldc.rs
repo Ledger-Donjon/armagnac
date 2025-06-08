@@ -7,7 +7,8 @@ use super::{
 };
 use crate::{
     align::Align,
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
@@ -15,7 +16,6 @@ use crate::{
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{indexing_args, unpredictable},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use core::panic;
@@ -245,8 +245,7 @@ impl Instruction for LdcLit {
 mod tests {
     use super::{LdcImm, LdcLit};
     use crate::{
-        arm::{ArmProcessor, Config},
-        coprocessor::Coprocessor,
+        core::{ArmProcessor, Config, Coprocessor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

@@ -7,16 +7,15 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::instructions::indexing_args;
 use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use core::panic;

@@ -5,14 +5,14 @@ use super::{
     Instruction, Pattern,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -75,7 +75,7 @@ impl Instruction for Smlal {
 mod tests {
     use super::Smlal;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };

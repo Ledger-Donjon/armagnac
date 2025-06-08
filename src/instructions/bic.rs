@@ -6,15 +6,14 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -147,7 +146,7 @@ impl Instruction for BicReg {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] & !shifted;

@@ -1,8 +1,6 @@
 //! Defines ARM processor core registers.
 
-use crate::{
-    condition::Condition, helpers::BitAccess, instructions::DecodeHelper, it_state::ItState,
-};
+use crate::{core::Condition, core::ItState, helpers::BitAccess, instructions::DecodeHelper};
 use core::panic;
 use std::{
     fmt::{self, Debug, Display},
@@ -728,7 +726,7 @@ pub enum Mode {
 /// Registers can be accessed directly, e.g.:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, Config};
+/// # use armagnac::core::{ArmProcessor, Config};
 /// let mut proc = ArmProcessor::new(Config::v7m());
 /// proc.registers.r0 = 0x1234;
 /// ```
@@ -736,7 +734,7 @@ pub enum Mode {
 /// Or using indexing (read-only):
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, Config};
+/// # use armagnac::core::{ArmProcessor, Config};
 /// # use armagnac::registers::RegisterIndex;
 /// # let proc = ArmProcessor::new(Config::v7m());
 /// let index = RegisterIndex::R0;
@@ -751,7 +749,7 @@ pub enum Mode {
 /// [CoreRegisters::set]:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, Config};
+/// # use armagnac::core::{ArmProcessor, Config};
 /// # use armagnac::registers::RegisterIndex;
 /// # let mut proc = ArmProcessor::new(Config::v7m());
 /// let index = RegisterIndex::R0;
@@ -764,7 +762,7 @@ pub enum Mode {
 /// of the program status register (or flags registers):
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, Config};
+/// # use armagnac::core::{ArmProcessor, Config};
 /// # let mut proc = ArmProcessor::new(Config::v7m());
 /// if proc.registers.psr.c() {
 ///     println!("Carry flag is set!")

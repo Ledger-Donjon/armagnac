@@ -1,4 +1,6 @@
-use crate::arm::{ArmProcessor, Config, Emulator};
+//! Helpers for running methods from an ELF file.
+
+use crate::core::{ArmProcessor, Config, Emulator};
 use object::{File, Object, ObjectSection, ObjectSymbol};
 use std::collections::BTreeMap;
 

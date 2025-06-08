@@ -3,14 +3,13 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{rdn_args_string, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

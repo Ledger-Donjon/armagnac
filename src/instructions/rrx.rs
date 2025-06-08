@@ -5,14 +5,13 @@ use super::{
     ArmVersion::{V7EM, V7M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
     arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -77,7 +76,7 @@ impl Instruction for Rrx {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{rrx::Rrx, Instruction},
         registers::RegisterIndex,
     };

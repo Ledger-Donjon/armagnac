@@ -12,9 +12,9 @@
 
 use crate::{
     arith::ArithError,
-    arm::ArmVersion,
+    core::ArmVersion,
+    core::ItState,
     instructions::{self, Encoding, Instruction, InstructionSize},
-    it_state::ItState,
 };
 use std::{fmt::Display, rc::Rc};
 
@@ -666,10 +666,10 @@ mod tests {
         BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
     };
     use crate::{
-        arm::{ArmProcessor, ArmVersion::V7EM, Config},
+        core::ItState,
+        core::{ArmProcessor, ArmVersion::V7EM, Config},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
-        it_state::ItState,
     };
     use rand::Rng;
     use std::{
@@ -712,7 +712,15 @@ mod tests {
 
             let mut state = proc.registers.psr.it_state();
             let cond = state.current_condition();
-            let ins = decoder.try_decode(ins, size, state).unwrap();
+            let Ok(ins) = decoder.try_decode(ins, size, state) else {
+                println!(
+                    "Failed to decode instruction 0x{:08x} (size {})",
+                    ins,
+                    size.byte_count()
+                );
+                println!("  Mnemonic: {mnemonic}");
+                panic!();
+            };
             let got_mnemonic = ins.mnemonic(pc, cond);
             if got_mnemonic != mnemonic {
                 println!("Mnemonic generation failed:");

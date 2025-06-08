@@ -6,15 +6,14 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -181,7 +180,7 @@ impl Instruction for RorReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{
             ror::{RorImm, RorReg},
             Encoding::DontCare,

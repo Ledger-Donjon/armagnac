@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

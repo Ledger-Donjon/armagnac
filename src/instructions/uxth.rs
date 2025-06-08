@@ -7,13 +7,12 @@ use super::{
     Pattern,
 };
 use crate::arith::Shift;
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -95,7 +94,7 @@ impl Instruction for Uxth {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{uxth::Uxth, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

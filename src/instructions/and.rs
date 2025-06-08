@@ -3,15 +3,14 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::arm::Effect;
 use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{ArmProcessor, RunError},
+    core::{ArmProcessor, RunError},
+    core::{Effect, ItState},
     decoder::DecodeError,
     helpers::BitAccess,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -183,7 +182,7 @@ impl Instruction for AndReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{
             and::{AndImm, AndReg},
             Encoding::DontCare,

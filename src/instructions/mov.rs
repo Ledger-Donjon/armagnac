@@ -7,11 +7,10 @@ use super::{
     Pattern,
 };
 use crate::arith::{shift_c, Shift, ShiftType};
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::thumb_expand_imm_optc,
-    arm::{ArmProcessor, RunError},
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::ItState,

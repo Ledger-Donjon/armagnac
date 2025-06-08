@@ -5,12 +5,10 @@
 
 use crate::{
     align::Align,
-    condition::Condition,
-    coprocessor::Coprocessor,
+    core::{Condition, Coprocessor, Irq},
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
-    irq::Irq,
     memory::{Env, MemoryAccessError, MemoryInterface, MemoryOpAction, RamMemory},
     mpu::{v7m::MpuV7M, v8m::MemoryProtectionUnitV8M},
     registers::{CoreRegisters, Mode, RegisterIndex},
@@ -160,7 +158,7 @@ pub enum ArmVersion {
 /// The following example will execute a tiny assembly program:
 ///
 /// ```
-/// # use armagnac::arm::{ArmProcessor, Config,  RunOptions, Emulator};
+/// # use armagnac::core::{ArmProcessor, Config,  RunOptions, Emulator};
 /// let mut proc = ArmProcessor::new(Config::v7m());
 ///
 /// // Load a tiny assembly program at address 0x1000.
@@ -181,7 +179,7 @@ pub enum ArmVersion {
 /// initialization time:
 ///
 /// ```
-/// use armagnac::arm::{ArmProcessor, Config, ArmVersion};
+/// use armagnac::core::{ArmProcessor, Config, ArmVersion};
 /// use armagnac::decoder::{Lut16AndGrouped32InstructionDecoder};
 ///
 /// let mut proc = ArmProcessor::new(Config::v7m());
@@ -245,7 +243,7 @@ impl ArmProcessor {
     /// If the Arm architecture version is not defined in the configuration, this method panics.
     ///
     /// ```
-    /// # use armagnac::arm::{ArmProcessor, Config};
+    /// # use armagnac::core::{ArmProcessor, Config};
     /// let processor = ArmProcessor::new(Config::v7m());
     /// ```
     pub fn new(config: Config) -> Self {

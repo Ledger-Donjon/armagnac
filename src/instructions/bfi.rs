@@ -6,12 +6,11 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -80,7 +79,7 @@ impl Instruction for Bfi {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config, RunError},
+        core::{ArmProcessor, Config, RunError},
         instructions::{bfi::Bfi, Instruction},
         registers::RegisterIndex,
     };

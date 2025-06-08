@@ -5,13 +5,13 @@ use super::{
     Instruction, Pattern,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
         Effect, RunError,
     },
     decoder::DecodeError,
-    it_state::ItState,
     qualifier_wide_match,
 };
 

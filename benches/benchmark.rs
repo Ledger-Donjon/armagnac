@@ -1,5 +1,5 @@
 use armagnac::{
-    arm::ArmVersion::V7M, decoder::Lut16AndGrouped32InstructionDecoder, harness::ElfHarness,
+    core::ArmVersion::V7M, decoder::Lut16AndGrouped32InstructionDecoder, harness::ElfHarness,
 };
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Duration;

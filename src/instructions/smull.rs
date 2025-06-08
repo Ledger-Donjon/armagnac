@@ -4,16 +4,16 @@ use super::{
     Encoding::{self, T1},
     Instruction, Pattern,
 };
-use crate::{arm::Effect, registers::RegisterIndex};
+use crate::{core::Effect, registers::RegisterIndex};
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
 };
 
 /// SMULL instruction.
@@ -72,7 +72,7 @@ impl Instruction for Smull {
 mod tests {
     use super::Smull;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };

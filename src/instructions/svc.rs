@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::Irq,
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
-    irq::Irq,
-    it_state::ItState,
 };
 
 /// Supervisor Call instruction.

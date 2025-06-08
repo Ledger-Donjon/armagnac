@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
     arith::sign_extend,
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
-    it_state::ItState,
 };
 
 /// BL instruction.

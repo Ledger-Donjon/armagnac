@@ -1,21 +1,23 @@
-//! Armagnac is an experimental ARMv7-M processor emulator designed for embedded systems emulation.
-//! It is slow, incomplete and unoptimized. However, it is fully written in Rust!
+//! Armagnac is a simple ARM Thumb emulation library written in Rust which can be used to emulate
+//! simple embedded systems. The library gives high control on the processor execution, allowing to
+//! run instruction by instruction, create hooks, inspect or modify the system state on the fly.
+//! Integration of custom peripherals in the memory space is made easy, allowing custom platforms
+//! emulation.
 //!
-//! Check [arm::ArmProcessor] to know how to quickly emulate an ARM binary.
+//! Check [core::ArmProcessor] to know how to quickly emulate an ARM binary.
+//!
+//! Check [memory] to see how peripherals can be implemented and mapped into the processor memory
+//! space.
 
 mod align;
 mod arith;
-pub mod arm;
-pub mod condition;
-pub mod coprocessor;
+pub mod core;
 pub mod decoder;
 pub mod harness;
 pub mod helpers;
 pub mod instructions;
-pub mod irq;
-mod it_state;
 pub mod memory;
 pub mod mpu;
 pub mod registers;
 pub mod symbols;
-mod system_control;
+pub mod system_control;

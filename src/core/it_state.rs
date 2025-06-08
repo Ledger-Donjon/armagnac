@@ -1,19 +1,13 @@
-use crate::condition::Condition;
-
-#[derive(Clone, Copy)]
-pub struct ItState(pub u8);
-
-#[derive(Clone, Copy, Eq, PartialEq, Debug)]
-pub enum ItThenElse {
-    Then,
-    Else,
-}
+use crate::core::Condition;
 
 /// ARMv7-M processor IT block state.
 ///
 /// The state is stored in the same encoding as specified in the Architecture Reference Manual.
 /// Note that the processor IT state is stored accross bits in the EPSR register, so this struct
 /// makes manipulation of the IT state easier.
+#[derive(Clone, Copy)]
+pub struct ItState(pub u8);
+
 impl ItState {
     pub fn new() -> Self {
         Self(0)
@@ -89,11 +83,18 @@ impl Default for ItState {
     }
 }
 
+/// Either 'Then' or 'Else' flow sequenced by IT blocks.
+#[derive(Clone, Copy, Eq, PartialEq, Debug)]
+pub enum ItThenElse {
+    Then,
+    Else,
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        condition::Condition,
-        it_state::{ItState, ItThenElse},
+        core::Condition,
+        core::{ItState, ItThenElse},
     };
 
     #[test]

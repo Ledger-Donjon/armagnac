@@ -1,8 +1,64 @@
 //! Memory peripherals and interfacing.
+//!
+//! For a given target device, it is possible to implement a particular peripheral that may be
+//! required for emulation. This is done by implementing the [MemoryInterface] trait. For
+//! instance, the following snippet defines the implementation of a Random Number Generator, with
+//! one register at offet 0 which can be read get a 32-bit random number:
+//!
+//! ```
+//! use armagnac::memory::{MemoryInterface, Env, MemoryReadResult};
+//!
+//! struct RngPeripheral {}
+//!
+//! impl MemoryInterface for RngPeripheral {
+//!     fn read_u32le(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u32> {
+//!         return Ok(4); // chosen by fair dice roll.
+//!     }
+//!
+//!     fn size(&self) -> u32 {
+//!         // There is only one 4 bytes register.
+//!         return 4;
+//!     }
+//! }
+//! ```
+//!
+//! This peripheral can then be mapped during processor creating, at the address 0x4000_0000.
+//! A small binary accessing this peripheral is then executed:
+//!
+//! ```
+//! use std::cell::RefCell;
+//! use std::rc::Rc;
+//! use armagnac::core::{ArmProcessor, Config, RunOptions, Emulator};
+//! # use armagnac::memory::{MemoryInterface, Env, MemoryReadResult};
+//!
+//! fn main() {
+//!     let mut proc = ArmProcessor::new(Config::v7m());
+//!     // Create RNG peripheral and map it at address 0x40000000
+//!     let rng = Rc::new(RefCell::new(RngPeripheral {}));
+//!     proc.map_iface(0x40000000, rng).unwrap();
+//!     // movs r3, #128 ; 0x80
+//!     // lsls r3, r3, #23
+//!     // movs r0, #0
+//!     // ldr r3, [r3, #0]
+//!     proc.map(0x1000, &[0x80, 0x23, 0xdb, 0x05, 0x00, 0x20, 0x1b, 0x68]);
+//!     proc.set_pc(0x1000);
+//!     // Run and limit execution to 3 instructions
+//!     proc.run(RunOptions::new().gas(4)).unwrap();
+//!     assert_eq!(proc.registers.r3, 4);
+//! }
+//! # struct RngPeripheral {}
+//! # impl MemoryInterface for RngPeripheral {
+//! #     fn read_u32le(&mut self, _address: u32, _env: &mut Env) -> MemoryReadResult<u32> {
+//! #         return Ok(4); // chosen by fair dice roll.
+//! #     }
+//! #     fn size(&self) -> u32 {
+//! #         return 4;
+//! #     }
+//! # }
+//! ```
 
+use crate::core::Irq;
 use std::iter::repeat_n;
-
-use crate::irq::Irq;
 
 /// Possible actions a `MemoryInterface` can request to the processor.
 pub enum MemoryOpAction {

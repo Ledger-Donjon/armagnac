@@ -1,14 +1,10 @@
-use std::{cell::RefCell, rc::Rc};
-
 use armagnac::{
-    arm::{
-        ArmProcessor, Emulator,
-        Event::{self},
-    },
+    core::Irq::SysTick,
+    core::{Emulator, Event},
     harness::{ElfHarness, ADDR_RAM, STACK_SIZE},
-    irq::Irq::SysTick,
     memory::{Env, MemoryInterface},
 };
+use std::{cell::RefCell, rc::Rc};
 
 /// This test runs a call to memcpy to copy a string to a buffer.
 #[test]

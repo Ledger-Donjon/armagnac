@@ -2,16 +2,15 @@
 
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
-use crate::arm::Effect;
 use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
-        RunError,
+        Effect, RunError,
     },
     instructions::{other, unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -88,7 +87,7 @@ mod tests {
     use super::Usat;
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };

@@ -6,10 +6,10 @@
 //! Register variant.
 
 use crate::{
-    arm::{ArmProcessor, ArmVersion, Effect, RunError},
-    condition::Condition,
+    core::Condition,
+    core::ItState,
+    core::{ArmProcessor, ArmVersion, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use std::rc::Rc;

@@ -1,6 +1,6 @@
 use crate::{
+    core::Irq,
     helpers::{BitAccess, MaskedRegister},
-    irq::Irq,
     memory::{
         Env, MemoryAccessError, MemoryOpAction, MemoryReadResult, MemoryWriteResult,
         RegistersMemoryInterface,

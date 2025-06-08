@@ -5,7 +5,8 @@ use super::{
     Instruction, Pattern,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
@@ -13,7 +14,6 @@ use crate::{
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

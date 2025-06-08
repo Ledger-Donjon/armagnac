@@ -6,12 +6,11 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -90,7 +89,7 @@ impl Instruction for Revsh {
 mod tests {
     use super::Revsh;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

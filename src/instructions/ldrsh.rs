@@ -6,16 +6,15 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     align::Align,
     arith::{shift_c, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::indexing_args,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -280,7 +279,7 @@ mod tests {
     use super::{LdrshImm, LdrshLit, LdrshReg};
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

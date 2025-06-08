@@ -7,13 +7,12 @@ use super::{
     Pattern,
 };
 use crate::arith::Shift;
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 

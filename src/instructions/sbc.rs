@@ -6,14 +6,13 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
-use crate::arm::Effect;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use crate::{instructions::rdn_args_string, qualifier_wide_match};
@@ -189,7 +188,7 @@ impl Instruction for SbcReg {
 mod tests {
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{
             sbc::{SbcImm, SbcReg},
             Encoding::DontCare,

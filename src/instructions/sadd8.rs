@@ -3,10 +3,10 @@
 use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
-use crate::arm::{ArmProcessor, Effect, RunError};
+use crate::core::ItState;
+use crate::core::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::instructions::{unpredictable, DecodeHelper};
-use crate::it_state::ItState;
 use crate::registers::RegisterIndex;
 
 /// SADD8 instruction.
@@ -75,7 +75,7 @@ impl Instruction for Sadd8 {
 #[cfg(test)]
 mod tests {
     use super::Sadd8;
-    use crate::arm::{ArmProcessor, Config};
+    use crate::core::{ArmProcessor, Config};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 

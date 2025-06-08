@@ -6,11 +6,11 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::{ArmProcessor, Effect, RunError};
+use crate::core::ItState;
+use crate::core::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::helpers::BitAccess;
 use crate::instructions::{indexing_args, unpredictable, DecodeHelper};
-use crate::it_state::ItState;
 use crate::registers::RegisterIndex;
 
 /// STRD (immediate) instruction.

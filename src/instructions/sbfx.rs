@@ -6,13 +6,12 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
     arith::sign_extend,
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -82,7 +81,7 @@ impl Instruction for Sbfx {
 mod tests {
     use super::Sbfx;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };

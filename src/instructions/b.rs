@@ -3,11 +3,11 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
-use crate::arm::{Effect, RunError};
+use crate::core::{Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{
-    arith::sign_extend, arm::ArmProcessor, condition::Condition, decoder::DecodeError,
-    instructions::other, it_state::ItState,
+    arith::sign_extend, core::ArmProcessor, core::Condition, core::ItState, decoder::DecodeError,
+    instructions::other,
 };
 
 /// B instruction.

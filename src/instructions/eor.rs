@@ -6,14 +6,13 @@ use super::{
     Pattern,
 };
 use super::{Instruction, Qualifier};
-use crate::arm::Effect;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
-    it_state::ItState,
     qualifier_wide_match,
     registers::RegisterIndex,
 };

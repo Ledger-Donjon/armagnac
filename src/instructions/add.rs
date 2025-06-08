@@ -3,15 +3,15 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::arm::Effect;
+use crate::core::{ArmProcessor, Effect};
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::RunError,
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use core::panic;
@@ -236,7 +236,7 @@ impl Instruction for AddReg {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc[self.rn], shifted, false);
@@ -356,7 +356,7 @@ impl Instruction for AddSpPlusImm {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
         proc.set(self.rd, result);
         if self.set_flags {
@@ -514,7 +514,7 @@ mod tests {
     use super::AddImm;
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Encoding::DontCare,

@@ -3,12 +3,11 @@
 use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -69,7 +68,7 @@ impl Instruction for Sadd16 {
 #[cfg(test)]
 mod tests {
     use super::Sadd16;
-    use crate::arm::{ArmProcessor, Config};
+    use crate::core::{ArmProcessor, Config};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 

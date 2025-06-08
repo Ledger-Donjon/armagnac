@@ -6,7 +6,8 @@ use super::{
     Instruction, Pattern,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
@@ -14,7 +15,6 @@ use crate::{
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{indexing_args, unpredictable},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 use core::panic;
@@ -136,8 +136,8 @@ impl Instruction for Stc {
 pub mod tests {
     use super::Stc;
     use crate::{
-        arm::{ArmProcessor, Config},
-        coprocessor::Coprocessor,
+        core::Coprocessor,
+        core::{ArmProcessor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

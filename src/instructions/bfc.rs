@@ -6,11 +6,11 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::{Effect, RunError};
+use crate::core::{ArmProcessor, Effect, RunError};
 use crate::{
+    core::ItState,
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -48,7 +48,7 @@ impl Instruction for Bfc {
         })
     }
 
-    fn execute(&self, proc: &mut crate::arm::ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = !((0xffffffffu32 >> (32 - width)) << self.lsb);
@@ -74,7 +74,7 @@ impl Instruction for Bfc {
 mod tests {
     use super::Bfc;
     use crate::{
-        arm::{ArmProcessor, Config, RunError},
+        core::{ArmProcessor, Config, RunError},
         instructions::Instruction,
         registers::RegisterIndex,
     };

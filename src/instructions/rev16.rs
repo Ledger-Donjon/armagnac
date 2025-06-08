@@ -6,12 +6,11 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::qualifier_wide_match;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -87,7 +86,7 @@ impl Instruction for Rev16 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{rev16::Rev16, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

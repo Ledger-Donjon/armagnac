@@ -6,12 +6,11 @@ use super::{
     ArmVersion::{V7EM, V8M},
     Pattern,
 };
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -72,7 +71,7 @@ impl Instruction for Qadd8 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{qadd8::Qadd8, Instruction},
         registers::RegisterIndex,
     };

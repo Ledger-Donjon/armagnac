@@ -6,6 +6,11 @@
 /// interrupts for instance), those are defined as [Irq::External] interrupts.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Irq {
+    Reset,
+    Nmi,
+    HardFault,
+    MemManage,
+    BusFault,
     UsageFault,
     SVCall,
     DebugMonitor,
@@ -20,6 +25,11 @@ impl Irq {
     /// Returns corresponding exception number.
     pub fn number(&self) -> u16 {
         match self {
+            Irq::Reset => 1,
+            Irq::Nmi => 2,
+            Irq::HardFault => 3,
+            Irq::MemManage => 4,
+            Irq::BusFault => 5,
             Irq::UsageFault => 6,
             Irq::SVCall => 11,
             Irq::DebugMonitor => 12,

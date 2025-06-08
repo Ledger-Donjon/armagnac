@@ -3,16 +3,16 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{Instruction, Pattern, Qualifier};
-use crate::arm::Effect;
+use crate::core::Effect;
 use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
-    arm::{ArmProcessor, RunError},
+    core::ItState,
+    core::{ArmProcessor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
-    it_state::ItState,
     registers::RegisterIndex,
 };
 
@@ -184,7 +184,7 @@ mod tests {
     use super::AdcImm;
     use crate::{
         arith::Shift,
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{adc::AdcReg, Encoding, Instruction},
         registers::RegisterIndex,
     };

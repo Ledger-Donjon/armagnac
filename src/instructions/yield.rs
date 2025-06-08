@@ -5,13 +5,13 @@ use super::{
     Instruction, Pattern, Qualifier,
 };
 use crate::{
-    arm::{
+    core::ItState,
+    core::{
         ArmProcessor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
         Effect, RunError,
     },
     decoder::DecodeError,
-    it_state::ItState,
     qualifier_wide_match,
 };
 
@@ -65,7 +65,7 @@ impl Instruction for Yield {
 mod tests {
     use super::Yield;
     use crate::{
-        arm::{ArmProcessor, Config},
+        core::{ArmProcessor, Config},
         instructions::{Encoding::DontCare, Instruction},
     };
 

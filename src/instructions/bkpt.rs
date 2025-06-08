@@ -5,13 +5,12 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Instruction, Pattern,
 };
-use crate::arm::Effect;
 use crate::{
-    arm::{ArmProcessor, RunError},
-    condition::Condition,
+    core::Condition,
+    core::ItState,
+    core::{ArmProcessor, Effect, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
-    it_state::ItState,
 };
 
 /// BKPT instruction.
@@ -62,7 +61,7 @@ impl Instruction for Bkpt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        arm::{ArmProcessor, Config, Effect},
+        core::{ArmProcessor, Config, Effect},
         instructions::{bkpt::Bkpt, Instruction},
     };
 

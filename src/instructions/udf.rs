@@ -3,9 +3,9 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{DecodeHelper, Instruction, Pattern};
-use crate::arm::{ArmProcessor, Effect, RunError};
+use crate::core::ItState;
+use crate::core::{ArmProcessor, Effect, RunError};
 use crate::decoder::DecodeError;
-use crate::it_state::ItState;
 
 /// UDF (Undefined) instruction.
 pub struct Udf {
@@ -59,7 +59,7 @@ impl Instruction for Udf {
 mod tests {
     use super::Udf;
     use crate::{
-        arm::{ArmProcessor, Config, RunError},
+        core::{ArmProcessor, Config, RunError},
         instructions::Instruction,
     };
 
