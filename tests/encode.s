@@ -290,6 +290,10 @@ cdp2    p5, #15, c9, c6, c4, #0
 cdp2    p9, #7, c15, c2, c15, #2
 cdp2    p15, #11, c1, c0, c7, #7
 
+// CLREX
+// T1
+clrex
+
 // CLZ
 // T1
 clz     r0, r1

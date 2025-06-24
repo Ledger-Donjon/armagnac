@@ -142,6 +142,7 @@ a7fe6333 cdp2     p3, #10, c3, c7, c3, #3
 f6fe0495 cdp2     p5, #15, c9, c6, c4, #0
 72fe4ff9 cdp2     p9, #7, c15, c2, c15, #2
 b0fee71f cdp2     p15, #11, c1, c0, c7, #7
+bff32f8f clrex
 b1fa81f0 clz      r0, r1
 b2fa82f1 clz      r1, r2
 befa8efc clz      r12, lr
@@ -307,8 +308,6 @@ def8aaea ldr.w    lr, [lr, #2730]
 54f81f39 ldr      r3, [r4], #-31
 55f8ff4d ldr      r4, [r5, #-255]!
 5ef8ffff ldr      pc, [lr, #255]!
-00bf     nop
-00bf     nop
 00bf     nop
 0148     ldr      r0, [pc, #4]
 0149     ldr      r1, [pc, #4]

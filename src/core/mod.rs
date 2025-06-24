@@ -3,6 +3,7 @@
 mod arm;
 mod condition;
 mod coprocessor;
+mod exclusive_monitor;
 mod irq;
 mod it_state;
 
@@ -11,5 +12,6 @@ pub use arm::{
 };
 pub use condition::Condition;
 pub use coprocessor::Coprocessor;
+pub use exclusive_monitor::{LocalMonitor, MonitorState};
 pub use irq::Irq;
 pub use it_state::{ItState, ItThenElse};

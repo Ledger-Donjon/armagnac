@@ -5,7 +5,7 @@
 
 use crate::{
     align::Align,
-    core::{Condition, Coprocessor, Irq},
+    core::{exclusive_monitor::LocalMonitor, Condition, Coprocessor, Irq},
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
@@ -200,6 +200,8 @@ pub struct ArmProcessor {
     /// Indicates current execution state (running, waiting for event, ...)
     state: State,
     memory_mappings: MemoryMappings,
+    /// The local monitor tags a memory address for exclusive accesses.
+    pub local_monitor: LocalMonitor,
     /// Parses word or double-word values to decode them as executable ARM instructions.
     /// Since this is a performance critical task of the emulator, different implementation with
     /// different optimisation strategies, which may depend on the context, may be selected.
@@ -260,6 +262,7 @@ impl ArmProcessor {
             registers: CoreRegisters::new(),
             state: State::Running,
             memory_mappings: MemoryMappings::new(),
+            local_monitor: LocalMonitor::new(config.exclusives_reservation_granule),
             execution_priority: 0,
             exception_active: (0..exception_count).map(|_| false).collect(),
             instruction_decoder: Box::new(BasicInstructionDecoder::new(version)),
@@ -1267,6 +1270,8 @@ pub struct Config {
     version: ArmVersion,
     /// Number of platform specific exceptions.
     external_exceptions: usize,
+    /// Reservation granule for the local monitor dealing with exclusive accesses.
+    exclusives_reservation_granule: u32,
 }
 
 impl Config {
@@ -1274,6 +1279,7 @@ impl Config {
         Self {
             version: ArmVersion::V6M,
             external_exceptions: 0,
+            exclusives_reservation_granule: 2,
         }
     }
 
@@ -1301,6 +1307,14 @@ impl Config {
     /// Sets the number of platform specific exceptions.
     pub fn external_exceptions(mut self, count: usize) -> Self {
         self.external_exceptions = count;
+        self
+    }
+
+    /// Sets the Exclusive Reservation Granule.
+    ///
+    /// Value must be a power of two in [2, 512].
+    pub fn exclusives_reservation_granule(mut self, granule: u32) -> Self {
+        self.exclusives_reservation_granule = granule;
         self
     }
 }

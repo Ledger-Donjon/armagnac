@@ -35,12 +35,13 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 - There is basic support for exceptions, but priorities are not enforced yet.
 - Only Thumb mode is supported at the moment.
 - All exceptions are considered WFI wakeup events.
+- No global monitor is implemented, synchronization and semaphores accross multiple
+  processors cannot be emulated.
 
 ### Unimplemented instructions for ArmV7-M
 
 Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. Unimplemented instructions will raise an error during execution.
 
-- CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
 - LDREX: Load Register Exclusive
@@ -129,7 +130,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - ADD (immediate, to PC): Add to PC
 - ASRS: Arithmetic Shift Right, Setting flags
 - BXAUT: Branch Exchange after Authentication
-- CLREX: Clear Exclusive
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
 - LDA: Load-Acquire Word

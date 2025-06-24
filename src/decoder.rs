@@ -303,6 +303,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::bx::Bx>(version);
         dec.insert::<instructions::cbnz::Cbnz>(version);
         dec.insert::<instructions::cdp::Cdp>(version);
+        dec.insert::<instructions::clrex::Clrex>(version);
         dec.insert::<instructions::clz::Clz>(version);
         dec.insert::<instructions::cmn::CmnImm>(version);
         dec.insert::<instructions::cmn::CmnReg>(version);
