@@ -617,6 +617,14 @@ ldrd    r2, r3, label_ldrd_lit_a
 ldrd    r10, r14, label_ldrd_lit_b
 label_ldrd_lit_b:
 
+// LDREX
+// T1
+ldrex   r0, [r1]
+ldrex   r2, [r6, #680]
+ldrex   r9, [r4, #1020]
+ldrex   r7, [r10, #4]
+ldrex   r10, [r13]
+
 // LDRH (immediate)
 // T1
 ldrh.n   r0, [r1, #0]
