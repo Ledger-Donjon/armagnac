@@ -20,8 +20,8 @@ impl LocalMonitor {
             "Exclusives reservation granule must be a power of two."
         );
         assert!(
-            (granule >= 2) && (granule <= 512),
-            "Exclusive reservation granule must be in [2, 512]."
+            (granule >= 4) && (granule <= 512),
+            "Exclusive reservation granule must be in [4, 512]."
         );
         Self {
             state: MonitorState::OpenAccess,

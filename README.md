@@ -44,7 +44,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
-- LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword
 - LDRSBT: Load Register Signed Byte Unprivileged
 - LDRSHT: Load Register Signed Halfword Unprivileged
@@ -137,7 +136,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LDAEXB: Load-Acquire Exclusive Byte
 - LDAEXH: Load-Acquire Exclusive Halfword
 - LDAH: Load-Acquire Halfword
-- LDREXB: Load Register Exclusive Byte
 - LDREXH: Load Register Exclusive Halfword
 - LDRSBT: Load Register Signed Byte Unprivileged
 - LDRSHT: Load Register Signed Halfword Unprivileged

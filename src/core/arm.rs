@@ -5,7 +5,7 @@
 
 use crate::{
     align::Align,
-    core::{exclusive_monitor::LocalMonitor, Condition, Coprocessor, Irq},
+    core::{exclusive_monitor::LocalMonitor, Condition, Coprocessor, Irq, MonitorState},
     decoder::{BasicInstructionDecoder, InstructionDecode, InstructionDecodeError},
     helpers::BitAccess,
     instructions::{Instruction, InstructionSize},
@@ -1262,6 +1262,17 @@ impl ArmProcessor {
         self.request_interrupt(Irq::UsageFault);
         self.system_control.borrow_mut().cfsr.set_nocp(true);
     }
+
+    /// Tags a memory address for exclusive access. `size` can be in [1, 4].
+    ///
+    /// Corresponds to `SetExclusiveMonitors()` in Arm Architecture Reference Manual.
+    pub fn set_exclusive_monitors(&mut self, address: u32, size: u32) {
+        debug_assert!((size >= 1) && (size <= 4));
+        let granule = self.local_monitor.granule;
+        self.local_monitor.state = MonitorState::ExclusiveAccess {
+            address: address.align(granule as usize),
+        };
+    }
 }
 
 /// Configuration builder used to build instances of [`ArmProcessor`].
@@ -1279,7 +1290,7 @@ impl Config {
         Self {
             version: ArmVersion::V6M,
             external_exceptions: 0,
-            exclusives_reservation_granule: 2,
+            exclusives_reservation_granule: 4,
         }
     }
 

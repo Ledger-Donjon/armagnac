@@ -625,6 +625,14 @@ ldrex   r9, [r4, #1020]
 ldrex   r7, [r10, #4]
 ldrex   r10, [r13]
 
+// LDREXB
+// T1
+ldrexb  r0, [r0]
+ldrexb  r7, [r6]
+ldrexb  r12, [r7]
+ldrexb  r3, [r14]
+ldrexb  r2, [r1]
+
 // LDRH (immediate)
 // T1
 ldrh.n   r0, [r1, #0]
