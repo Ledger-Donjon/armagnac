@@ -10,7 +10,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     registers::{MainRegisterList, RegisterIndex},
@@ -90,7 +90,7 @@ impl Instruction for Ldm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         // The ordering of loads into the register must respect the ARM specification,
         // because memory operations may not be commutative if address targets a peripheral.
         let mut address = proc[self.rn];

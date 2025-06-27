@@ -10,7 +10,7 @@ use crate::arith::{shift_c, Shift, ShiftType};
 use crate::qualifier_wide_match;
 use crate::{
     arith::thumb_expand_imm_optc,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::ItState,
@@ -92,7 +92,7 @@ impl Instruction for MovImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         proc.set(self.rd, self.imm32);
         if self.set_flags {
             proc.registers.psr.set_nz(self.imm32).set_c_opt(self.carry);
@@ -191,7 +191,7 @@ impl Instruction for MovReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.rm];
         if self.rd.is_pc() {
             proc.alu_write_pc(result);
@@ -285,7 +285,7 @@ impl Instruction for MovRegShiftReg {
         }
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rs] & 0xff;
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(

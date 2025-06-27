@@ -9,7 +9,7 @@ use super::{Instruction, Qualifier};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     qualifier_wide_match,
@@ -45,7 +45,7 @@ impl Instruction for CmnImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.registers[self.rn], self.imm32, false);
         proc.registers
             .psr
@@ -124,7 +124,7 @@ impl Instruction for CmnReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, false);
@@ -155,7 +155,7 @@ mod tests {
 
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{cmn::CmnImm, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
@@ -164,14 +164,14 @@ mod tests {
 
     #[test]
     fn cmn_imm() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         cmm_imm_vec(&mut proc, -4, false, true, false);
         cmm_imm_vec(&mut proc, -5, true, true, false);
         cmm_imm_vec(&mut proc, -6, false, false, false);
         cmm_imm_vec(&mut proc, i32::MAX, false, false, true);
     }
 
-    fn cmm_imm_vec(proc: &mut ArmProcessor, inital_rn: i32, z: bool, c: bool, v: bool) {
+    fn cmm_imm_vec(proc: &mut Processor, inital_rn: i32, z: bool, c: bool, v: bool) {
         let rn = RegisterIndex::new_general_random();
         let ins = CmnImm { rn, imm32: 5 };
         proc.registers.psr.set(0);
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn cmn_reg() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         cmn_reg_vec(&mut proc, -4, 5, Shift::lsl(0), false, true, false);
         cmn_reg_vec(&mut proc, -5, 5, Shift::lsl(0), true, true, false);
         cmn_reg_vec(&mut proc, -6, 5, Shift::lsl(0), false, false, false);
@@ -198,7 +198,7 @@ mod tests {
     }
 
     fn cmn_reg_vec(
-        proc: &mut ArmProcessor,
+        proc: &mut Processor,
         r0: i32,
         r1: u32,
         shift: Shift,

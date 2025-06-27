@@ -9,7 +9,7 @@ use crate::{
     align::Align,
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -87,7 +87,7 @@ impl Instruction for LdcImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let Some(coprocessor) = proc.coproc_accepted(self.coproc, self.ins) else {
             proc.generate_coprocessor_exception();
             return Ok(Effect::None);
@@ -192,7 +192,7 @@ impl Instruction for LdcLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let Some(coprocessor) = proc.coproc_accepted(self.coproc, self.ins) else {
             proc.generate_coprocessor_exception();
             return Ok(Effect::None);
@@ -245,7 +245,7 @@ impl Instruction for LdcLit {
 mod tests {
     use super::{LdcImm, LdcLit};
     use crate::{
-        core::{ArmProcessor, Config, Coprocessor},
+        core::{Processor, Config, Coprocessor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
@@ -302,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_ldc_imm() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let mut rng = rand::rng();
         let cp: u8 = rng.random_range(0..16);
         let coprocessor = Rc::new(RefCell::new(TestCoproc { data: Vec::new() }));
@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_ldc_lit() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let mut rng = rand::rng();
         let cp: u8 = rng.random_range(0..16);
         let coprocessor = Rc::new(RefCell::new(TestCoproc { data: Vec::new() }));

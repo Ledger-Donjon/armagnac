@@ -8,7 +8,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, unpredictable, DecodeHelper, ItState},
@@ -72,7 +72,7 @@ impl Instruction for Stmdb {
         }
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         // SP and PC cannot be pushed.
         // Instruction decoder should prevent this to happen
         debug_assert!(!self.registers.has_sp() && !self.registers.has_pc());

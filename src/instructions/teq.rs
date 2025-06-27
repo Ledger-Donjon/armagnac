@@ -9,7 +9,7 @@ use super::{Instruction, Qualifier};
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -45,7 +45,7 @@ impl Instruction for TeqImm {
         Ok(Self { rn, imm32, carry })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.rn] ^ self.imm32;
         proc.registers.psr.set_nz(result).set_c_opt(self.carry);
         Ok(Effect::None)
@@ -97,7 +97,7 @@ impl Instruction for TeqReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] ^ shifted;
@@ -123,7 +123,7 @@ mod tests {
     use super::TeqImm;
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{teq::TeqReg, Instruction},
         registers::RegisterIndex,
     };
@@ -165,7 +165,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, 0x12345678);
             proc.registers.psr.set_c(v.initial_c);
@@ -214,7 +214,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, 0x12345678);
             proc.set(rm, v.initial_rm);

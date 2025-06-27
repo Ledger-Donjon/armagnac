@@ -10,7 +10,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::rdn_args_string,
@@ -60,7 +60,7 @@ impl Instruction for BicImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.rn] & !self.imm32;
         proc.set(self.rd, result);
         if self.set_flags {
@@ -146,7 +146,7 @@ impl Instruction for BicReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] & !shifted;

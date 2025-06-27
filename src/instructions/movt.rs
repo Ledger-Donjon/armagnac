@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -43,7 +43,7 @@ impl Instruction for Movt {
         Ok(Self { rd, imm16 })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rd = proc[self.rd];
         proc.set(self.rd, ((self.imm16 as u32) << 16) | rd & 0x0000ffff);
         Ok(Effect::None)
@@ -61,7 +61,7 @@ impl Instruction for Movt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{movt::Movt, Instruction},
         registers::RegisterIndex,
     };
@@ -74,7 +74,7 @@ mod tests {
             (RegisterIndex::R2, 0xffff, 0xffff4321),
         ];
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             proc.set(v.0, 0x87654321);
             let mut expected = proc.registers.clone();
             Movt {

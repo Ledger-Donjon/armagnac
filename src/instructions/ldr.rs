@@ -12,7 +12,7 @@ use crate::{
     align::Align,
     arith::{shift_c, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::AddOrSub,
@@ -123,7 +123,7 @@ impl Instruction for LdrImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let addr = if self.index { offset_addr } else { rn };
@@ -210,7 +210,7 @@ impl Instruction for LdrLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let addr = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u32_unaligned(addr)?;
@@ -313,7 +313,7 @@ impl Instruction for LdrReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(offset, self.add);

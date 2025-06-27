@@ -8,7 +8,7 @@ use super::{
 };
 use crate::qualifier_wide_match;
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::ItState,
 };
@@ -41,7 +41,7 @@ impl Instruction for Nop {
         Ok(Self { encoding })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::None)
     }
 

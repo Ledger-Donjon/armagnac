@@ -2,7 +2,7 @@
 ///
 /// Systems may include third-party coprocessors, which are accessible using a specific set of Arm
 /// instructions. It is possible to implement a coprossessor using this trait and attack it to one
-/// of the 16 available slots using [crate::core::ArmProcessor::set_coprocessor].
+/// of the 16 available slots using [crate::core::Processor::set_coprocessor].
 pub trait Coprocessor {
     /// Whether the coprocessor accepts the `ins` instruction.
     ///

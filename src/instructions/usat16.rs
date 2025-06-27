@@ -4,7 +4,7 @@ use crate::{
     arith::unsigned_sat_q,
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V8M},
         Effect, RunError,
     },
@@ -49,7 +49,7 @@ impl Instruction for Usat16 {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let (result1, sat1) = unsigned_sat_q(rn as i16 as i64, self.saturate_to);
         let (result2, sat2) = unsigned_sat_q((rn >> 16) as u16 as i16 as i64, self.saturate_to);
@@ -76,7 +76,7 @@ impl Instruction for Usat16 {
 mod tests {
     use super::Usat16;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -94,7 +94,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.0);

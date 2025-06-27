@@ -3,7 +3,7 @@
 use super::Encoding::T1;
 use crate::{
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, ItState, MonitorState, RunError,
     },
@@ -30,7 +30,7 @@ impl Instruction for Clrex {
         Ok(Self {})
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         proc.local_monitor.state = MonitorState::OpenAccess;
         Ok(Effect::None)
     }

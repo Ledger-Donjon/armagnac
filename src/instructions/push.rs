@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},
@@ -65,7 +65,7 @@ impl Instruction for Push {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         // PUSH is equivalent to STMDB if Rn is SP and wback is true.
         // We use the STMDB implementation.
         let stmdb = Stmdb {

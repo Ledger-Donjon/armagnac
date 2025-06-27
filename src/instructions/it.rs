@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::Condition,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     core::{ItState, ItThenElse},
     decoder::DecodeError,
     instructions::{other, unpredictable},
@@ -47,7 +47,7 @@ impl Instruction for It {
         Some(Condition::Always)
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         proc.registers.psr.set_it_state(self.state);
         Ok(Effect::None)
     }

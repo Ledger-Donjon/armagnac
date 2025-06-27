@@ -9,7 +9,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     core::ItState,
-    core::{ArmProcessor, RunError},
+    core::{Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -53,7 +53,7 @@ impl Instruction for AdcImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry, overflow) = add_with_carry(proc[self.rn], self.imm32, carry_in);
         proc.set(self.rd, result);
@@ -142,7 +142,7 @@ impl Instruction for AdcReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], shifted, carry_in);
@@ -184,7 +184,7 @@ mod tests {
     use super::AdcImm;
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{adc::AdcReg, Encoding, Instruction},
         registers::RegisterIndex,
     };
@@ -251,7 +251,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.registers.psr.set_c(v.carry_in);
@@ -340,7 +340,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, 100);

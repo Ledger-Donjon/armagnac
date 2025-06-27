@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::signed_sat_q,
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -45,7 +45,7 @@ impl Instruction for Qdsub {
         Ok(Self { rd, rm, rn })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let (doubled, sat1) = signed_sat_q(2 * (proc[self.rn] as i32 as i64), 32);
         let (result, sat2) = signed_sat_q(proc[self.rm] as i32 as i64 - doubled, 32);
         proc.set(self.rd, result as u32);
@@ -67,7 +67,7 @@ impl Instruction for Qdsub {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{qdsub::Qdsub, Instruction},
         registers::RegisterIndex,
     };
@@ -136,7 +136,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7em());
+            let mut proc = Processor::new(Config::v7em());
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);

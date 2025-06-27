@@ -8,7 +8,7 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -86,7 +86,7 @@ impl Instruction for Stc {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let Some(coprocessor) = proc.coproc_accepted(self.coproc, self.ins) else {
             proc.generate_coprocessor_exception();
             return Ok(Effect::None);
@@ -137,7 +137,7 @@ pub mod tests {
     use super::Stc;
     use crate::{
         core::Coprocessor,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
@@ -190,7 +190,7 @@ pub mod tests {
     }
     #[test]
     fn test_stc() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let mut rng = rand::rng();
         let cp: u8 = rng.random_range(0..16);
         let coprocessor = Rc::new(RefCell::new(TestCoproc(vec![

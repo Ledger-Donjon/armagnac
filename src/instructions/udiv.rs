@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -40,7 +40,7 @@ impl Instruction for Udiv {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let divisor = proc[self.rm];
         if divisor == 0 {
             unimplemented!("Division by zero handling")

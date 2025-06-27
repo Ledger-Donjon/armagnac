@@ -6,7 +6,7 @@ use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -57,7 +57,7 @@ impl Instruction for Usat {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let operand = shift_c(proc[self.rn], self.shift, false).0;
         let (result, sat) = unsigned_sat_q(operand as i32 as i64, self.saturate_to);
         proc.set(self.rd, result as u32);
@@ -87,7 +87,7 @@ mod tests {
     use super::Usat;
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -105,7 +105,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.0);

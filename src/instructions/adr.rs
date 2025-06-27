@@ -3,7 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3};
 use super::{unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::core::{ArmProcessor, Effect, RunError};
+use crate::core::{Processor, Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{align::Align, registers::RegisterIndex};
 
@@ -65,7 +65,7 @@ impl Instruction for Adr {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc.pc().align(4).wrapping_add(self.imm32 as u32);
         proc.set(self.rd, result);
         Ok(Effect::None)
@@ -87,12 +87,12 @@ impl Instruction for Adr {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{adr::Adr, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
-    fn test_adr_vec(proc: &mut ArmProcessor, offset: i32) {
+    fn test_adr_vec(proc: &mut Processor, offset: i32) {
         proc.set_pc(0x1000);
         proc.registers.r0 = 0;
         let rd = RegisterIndex::new_general_random();
@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_adr() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         test_adr_vec(&mut proc, 0);
         test_adr_vec(&mut proc, -16);
         test_adr_vec(&mut proc, 16);

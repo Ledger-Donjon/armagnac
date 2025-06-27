@@ -4,7 +4,7 @@ use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
 use crate::core::ItState;
-use crate::core::{ArmProcessor, Effect, RunError};
+use crate::core::{Processor, Effect, RunError};
 use crate::decoder::DecodeError;
 use crate::instructions::{unpredictable, DecodeHelper};
 use crate::registers::RegisterIndex;
@@ -39,7 +39,7 @@ impl Instruction for Sadd8 {
         Ok(Self { rd, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rm = proc[self.rm];
         let rn = proc[self.rn];
         let sum1 = (rn as i8 as i32).wrapping_add(rm as i8 as i32);
@@ -75,7 +75,7 @@ impl Instruction for Sadd8 {
 #[cfg(test)]
 mod tests {
     use super::Sadd8;
-    use crate::core::{ArmProcessor, Config};
+    use crate::core::{Processor, Config};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 
@@ -89,7 +89,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7em());
+            let mut proc = Processor::new(Config::v7em());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.0);

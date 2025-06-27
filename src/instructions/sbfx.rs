@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::sign_extend,
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -51,7 +51,7 @@ impl Instruction for Sbfx {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let msbit = self.lsb + self.widthm1;
         if msbit <= 31 {
             let result = sign_extend(proc[self.rn] >> self.lsb, self.widthm1 + 1);
@@ -81,12 +81,12 @@ impl Instruction for Sbfx {
 mod tests {
     use super::Sbfx;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
 
-    fn test_sbfx_vec(proc: &mut ArmProcessor, r1: u32, lsb: u8, widthm1: u8, expected_r0: u32) {
+    fn test_sbfx_vec(proc: &mut Processor, r1: u32, lsb: u8, widthm1: u8, expected_r0: u32) {
         proc.registers.r0 = 0;
         proc.registers.r1 = r1;
         Sbfx {
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn test_sbfx() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         let magic = 0x12b456f8;
         test_sbfx_vec(&mut proc, magic, 0, 0, 0);
         test_sbfx_vec(&mut proc, magic, 3, 0, 0xffffffff);

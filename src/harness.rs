@@ -1,6 +1,6 @@
 //! Helpers for running methods from an ELF file.
 
-use crate::core::{ArmProcessor, Config, Emulator};
+use crate::core::{Processor, Config, Emulator};
 use object::{File, Object, ObjectSection, ObjectSymbol};
 use std::collections::BTreeMap;
 
@@ -10,7 +10,7 @@ pub const STACK_SIZE: u32 = 1024;
 /// Helper for running easily tests from an ELF file.
 pub struct ElfHarness {
     /// Processor executing the test methods.
-    pub proc: ArmProcessor,
+    pub proc: Processor,
     /// All symbols and their address, extracted from the ELF file.
     pub symbols: BTreeMap<String, u32>,
 }
@@ -25,7 +25,7 @@ impl ElfHarness {
             .map(|s| (s.name().unwrap().into(), s.address() as u32))
             .collect();
 
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         proc.map_ram(ADDR_RAM, 1024).unwrap();
 
         // Map program section as read-only RAM memories

@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper, ItState},
@@ -44,7 +44,7 @@ impl Instruction for Msr {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let val = proc[self.rn];
         match self.sysm {
             RegisterIndex::Apsr => todo!(),

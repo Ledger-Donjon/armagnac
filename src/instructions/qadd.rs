@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::signed_sat_q,
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -45,7 +45,7 @@ impl Instruction for Qadd {
         Ok(Self { rd, rm, rn })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rm = proc[self.rm] as i32 as i64;
         let rn = proc[self.rn] as i32 as i64;
         let (result, sat) = signed_sat_q(rm + rn, 32);
@@ -70,7 +70,7 @@ impl Instruction for Qadd {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{qadd::Qadd, Instruction},
         registers::RegisterIndex,
     };
@@ -131,7 +131,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7em());
+            let mut proc = Processor::new(Config::v7em());
             let rd = RegisterIndex::new_general_random();
             let (rm, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.initial_rm);

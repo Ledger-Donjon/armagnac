@@ -8,7 +8,7 @@ use super::{
 use crate::{
     core::Condition,
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
 };
@@ -40,7 +40,7 @@ impl Instruction for Bkpt {
         })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::Break(self.imm8))
     }
 
@@ -61,13 +61,13 @@ impl Instruction for Bkpt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config, Effect},
+        core::{Processor, Config, Effect},
         instructions::{bkpt::Bkpt, Instruction},
     };
 
     #[test]
     fn test_bkpt() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let result = Bkpt { imm8: 0xa5 }.execute(&mut proc).unwrap();
         assert_eq!(result, Effect::Break(0xa5));
     }

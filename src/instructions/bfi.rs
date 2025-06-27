@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -53,7 +53,7 @@ impl Instruction for Bfi {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = 0xffffffffu32 >> (32 - width);
@@ -79,7 +79,7 @@ impl Instruction for Bfi {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config, RunError},
+        core::{Processor, Config, RunError},
         instructions::{bfi::Bfi, Instruction},
         registers::RegisterIndex,
     };
@@ -95,7 +95,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let (rd, rn) = RegisterIndex::pick_two_general_distinct();
             proc.set(rd, 0x12b456f8);
             proc.set(rn, 0x87654321);
@@ -113,7 +113,7 @@ mod tests {
         }
 
         // Check that msb < lsb leads to error.
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         let rd = RegisterIndex::new_general_random();
         let rn = RegisterIndex::new_general_random();
         assert_eq!(

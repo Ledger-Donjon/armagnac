@@ -7,7 +7,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     registers::RegisterIndex,
@@ -69,7 +69,7 @@ impl Instruction for AsrImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], Shift::asr(self.shift as u32), carry_in);
         proc.set(self.rd, result);
@@ -155,7 +155,7 @@ impl Instruction for AsrReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rm] & 0xff;
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rn], Shift::asr(shift_n), carry_in);

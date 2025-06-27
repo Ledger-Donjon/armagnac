@@ -28,11 +28,11 @@
 //! ```
 //! use std::cell::RefCell;
 //! use std::rc::Rc;
-//! use armagnac::core::{ArmProcessor, Config, RunOptions, Emulator};
+//! use armagnac::core::{Processor, Config, RunOptions, Emulator};
 //! # use armagnac::memory::{MemoryInterface, Env, MemoryReadResult};
 //!
 //! fn main() {
-//!     let mut proc = ArmProcessor::new(Config::v7m());
+//!     let mut proc = Processor::new(Config::v7m());
 //!     // Create RNG peripheral and map it at address 0x40000000
 //!     let rng = Rc::new(RefCell::new(RngPeripheral {}));
 //!     proc.map_iface(0x40000000, rng).unwrap();

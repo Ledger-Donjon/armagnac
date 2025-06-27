@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -42,7 +42,7 @@ impl Instruction for Mrs {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let mut rd = 0;
         let sysm = self.sysm.index_sys();
         match sysm >> 3 {

@@ -8,7 +8,7 @@ use super::{
 };
 use crate::qualifier_wide_match;
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},
@@ -78,7 +78,7 @@ impl Instruction for Pop {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let mut addr = proc.sp();
         // Note: In the ARM Architecture Reference manual, the reference implementation for POP
         // updates the SP register at the end of the procedure. However, if PC is in the registers

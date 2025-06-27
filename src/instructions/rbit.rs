@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -40,7 +40,7 @@ impl Instruction for Rbit {
         Ok(Self { rd, rm: rm1 })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let mut a = proc[self.rm];
         let mut b = 0;
         for _ in 0..32 {

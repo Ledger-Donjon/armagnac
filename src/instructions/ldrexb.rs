@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, ItState, RunError,
     },
@@ -42,7 +42,7 @@ impl Instruction for Ldrexb {
         Ok(Self { rt, rn })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let address = proc[self.rn];
         proc.set_exclusive_monitors(address, 1);
         let value = proc.read_u8(address)? as u32;

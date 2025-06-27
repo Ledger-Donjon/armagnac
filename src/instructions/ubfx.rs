@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -49,7 +49,7 @@ impl Instruction for Ubfx {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let msb = self.lsb + self.width_minus_1;
         debug_assert!(msb <= 31);
         let result = proc[self.rn] << (31 - msb) >> (31 - msb + self.lsb);

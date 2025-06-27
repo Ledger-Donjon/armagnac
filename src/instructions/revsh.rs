@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -65,7 +65,7 @@ impl Instruction for Revsh {
         }
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rm = proc[self.rm];
         let result = (((((rm as u8) as i8) as i32) as u32) << 8) | ((rm & 0x0000ff00) >> 8);
         proc.set(self.rd, result);
@@ -89,7 +89,7 @@ impl Instruction for Revsh {
 mod tests {
     use super::Revsh;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
@@ -98,7 +98,7 @@ mod tests {
     fn test_revsh() {
         let vectors = [(0x12345678, 0x00007856), (0x12b456f8, 0xfffff856)];
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let (rd, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rm, v.0);
             let mut expected = proc.registers.clone();

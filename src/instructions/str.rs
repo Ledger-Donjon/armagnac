@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{DecodeHelper, ItState},
     registers::RegisterIndex,
@@ -118,7 +118,7 @@ impl Instruction for StrImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -203,7 +203,7 @@ impl Instruction for StrReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (offset, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let address = proc[self.rn].wrapping_add(offset);

@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -43,7 +43,7 @@ impl Instruction for Cbnz {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         if (proc[self.rn] == 0) ^ self.non_zero {
             proc.set_pc(proc.pc().wrapping_add(self.imm32));
             Ok(Effect::Branch)

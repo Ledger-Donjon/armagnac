@@ -4,7 +4,7 @@ use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{DecodeHelper, Instruction, Pattern};
 use crate::core::ItState;
-use crate::core::{ArmProcessor, Effect, RunError};
+use crate::core::{Processor, Effect, RunError};
 use crate::decoder::DecodeError;
 
 /// UDF (Undefined) instruction.
@@ -42,7 +42,7 @@ impl Instruction for Udf {
         })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Err(RunError::InstructionUndefined)
     }
 
@@ -59,13 +59,13 @@ impl Instruction for Udf {
 mod tests {
     use super::Udf;
     use crate::{
-        core::{ArmProcessor, Config, RunError},
+        core::{Processor, Config, RunError},
         instructions::Instruction,
     };
 
     #[test]
     fn test_udf() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let result = Udf { imm16: 0 }.execute(&mut proc);
         assert_eq!(result, Err(RunError::InstructionUndefined));
     }

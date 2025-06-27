@@ -7,7 +7,7 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -44,7 +44,7 @@ impl Instruction for Yield {
         Ok(Self { encoding })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::None)
     }
 
@@ -65,13 +65,13 @@ impl Instruction for Yield {
 mod tests {
     use super::Yield;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{Encoding::DontCare, Instruction},
     };
 
     #[test]
     fn test_yield() {
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let expected = proc.registers.clone();
         Yield { encoding: DontCare }.execute(&mut proc).unwrap();
         assert_eq!(proc.registers, expected);

@@ -1,6 +1,6 @@
 use crate::core::ArmVersion;
 
-/// Configuration builder used to build instances of [`ArmProcessor`].
+/// Configuration builder used to build instances of [`Processor`].
 pub struct Config {
     /// Arm architecture version. Must be defined.
     pub(crate) version: ArmVersion,

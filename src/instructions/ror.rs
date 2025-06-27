@@ -10,7 +10,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
@@ -56,7 +56,7 @@ impl Instruction for RorImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         proc.set(self.rd, result);
@@ -144,7 +144,7 @@ impl Instruction for RorReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let shift_n = proc[self.rm] & 0xff;
         let carry_in = proc.registers.psr.c();
         let (result, carry) = shift_c(proc[self.rn], Shift::ror(shift_n), carry_in);
@@ -180,7 +180,7 @@ impl Instruction for RorReg {
 mod tests {
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{
             ror::{RorImm, RorReg},
             Encoding::DontCare,
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_ror_imm() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         let mut ins = RorImm {
             rd: RegisterIndex::R0,
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn test_ror_reg() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 1;
         let ins = RorReg {

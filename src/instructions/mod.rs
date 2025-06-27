@@ -8,7 +8,7 @@
 use crate::{
     core::Condition,
     core::ItState,
-    core::{ArmProcessor, ArmVersion, Effect, RunError},
+    core::{Processor, ArmVersion, Effect, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -212,7 +212,7 @@ pub trait Instruction {
     ///
     /// The execution of an instruction may also result in an error, for instance if an invalid
     /// memory access is performed.
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError>;
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError>;
 
     /// Returns the name of the instruction, in lowercase, to be shown in its mnemonic.
     ///

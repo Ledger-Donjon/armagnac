@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
 };
 
@@ -33,7 +33,7 @@ impl Instruction for Isb {
         })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::None)
     }
 

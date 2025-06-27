@@ -4,7 +4,7 @@
 //! Integration of custom peripherals in the memory space is made easy, allowing custom platforms
 //! emulation.
 //!
-//! Check [core::ArmProcessor] to know how to quickly emulate an ARM binary.
+//! Check [core::Processor] to know how to quickly emulate an ARM binary.
 //!
 //! Check [memory] to see how peripherals can be implemented and mapped into the processor memory
 //! space.

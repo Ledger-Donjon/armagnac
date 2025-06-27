@@ -7,7 +7,7 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -54,7 +54,7 @@ impl Instruction for Smlal {
         Ok(Self { rdlo, rdhi, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = (proc[self.rn] as i32 as i64) * (proc[self.rm] as i32 as i64)
             + (((proc[self.rdhi] as u64) << 32) | proc[self.rdlo] as u64) as i64;
         proc.set(self.rdhi, (result >> 32) as u32);
@@ -75,7 +75,7 @@ impl Instruction for Smlal {
 mod tests {
     use super::Smlal;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -106,7 +106,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let (rdlo, rdhi, rn, rm) = RegisterIndex::pick_four_general_distinct();
             proc.set(rdhi, (v.0 >> 32) as u32);
             proc.set(rdlo, v.0 as u32);

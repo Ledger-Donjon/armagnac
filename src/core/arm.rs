@@ -1,6 +1,6 @@
 //! Implements ARM processor core functions and execution.
 //!
-//! [ArmProcessor] structure shall be used to define a system and emulate its processor and
+//! [Processor] structure shall be used to define a system and emulate its processor and
 //! attached peripherals.
 
 use crate::{
@@ -158,8 +158,8 @@ pub enum ArmVersion {
 /// The following example will execute a tiny assembly program:
 ///
 /// ```
-/// # use armagnac::core::{ArmProcessor, Config,  RunOptions, Emulator};
-/// let mut proc = ArmProcessor::new(Config::v7m());
+/// # use armagnac::core::{Processor, Config,  RunOptions, Emulator};
+/// let mut proc = Processor::new(Config::v7m());
 ///
 /// // Load a tiny assembly program at address 0x1000.
 /// // This creates a RAM memory of 6 bytes.
@@ -174,22 +174,22 @@ pub enum ArmVersion {
 /// assert_eq!(proc.registers.r2, 3);
 /// ```
 ///
-/// By default [ArmProcessor] uses [BasicInstructionDecoder] for decoding instructions. When
+/// By default [Processor] uses [BasicInstructionDecoder] for decoding instructions. When
 /// running long emulations, you may want to use a more performant decoder, at the cost of a longer
 /// initialization time:
 ///
 /// ```
-/// use armagnac::core::{ArmProcessor, Config, ArmVersion};
+/// use armagnac::core::{Processor, Config, ArmVersion};
 /// use armagnac::decoder::{Lut16AndGrouped32InstructionDecoder};
 ///
-/// let mut proc = ArmProcessor::new(Config::v7m());
+/// let mut proc = Processor::new(Config::v7m());
 /// proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new(ArmVersion::V7M));
 /// ```
 ///
 /// You can also write your own decoder by implementing the [InstructionDecode] trait. For example,
 /// when emulating a small function for fuzzing, you may only keep the instructions used in the
 /// assembly of that particular method to make the instruction decoding faster.
-pub struct ArmProcessor {
+pub struct Processor {
     /// ARM emutaled version.
     pub version: ArmVersion,
     /// r0-r15 and sys registers.
@@ -237,7 +237,7 @@ pub struct ArmProcessor {
 
 type InstructionBox = Rc<dyn Instruction>;
 
-impl ArmProcessor {
+impl Processor {
     /// Creates a new Arm processor.
     ///
     /// A [`Config`] is passed for initialization.
@@ -245,8 +245,8 @@ impl ArmProcessor {
     /// If the Arm architecture version is not defined in the configuration, this method panics.
     ///
     /// ```
-    /// # use armagnac::core::{ArmProcessor, Config};
-    /// let processor = ArmProcessor::new(Config::v7m());
+    /// # use armagnac::core::{Processor, Config};
+    /// let processor = Processor::new(Config::v7m());
     /// ```
     pub fn new(config: Config) -> Self {
         let version = config.version;
@@ -1294,15 +1294,15 @@ impl RunOptions {
     }
 }
 
-/// [ArmProcessor] implements this trait to provide an interface for running the device with
+/// [Processor] implements this trait to provide an interface for running the device with
 /// possible options.
 ///
 /// The most important method is [Emulator::next_event] which runs a single emulation step and
-/// returns the first event encountered. A device struct using composition with [ArmProcessor] may
+/// returns the first event encountered. A device struct using composition with [Processor] may
 /// implement this trait and the [Emulator::next_event] method to handle, filter or forward
 /// processor events and this way build an additive layer to the processor (hooks are a good
 /// example use case). This way the new struct will automatically benefit from [Emulator::run]
-/// blanket implementation and provide the same interface as [ArmProcessor].
+/// blanket implementation and provide the same interface as [Processor].
 pub trait Emulator {
     /// Processes execution until next event, and returns that event.
     fn next_event(&mut self) -> Result<Event, RunError>;
@@ -1328,7 +1328,7 @@ pub trait Emulator {
     }
 }
 
-impl Emulator for ArmProcessor {
+impl Emulator for Processor {
     fn next_event(&mut self) -> Result<Event, RunError> {
         while self.events.is_empty() {
             self.step()?;
@@ -1338,7 +1338,7 @@ impl Emulator for ArmProcessor {
 }
 
 /// Indexing implemented for easier access to the registers.
-impl Index<RegisterIndex> for ArmProcessor {
+impl Index<RegisterIndex> for Processor {
     type Output = u32;
 
     fn index(&self, index: RegisterIndex) -> &Self::Output {

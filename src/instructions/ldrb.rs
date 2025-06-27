@@ -13,7 +13,7 @@ use crate::{
     align::Align,
     arith::{shift_c, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     registers::RegisterIndex,
@@ -96,7 +96,7 @@ impl Instruction for LdrbImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rn = proc[self.0.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.0.imm32, self.0.add);
         let addr = if self.0.index { offset_addr } else { rn };
@@ -181,7 +181,7 @@ impl Instruction for LdrbReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
@@ -243,7 +243,7 @@ impl Instruction for LdrbLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u8(address)?;

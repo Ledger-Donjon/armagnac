@@ -3,7 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::core::{ArmProcessor, Effect};
+use crate::core::{Processor, Effect};
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
@@ -113,7 +113,7 @@ impl Instruction for AddImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let (r, c, v) = add_with_carry(proc[self.rn], self.imm32, false);
         proc.set(self.rd, r);
         if self.set_flags {
@@ -236,7 +236,7 @@ impl Instruction for AddReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (r, c, v) = add_with_carry(proc[self.rn], shifted, false);
@@ -356,7 +356,7 @@ impl Instruction for AddSpPlusImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let (result, carry, overflow) = add_with_carry(proc.sp(), self.imm32, false);
         proc.set(self.rd, result);
         if self.set_flags {
@@ -467,7 +467,7 @@ impl Instruction for AddSpPlusReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, _) = shift_c(proc[self.rm], self.shift, carry_in);
         let (result, carry, overflow) = add_with_carry(proc.sp(), shifted, false);
@@ -514,7 +514,7 @@ mod tests {
     use super::AddImm;
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Encoding::DontCare,
@@ -586,7 +586,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rn = RegisterIndex::new_general_random();
             let rd = RegisterIndex::new_general_random();
             proc.set(rn, v.rn_value);
@@ -677,7 +677,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rd, 0);
@@ -749,7 +749,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;
             let mut expected_registers = proc.registers.clone();
@@ -822,7 +822,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             let rm = RegisterIndex::new_general_random();
             proc.registers.msp = v.sp_value;

@@ -8,7 +8,7 @@
 //! implements the [InstructionDecode] trait.
 //!
 //! The instruction decoder implementation can be selected by changing
-//! [crate::arm::ArmProcessor::instruction_decoder].
+//! [crate::arm::Processor::instruction_decoder].
 
 use crate::{
     arith::ArithError,
@@ -670,7 +670,7 @@ mod tests {
     };
     use crate::{
         core::ItState,
-        core::{ArmProcessor, ArmVersion::V7EM, Config},
+        core::{Processor, ArmVersion::V7EM, Config},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
     };
@@ -686,7 +686,7 @@ mod tests {
         let file = File::open("src/test_decoder.txt").unwrap();
         let buf_reader = BufReader::new(file);
         let decoder = BasicInstructionDecoder::new(V7EM);
-        let mut proc = ArmProcessor::new(Config::v7em());
+        let mut proc = Processor::new(Config::v7em());
         let mut pc = 0x1000;
 
         for line in buf_reader.lines().map(|l| l.unwrap()) {

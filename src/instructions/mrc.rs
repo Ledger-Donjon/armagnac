@@ -7,7 +7,7 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -72,7 +72,7 @@ impl Instruction for Mrc {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let Some(coprocessor) = proc.coproc_accepted(self.coproc, self.ins) else {
             proc.generate_coprocessor_exception();
             return Ok(Effect::None);

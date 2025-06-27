@@ -7,7 +7,7 @@ use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    core::{ArmProcessor, RunError},
+    core::{Processor, RunError},
     core::{Effect, ItState},
     decoder::DecodeError,
     helpers::BitAccess,
@@ -59,7 +59,7 @@ impl Instruction for AndImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.rn] & self.imm32;
         proc.set(self.rd, result);
         if self.set_flags {
@@ -145,7 +145,7 @@ impl Instruction for AndReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] & shifted;
@@ -182,7 +182,7 @@ impl Instruction for AndReg {
 mod tests {
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{
             and::{AndImm, AndReg},
             Encoding::DontCare,
@@ -238,7 +238,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let rn = RegisterIndex::new_general_random();
             proc.set(rn, v.initial_rn);
@@ -305,7 +305,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let rd = RegisterIndex::new_general_random();
             let (rn, rm) = RegisterIndex::pick_two_general_distinct();
             proc.set(rn, v.initial_rn);

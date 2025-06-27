@@ -9,7 +9,7 @@ use super::{Instruction, Qualifier};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -55,7 +55,7 @@ impl Instruction for SbcImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (result, carry, overflow) = add_with_carry(proc[self.rn], !self.imm32, carry_in);
         proc.set(self.rd, result);
@@ -147,7 +147,7 @@ impl Instruction for SbcReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let shifted = shift_c(proc[self.rm], self.shift, carry_in).0;
         let (result, carry, overflow) = add_with_carry(proc[self.rn], !shifted, carry_in);
@@ -188,7 +188,7 @@ impl Instruction for SbcReg {
 mod tests {
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{
             sbc::{SbcImm, SbcReg},
             Encoding::DontCare,
@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_sbc_imm() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 1000;
         SbcImm {
             rd: RegisterIndex::R0,
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn test_sbc_reg() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 1000;
         proc.registers.r2 = 99;
         SbcReg {

@@ -8,7 +8,7 @@ use crate::{core::Effect, registers::RegisterIndex};
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         RunError,
     },
@@ -52,7 +52,7 @@ impl Instruction for Smull {
         Ok(Self { rdlo, rdhi, rn, rm })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = (proc[self.rn] as i32 as i64) * (proc[self.rm] as i32 as i64);
         proc.set(self.rdhi, (result >> 32) as u32);
         proc.set(self.rdlo, result as u32);
@@ -72,7 +72,7 @@ impl Instruction for Smull {
 mod tests {
     use super::Smull;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -88,7 +88,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v7m());
+            let mut proc = Processor::new(Config::v7m());
             let (rdlo, rdhi, rn, rm) = RegisterIndex::pick_four_general_distinct();
             proc.set(rn, v.0 as u32);
             proc.set(rm, v.1 as u32);

@@ -6,7 +6,7 @@ use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
 use crate::core::{Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{
-    arith::sign_extend, core::ArmProcessor, core::Condition, core::ItState, decoder::DecodeError,
+    arith::sign_extend, core::Processor, core::Condition, core::ItState, decoder::DecodeError,
     instructions::other,
 };
 
@@ -107,7 +107,7 @@ impl Instruction for B {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let address = (proc.pc() as i32 + self.imm32) as u32;
         proc.set_pc(address);
         Ok(Effect::Branch)

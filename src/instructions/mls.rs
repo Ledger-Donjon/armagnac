@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -49,7 +49,7 @@ impl Instruction for Mls {
         Ok(Self { rd, rn, rm, ra })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.ra] - proc[self.rn].wrapping_mul(proc[self.rm]);
         proc.set(self.rd, result);
         Ok(Effect::None)
@@ -67,14 +67,14 @@ impl Instruction for Mls {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{mls::Mls, Instruction},
         registers::{CoreRegisters, RegisterIndex},
     };
 
     #[test]
     fn test_mls() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 0x01020304;
         proc.registers.r3 = 0x87654321;

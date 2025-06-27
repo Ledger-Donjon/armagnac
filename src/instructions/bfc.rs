@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::core::{ArmProcessor, Effect, RunError};
+use crate::core::{Processor, Effect, RunError};
 use crate::{
     core::ItState,
     decoder::DecodeError,
@@ -48,7 +48,7 @@ impl Instruction for Bfc {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         if self.msb >= self.lsb {
             let width = self.msb - self.lsb + 1;
             let mask = !((0xffffffffu32 >> (32 - width)) << self.lsb);
@@ -74,7 +74,7 @@ impl Instruction for Bfc {
 mod tests {
     use super::Bfc;
     use crate::{
-        core::{ArmProcessor, Config, RunError},
+        core::{Processor, Config, RunError},
         instructions::Instruction,
         registers::RegisterIndex,
     };
@@ -95,7 +95,7 @@ mod tests {
         ];
 
         for v in vectors {
-            let mut proc = ArmProcessor::new(Config::v8m());
+            let mut proc = Processor::new(Config::v8m());
             let rd = RegisterIndex::new_general_random();
             proc.set(rd, 0xffffffff);
             Bfc {
@@ -109,7 +109,7 @@ mod tests {
         }
 
         // Check that msb < lsb leads to error.
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         let rd = RegisterIndex::new_general_random();
         assert_eq!(
             Bfc {

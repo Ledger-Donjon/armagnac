@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -63,7 +63,7 @@ impl Instruction for Rev16 {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rm = proc[self.rm];
         let result = ((rm & 0x00ff00ff) << 8) | ((rm & 0xff00ff00) >> 8);
         proc.set(self.rd, result);
@@ -86,14 +86,14 @@ impl Instruction for Rev16 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{rev16::Rev16, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_rev16() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         let ins = Rev16 {
             rd: RegisterIndex::R0,

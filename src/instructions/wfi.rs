@@ -7,7 +7,7 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
         Effect, RunError,
     },
@@ -44,7 +44,7 @@ impl Instruction for Wfi {
         Ok(Self { encoding })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::WaitForInterrupt)
     }
 

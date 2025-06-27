@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, unpredictable, DecodeHelper},
@@ -57,7 +57,7 @@ impl Instruction for OrnImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let result = proc[self.rn] | !self.imm32;
         proc.set(self.rd, result);
         if self.set_flags {
@@ -120,7 +120,7 @@ impl Instruction for OrnReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let carry_in = proc.registers.psr.c();
         let (shifted, carry) = shift_c(proc[self.rm], self.shift, carry_in);
         let result = proc[self.rn] | !shifted;
@@ -155,14 +155,14 @@ mod tests {
     use super::OrnImm;
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{orn::OrnReg, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_orn_imm() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         OrnImm {
             rd: RegisterIndex::R0,
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_orn_reg() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.registers.r1 = 0x12345678;
         proc.registers.r2 = 0x00ff00ff;
         OrnReg {

@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::sign_extend,
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
 };
@@ -46,7 +46,7 @@ impl Instruction for Bl {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let pc = proc.pc();
         let address = (pc as i32 + self.imm32) as u32;
         proc.set_lr(pc | 1);

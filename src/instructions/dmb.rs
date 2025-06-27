@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::core::{ArmProcessor, Effect, RunError};
+use crate::core::{Processor, Effect, RunError};
 use crate::instructions::DecodeHelper;
 
 /// DMB instruction.
@@ -39,7 +39,7 @@ impl Instruction for Dmb {
         })
     }
 
-    fn execute(&self, _proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {
         Ok(Effect::None)
     }
 
@@ -61,14 +61,14 @@ impl Instruction for Dmb {
 mod tests {
     use super::Dmb;
     use crate::{
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::Instruction,
     };
 
     #[test]
     fn test_dmb() {
         // Check that the instruction does nothing.
-        let mut proc = ArmProcessor::new(Config::v7m());
+        let mut proc = Processor::new(Config::v7m());
         let expected = proc.registers.clone();
         for option in 0..=0xf {
             Dmb { option }.execute(&mut proc).unwrap();

@@ -11,7 +11,7 @@ use crate::{
     align::Align,
     arith::{shift_c, Shift},
     core::ItState,
-    core::{ArmProcessor, Effect, RunError},
+    core::{Processor, Effect, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::indexing_args,
@@ -96,7 +96,7 @@ impl Instruction for LdrshImm {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let rn = proc[self.rn];
         let offset_addr = rn.wrapping_add_or_sub(self.imm32, self.add);
         let address = if self.index { offset_addr } else { rn };
@@ -158,7 +158,7 @@ impl Instruction for LdrshLit {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let base = proc.pc().align(4);
         let address = base.wrapping_add_or_sub(self.imm32, self.add);
         let data = proc.read_u16_unaligned(address)?;
@@ -244,7 +244,7 @@ impl Instruction for LdrshReg {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         // From the specification, INDEX is always true, ADD is always true and WBACK always false,
         // so the implementation has been simplified.
         let (offset, _) = shift_c(proc[self.rm], self.shift, proc.registers.psr.c());
@@ -279,14 +279,14 @@ mod tests {
     use super::{LdrshImm, LdrshLit, LdrshReg};
     use crate::{
         arith::Shift,
-        core::{ArmProcessor, Config},
+        core::{Processor, Config},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };
 
     #[test]
     fn test_ldrsh_imm() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x9234d678).unwrap();
 
@@ -321,7 +321,7 @@ mod tests {
 
     #[test]
     fn test_ldrsh_lit() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x9234d678).unwrap();
 
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_ldrsh_reg() {
-        let mut proc = ArmProcessor::new(Config::v8m());
+        let mut proc = Processor::new(Config::v8m());
         proc.map_ram(0x1000, 4).unwrap();
         proc.write_u32le_iface(0x1000, 0x9234d678).unwrap();
 

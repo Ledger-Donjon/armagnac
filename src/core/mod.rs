@@ -9,7 +9,7 @@ mod irq;
 mod it_state;
 
 pub use arm::{
-    ArmProcessor, ArmVersion, Effect, Emulator, Event, MapConflict, RunError, RunOptions,
+    Processor, ArmVersion, Effect, Emulator, Event, MapConflict, RunError, RunOptions,
 };
 pub use condition::Condition;
 pub use config::Config;

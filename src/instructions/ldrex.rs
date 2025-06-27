@@ -4,7 +4,7 @@ use super::{Encoding::T1, Pattern};
 use crate::{
     align::Align,
     core::{
-        ArmProcessor,
+        Processor,
         ArmVersion::{V7EM, V7M, V8M},
         Effect, ItState, MonitorState, RunError,
     },
@@ -46,7 +46,7 @@ impl Instruction for Ldrex {
         })
     }
 
-    fn execute(&self, proc: &mut ArmProcessor) -> Result<Effect, RunError> {
+    fn execute(&self, proc: &mut Processor) -> Result<Effect, RunError> {
         let address = proc[self.rn] + self.imm32;
         proc.set_exclusive_monitors(address, 4);
         let value = proc.read_u32_aligned(address)?;
