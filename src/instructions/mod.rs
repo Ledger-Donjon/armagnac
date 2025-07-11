@@ -48,6 +48,7 @@ pub mod ldrbt;
 pub mod ldrd;
 pub mod ldrex;
 pub mod ldrexb;
+pub mod ldrexh;
 pub mod ldrh;
 pub mod ldrht;
 pub mod ldrsb;
