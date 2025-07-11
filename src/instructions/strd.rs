@@ -10,7 +10,7 @@ use crate::core::ItState;
 use crate::core::{Effect, Processor, RunError};
 use crate::decoder::DecodeError;
 use crate::helpers::BitAccess;
-use crate::instructions::{indexing_args, unpredictable, DecodeHelper};
+use crate::instructions::{indexing_args, other, unpredictable, DecodeHelper};
 use crate::registers::RegisterIndex;
 
 /// STRD (immediate) instruction.
@@ -48,6 +48,7 @@ impl Instruction for StrdImm {
         let index = ins.bit(24);
         let add = ins.bit(23);
         let wback = ins.bit(21);
+        other(!index && !wback)?;
         unpredictable(wback && (rn == rt || rn == rt2))?;
         unpredictable(rn.is_pc() || rt.is_sp_or_pc() || rt2.is_sp_or_pc())?;
         Ok(Self {

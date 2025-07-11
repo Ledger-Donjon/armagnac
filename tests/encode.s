@@ -1415,6 +1415,14 @@ strd    r3, r9, [r10], #-208
 strd    r2, r6, [r4, #560]!
 strd    r4, r0, [r12, #-440]!
 
+// STREX
+// T1
+strex   r0, r1, [r2]
+strex   r5, r4, [r4, #1020]
+strex   r10, r12, [r4, #1020]
+strex   r9, r2, [r4, #1020]
+strex   r12, r7, [r13, #1020]
+
 // STRH (immediate)
 // T1
 strh.n  r0, [r1]

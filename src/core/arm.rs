@@ -1274,6 +1274,26 @@ impl Processor {
             address: address.align(granule as usize),
         };
     }
+
+    /// If the local exclusive monitor has locked a given address, clear the lock and return true.
+    ///
+    /// Corresponds to `ExclusiveMonitorsPass()` in the Arm Architecture Reference Manual.
+    pub fn exclusive_monitors_pass(&mut self, address: u32, size: u32) -> Result<bool, RunError> {
+        self.usage_fault_if_unaligned(address, size as usize)?;
+        // TODO address validation
+        if self.local_monitor.state == (MonitorState::ExclusiveAccess { address: address }) {
+            self.clear_exclusive_local();
+            return Ok(true);
+        }
+        return Ok(false);
+    }
+
+    /// Clears the local exclusive monitor lock.
+    ///
+    /// Corresponds to `ClearExclusiveLocal()` in the Arm Architecture Reference Manual.
+    pub fn clear_exclusive_local(&mut self) {
+        self.local_monitor.state = MonitorState::OpenAccess;
+    }
 }
 
 /// Options passed to [Emulator::run] to configure emulation.

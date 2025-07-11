@@ -878,6 +878,11 @@ e2e810e5 strd     lr, r5, [r2], #64
 6ae83439 strd     r3, r9, [r10], #-208
 e4e98c26 strd     r2, r6, [r4, #560]!
 6ce96e40 strd     r4, r0, [r12, #-440]!
+42e80010 strex    r0, r1, [r2]
+44e8ff45 strex    r5, r4, [r4, #1020]
+44e8ffca strex    r10, r12, [r4, #1020]
+44e8ff29 strex    r9, r2, [r4, #1020]
+4de8ff7c strex    r12, r7, [sp, #1020]
 0880     strh     r0, [r1]
 ba80     strh     r2, [r7, #4]
 dd83     strh     r5, [r3, #30]

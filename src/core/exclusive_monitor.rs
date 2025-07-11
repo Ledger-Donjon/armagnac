@@ -1,4 +1,5 @@
 /// Local monitor state as defined in the Arm Architecture Reference Manual.
+#[derive(PartialEq, Eq)]
 pub enum MonitorState {
     OpenAccess,
     ExclusiveAccess { address: u32 },
