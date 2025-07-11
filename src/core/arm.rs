@@ -924,6 +924,7 @@ impl Processor {
             .any(|ch| ch.range.contains(&(pc as usize)))
         {
             self.events.push(Event::Hook { address: pc });
+            return Ok(());
         }
 
         match self.state {
