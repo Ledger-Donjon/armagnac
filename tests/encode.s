@@ -1431,6 +1431,14 @@ strex   r10, r12, [r4, #1020]
 strex   r9, r2, [r4, #1020]
 strex   r12, r7, [r13, #1020]
 
+// STREXB
+// T1
+strexb  r0, r3, [r9]
+strexb  r7, r10, [r6]
+strexb  r12, r9, [r7]
+strexb  r3, r0, [r14]
+strexb  r6, r2, [r1]
+
 // STRH (immediate)
 // T1
 strh.n  r0, [r1]

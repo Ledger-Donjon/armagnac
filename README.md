@@ -51,7 +51,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PSSBB: Physical Speculative Store Bypass Barrier
 - SSBB: Speculative Store Bypass Barrier
 - STRBT: Store Register Byte Unprivileged
-- STREXB: Store Register Exclusive Byte
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
@@ -151,7 +150,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - STLEXH: Store-Release Exclusive Halfword
 - STLH: Store-Release Halfword
 - STRBT: Store Register Byte Unprivileged
-- STREXB: Store Register Exclusive Byte
 - STREXH: Store Register Exclusive Halfword
 - STRHT: Store Register Halfword Unprivileged
 - STRT: Store Register Unprivileged
