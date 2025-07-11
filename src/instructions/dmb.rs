@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::instructions::DecodeHelper;
 
 /// DMB instruction.
@@ -61,7 +61,7 @@ impl Instruction for Dmb {
 mod tests {
     use super::Dmb;
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::Instruction,
     };
 

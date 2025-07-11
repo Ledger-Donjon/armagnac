@@ -8,7 +8,7 @@ use super::{
 use crate::{
     core::Condition,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
 };
@@ -61,7 +61,7 @@ impl Instruction for Bkpt {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config, Effect},
+        core::{Config, Effect, Processor},
         instructions::{bkpt::Bkpt, Instruction},
     };
 

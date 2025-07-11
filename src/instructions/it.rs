@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::Condition,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     core::{ItState, ItThenElse},
     decoder::DecodeError,
     instructions::{other, unpredictable},

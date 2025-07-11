@@ -8,7 +8,7 @@ use super::{
 };
 use crate::qualifier_wide_match;
 use crate::{
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::ItState,
     registers::{MainRegisterList, RegisterIndex},

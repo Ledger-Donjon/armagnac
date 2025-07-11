@@ -11,7 +11,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };

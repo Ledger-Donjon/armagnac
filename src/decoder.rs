@@ -670,7 +670,7 @@ mod tests {
     };
     use crate::{
         core::ItState,
-        core::{Processor, ArmVersion::V7EM, Config},
+        core::{ArmVersion::V7EM, Config, Processor},
         decoder::InstructionDecode,
         instructions::{InstructionSize, Mnemonic},
     };

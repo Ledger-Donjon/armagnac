@@ -6,9 +6,8 @@ use super::{
 };
 use crate::{
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, ItState, RunError,
+        Effect, ItState, Processor, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper, Instruction},

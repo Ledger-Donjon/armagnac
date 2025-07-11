@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::{
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper, ItState},

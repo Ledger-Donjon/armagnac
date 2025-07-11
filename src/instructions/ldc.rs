@@ -9,9 +9,8 @@ use crate::{
     align::Align,
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, RunError,
+        Effect, Processor, RunError,
     },
     decoder::DecodeError,
     helpers::BitAccess,
@@ -245,7 +244,7 @@ impl Instruction for LdcLit {
 mod tests {
     use super::{LdcImm, LdcLit};
     use crate::{
-        core::{Processor, Config, Coprocessor},
+        core::{Config, Coprocessor, Processor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

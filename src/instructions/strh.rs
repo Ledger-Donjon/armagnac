@@ -12,7 +12,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };

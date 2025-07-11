@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -66,7 +66,7 @@ impl Instruction for Qadd16 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{qadd16::Qadd16, Instruction},
         registers::RegisterIndex,
     };

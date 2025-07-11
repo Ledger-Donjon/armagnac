@@ -3,7 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3, T4};
 use super::{other, unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::core::{Processor, Effect};
+use crate::core::{Effect, Processor};
 use crate::qualifier_wide_match;
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift, ShiftType},
@@ -514,7 +514,7 @@ mod tests {
     use super::AddImm;
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{
             add::{AddReg, AddSpPlusImm, AddSpPlusReg},
             Encoding::DontCare,

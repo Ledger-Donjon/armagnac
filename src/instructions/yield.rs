@@ -7,9 +7,8 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V6M, V7EM, V7M, V8M},
-        Effect, RunError,
+        Effect, Processor, RunError,
     },
     decoder::DecodeError,
     qualifier_wide_match,
@@ -65,7 +64,7 @@ impl Instruction for Yield {
 mod tests {
     use super::Yield;
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{Encoding::DontCare, Instruction},
     };
 

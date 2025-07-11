@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{DecodeHelper, ItState},
     registers::RegisterIndex,

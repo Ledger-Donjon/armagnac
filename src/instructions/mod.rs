@@ -8,7 +8,7 @@
 use crate::{
     core::Condition,
     core::ItState,
-    core::{Processor, ArmVersion, Effect, RunError},
+    core::{ArmVersion, Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };

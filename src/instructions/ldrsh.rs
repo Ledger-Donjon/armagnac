@@ -11,7 +11,7 @@ use crate::{
     align::Align,
     arith::{shift_c, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::indexing_args,
@@ -279,7 +279,7 @@ mod tests {
     use super::{LdrshImm, LdrshLit, LdrshReg};
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

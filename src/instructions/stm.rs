@@ -10,7 +10,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     registers::{MainRegisterList, RegisterIndex},

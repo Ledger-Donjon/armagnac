@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::sign_extend,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::unpredictable,
 };

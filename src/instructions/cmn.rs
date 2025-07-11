@@ -9,7 +9,7 @@ use super::{Instruction, Qualifier};
 use crate::{
     arith::{add_with_carry, shift_c, thumb_expand_imm, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     qualifier_wide_match,
@@ -155,7 +155,7 @@ mod tests {
 
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{cmn::CmnImm, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

@@ -10,7 +10,7 @@ use crate::arith::{shift_c, Shift, ShiftType};
 use crate::qualifier_wide_match;
 use crate::{
     arith::thumb_expand_imm_optc,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::ItState,

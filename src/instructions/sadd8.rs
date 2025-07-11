@@ -4,7 +4,7 @@ use super::ArmVersion::{V7EM, V8M};
 use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
 use crate::core::ItState;
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::decoder::DecodeError;
 use crate::instructions::{unpredictable, DecodeHelper};
 use crate::registers::RegisterIndex;
@@ -75,7 +75,7 @@ impl Instruction for Sadd8 {
 #[cfg(test)]
 mod tests {
     use super::Sadd8;
-    use crate::core::{Processor, Config};
+    use crate::core::{Config, Processor};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 

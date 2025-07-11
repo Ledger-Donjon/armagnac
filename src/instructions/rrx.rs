@@ -8,7 +8,7 @@ use super::{
 use crate::{
     arith::{shift_c, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},
@@ -76,7 +76,7 @@ impl Instruction for Rrx {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{rrx::Rrx, Instruction},
         registers::RegisterIndex,
     };

@@ -6,7 +6,7 @@ use super::{undefined, unpredictable, Instruction, Pattern, Qualifier};
 use crate::core::{Effect, RunError};
 use crate::qualifier_wide_match;
 use crate::{
-    arith::sign_extend, core::Processor, core::Condition, core::ItState, decoder::DecodeError,
+    arith::sign_extend, core::Condition, core::ItState, core::Processor, decoder::DecodeError,
     instructions::other,
 };
 

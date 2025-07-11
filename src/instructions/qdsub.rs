@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::signed_sat_q,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -67,7 +67,7 @@ impl Instruction for Qdsub {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{qdsub::Qdsub, Instruction},
         registers::RegisterIndex,
     };

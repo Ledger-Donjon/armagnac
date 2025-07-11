@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -89,7 +89,7 @@ impl Instruction for Revsh {
 mod tests {
     use super::Revsh;
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

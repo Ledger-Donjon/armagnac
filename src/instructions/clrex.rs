@@ -3,9 +3,8 @@
 use super::Encoding::T1;
 use crate::{
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, ItState, MonitorState, RunError,
+        Effect, ItState, MonitorState, Processor, RunError,
     },
     decoder::DecodeError,
     instructions::{Encoding, Instruction, Pattern},

@@ -6,9 +6,8 @@ use crate::{
     arith::{shift_c, unsigned_sat_q, Shift},
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, RunError,
+        Effect, Processor, RunError,
     },
     instructions::{other, unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -87,7 +86,7 @@ mod tests {
     use super::Usat;
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::Instruction,
         registers::RegisterIndex,
     };

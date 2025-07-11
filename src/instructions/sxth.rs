@@ -11,7 +11,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::ror,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -97,7 +97,7 @@ impl Instruction for Sxth {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{sxth::Sxth, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

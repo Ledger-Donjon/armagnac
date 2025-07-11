@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{other, unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -79,7 +79,7 @@ impl Instruction for Bfi {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config, RunError},
+        core::{Config, Processor, RunError},
         instructions::{bfi::Bfi, Instruction},
         registers::RegisterIndex,
     };

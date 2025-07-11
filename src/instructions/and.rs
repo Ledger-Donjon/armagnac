@@ -7,8 +7,8 @@ use crate::instructions::rdn_args_string;
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    core::{Processor, RunError},
     core::{Effect, ItState},
+    core::{Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     registers::RegisterIndex,
@@ -182,7 +182,7 @@ impl Instruction for AndReg {
 mod tests {
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{
             and::{AndImm, AndReg},
             Encoding::DontCare,

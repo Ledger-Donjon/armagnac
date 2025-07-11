@@ -7,7 +7,7 @@ use super::{
     Pattern,
 };
 use crate::core::ItState;
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::decoder::DecodeError;
 use crate::helpers::BitAccess;
 use crate::instructions::{indexing_args, unpredictable, DecodeHelper};

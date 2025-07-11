@@ -13,7 +13,7 @@ use crate::{
     align::Align,
     arith::{shift_c, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{unpredictable, DecodeHelper},

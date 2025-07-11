@@ -9,7 +9,7 @@ use super::{Instruction, Qualifier};
 use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, thumb_expand_imm_optc, Shift},
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper, ItState},

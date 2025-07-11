@@ -4,7 +4,7 @@ use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2};
 use super::{DecodeHelper, Instruction, Pattern};
 use crate::core::ItState;
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::decoder::DecodeError;
 
 /// UDF (Undefined) instruction.
@@ -59,7 +59,7 @@ impl Instruction for Udf {
 mod tests {
     use super::Udf;
     use crate::{
-        core::{Processor, Config, RunError},
+        core::{Config, Processor, RunError},
         instructions::Instruction,
     };
 

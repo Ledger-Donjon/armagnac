@@ -9,7 +9,7 @@ use super::{
 use crate::{
     core::Irq,
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::DecodeHelper,
 };

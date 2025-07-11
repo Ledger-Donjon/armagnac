@@ -10,7 +10,7 @@ use crate::qualifier_wide_match;
 use crate::{
     arith::{shift_c, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, rdn_args_string, unpredictable, DecodeHelper},
@@ -180,7 +180,7 @@ impl Instruction for RorReg {
 mod tests {
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{
             ror::{RorImm, RorReg},
             Encoding::DontCare,

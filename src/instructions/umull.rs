@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -69,7 +69,7 @@ impl Instruction for Umull {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{umull::Umull, Instruction},
         registers::RegisterIndex,
     };

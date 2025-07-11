@@ -5,7 +5,7 @@ use super::Encoding::{self, T1};
 use super::{Instruction, Pattern};
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
     registers::RegisterIndex,
@@ -68,7 +68,7 @@ impl Instruction for Sadd16 {
 #[cfg(test)]
 mod tests {
     use super::Sadd16;
-    use crate::core::{Processor, Config};
+    use crate::core::{Config, Processor};
     use crate::instructions::Instruction;
     use crate::registers::RegisterIndex;
 

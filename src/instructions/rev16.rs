@@ -9,7 +9,7 @@ use super::{
 use crate::qualifier_wide_match;
 use crate::{
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     registers::RegisterIndex,
 };
@@ -86,7 +86,7 @@ impl Instruction for Rev16 {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{rev16::Rev16, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

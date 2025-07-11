@@ -8,9 +8,7 @@ mod exclusive_monitor;
 mod irq;
 mod it_state;
 
-pub use arm::{
-    Processor, ArmVersion, Effect, Emulator, Event, MapConflict, RunError, RunOptions,
-};
+pub use arm::{ArmVersion, Effect, Emulator, Event, MapConflict, Processor, RunError, RunOptions};
 pub use condition::Condition;
 pub use config::Config;
 pub use coprocessor::Coprocessor;

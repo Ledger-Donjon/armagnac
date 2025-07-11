@@ -9,7 +9,7 @@ use super::{
 use crate::{
     arith::{shift_c, signed_sat_q, Shift},
     core::ItState,
-    core::{Processor, Effect, RunError},
+    core::{Effect, Processor, RunError},
     decoder::DecodeError,
     helpers::BitAccess,
     instructions::{other, unpredictable, DecodeHelper},
@@ -86,7 +86,7 @@ mod tests {
     use super::Ssat;
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::Instruction,
         registers::RegisterIndex,
     };

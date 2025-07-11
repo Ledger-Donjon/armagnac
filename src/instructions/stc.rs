@@ -8,9 +8,8 @@ use super::{
 use crate::{
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, RunError,
+        Effect, Processor, RunError,
     },
     decoder::DecodeError,
     helpers::BitAccess,
@@ -137,7 +136,7 @@ pub mod tests {
     use super::Stc;
     use crate::{
         core::Coprocessor,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

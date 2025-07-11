@@ -6,7 +6,7 @@ use super::{
     ArmVersion::{V7EM, V7M, V8M},
     Pattern,
 };
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::{
     core::ItState,
     decoder::DecodeError,
@@ -74,7 +74,7 @@ impl Instruction for Bfc {
 mod tests {
     use super::Bfc;
     use crate::{
-        core::{Processor, Config, RunError},
+        core::{Config, Processor, RunError},
         instructions::Instruction,
         registers::RegisterIndex,
     };

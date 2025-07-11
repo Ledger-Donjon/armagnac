@@ -8,9 +8,8 @@ use crate::{core::Effect, registers::RegisterIndex};
 use crate::{
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V7EM, V7M, V8M},
-        RunError,
+        Processor, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
@@ -72,7 +71,7 @@ impl Instruction for Smull {
 mod tests {
     use super::Smull;
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::Instruction,
         registers::RegisterIndex,
     };

@@ -4,9 +4,8 @@ use crate::{
     arith::unsigned_sat_q,
     core::ItState,
     core::{
-        Processor,
         ArmVersion::{V7EM, V8M},
-        Effect, RunError,
+        Effect, Processor, RunError,
     },
     decoder::DecodeError,
     instructions::{unpredictable, DecodeHelper},
@@ -76,7 +75,7 @@ impl Instruction for Usat16 {
 mod tests {
     use super::Usat16;
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::Instruction,
         registers::RegisterIndex,
     };

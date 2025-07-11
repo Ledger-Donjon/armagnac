@@ -3,7 +3,7 @@
 use super::ArmVersion::{V6M, V7EM, V7M, V8M};
 use super::Encoding::{self, T1, T2, T3};
 use super::{unpredictable, DecodeHelper, Instruction, Pattern, Qualifier};
-use crate::core::{Processor, Effect, RunError};
+use crate::core::{Effect, Processor, RunError};
 use crate::qualifier_wide_match;
 use crate::{align::Align, registers::RegisterIndex};
 
@@ -87,7 +87,7 @@ impl Instruction for Adr {
 #[cfg(test)]
 mod tests {
     use crate::{
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{adr::Adr, Encoding::DontCare, Instruction},
         registers::RegisterIndex,
     };

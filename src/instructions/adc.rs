@@ -184,7 +184,7 @@ mod tests {
     use super::AdcImm;
     use crate::{
         arith::Shift,
-        core::{Processor, Config},
+        core::{Config, Processor},
         instructions::{adc::AdcReg, Encoding, Instruction},
         registers::RegisterIndex,
     };
