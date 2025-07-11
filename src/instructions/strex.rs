@@ -35,7 +35,6 @@ impl Instruction for Strex {
     }
 
     fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
-        println!("DEBUG AAA");
         debug_assert_eq!(encoding, T1);
         let rd = ins.reg4(8);
         let rt = ins.reg4(12);

@@ -2,10 +2,9 @@
 
 use super::{Encoding::T1, Pattern};
 use crate::{
-    align::Align,
     core::{
         ArmVersion::{V7EM, V7M, V8M},
-        Effect, ItState, MonitorState, Processor, RunError,
+        Effect, ItState, Processor, RunError,
     },
     decoder::DecodeError,
     instructions::{indexing_args, unpredictable, DecodeHelper, Encoding, Instruction},
