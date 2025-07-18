@@ -923,6 +923,11 @@ acf8ffef strh.w   lr, [r12, #4095]
 21f82ac0 strh.w   r12, [r1, r10, lsl #2]
 28f80070 strh.w   r7, [r8, r0]
 29f83750 strh.w   r5, [r9, r7, lsl #3]
+41f8000e strt     r0, [r1]
+42f8012e strt     r2, [r2, #1]
+4cf8ff9e strt     r9, [r12, #255]
+44f800ee strt     lr, [r4]
+43f8aa7e strt     r7, [r3, #170]
 081e     subs     r0, r1, #0
 9a1e     subs     r2, r3, #2
 341f     subs     r4, r6, #4

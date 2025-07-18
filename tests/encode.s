@@ -1481,6 +1481,14 @@ strh.w  r12, [r1, r10, lsl #2]
 strh.w  r7, [r8, r0]
 strh.w  r5, [r9, r7, lsl #3]
 
+// STRT
+// T1
+strt    r0, [r1]
+strt    r2, [r2, #1]
+strt    r9, [r12, #255]
+strt    r14, [r4]
+strt    r7, [r3, #170]
+
 // SUB (immediate)
 // T1
 subs.n  r0, r1, #0

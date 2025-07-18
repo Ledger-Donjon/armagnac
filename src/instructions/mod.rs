@@ -107,6 +107,7 @@ pub mod strex;
 pub mod strexb;
 pub mod strexh;
 pub mod strh;
+pub mod strt;
 pub mod sub;
 pub mod svc;
 pub mod sxtb;
