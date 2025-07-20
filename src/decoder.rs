@@ -340,6 +340,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::ldrsb::LdrsbImm>(version);
         dec.insert::<instructions::ldrsb::LdrsbLit>(version);
         dec.insert::<instructions::ldrsb::LdrsbReg>(version);
+        dec.insert::<instructions::ldrsbt::Ldrsbt>(version);
         dec.insert::<instructions::ldrsh::LdrshImm>(version);
         dec.insert::<instructions::ldrsh::LdrshLit>(version);
         dec.insert::<instructions::ldrsh::LdrshReg>(version);

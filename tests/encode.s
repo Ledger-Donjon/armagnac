@@ -725,6 +725,14 @@ ldrsb.w r7, [r1, r10, lsl #1]
 ldrsb.w r10, [r8, r9, lsl #3]
 ldrsb.w r14, [r14, r14]
 
+// LDRSBT
+// T1
+ldrsbt  r0, [r1]
+ldrsbt  r2, [r2, #1]
+ldrsbt  r9, [r12, #255]
+ldrsbt  r14, [r4]
+ldrsbt  r7, [r3, #170]
+
 // LDRSH (immediate)
 // T1
 ldrsh   r0, [r0, #0]
@@ -947,6 +955,9 @@ mrs     r5, primask
 //mrs     r2, faultmask
 mrs     r1, control
 
+.org 0x1830
+label_far_s12:
+
 // MSR
 // T1
 //msr     ipsr, r14
@@ -970,9 +981,6 @@ mul   r0, r1, r2
 mul   r1, r2, r3
 mul   r2, r3, r4
 mul   r14, r12, r10
-
-.org 0x1830
-label_far_s12:
 
 // MVN (immediate)
 // T1
