@@ -50,7 +50,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
 - SSBB: Speculative Store Bypass Barrier
-- STRHT: Store Register Halfword Unprivileged
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -146,7 +145,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - STLEXB: Store-Release Exclusive Byte
 - STLEXH: Store-Release Exclusive Halfword
 - STLH: Store-Release Halfword
-- STRHT: Store Register Halfword Unprivileged
 - SUB (immediate, from PC): Subtract
 - TT, TTT, TTA, TTAT: Test Target (Alternate Domain, Unprivileged)
 - VLLDM: Floating-point Lazy Load Multiple

@@ -108,6 +108,7 @@ pub mod strex;
 pub mod strexb;
 pub mod strexh;
 pub mod strh;
+pub mod strht;
 pub mod strt;
 pub mod sub;
 pub mod svc;
