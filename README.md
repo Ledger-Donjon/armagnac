@@ -44,7 +44,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 
 - CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
-- LDRSHT: Load Register Signed Halfword Unprivileged
 - PLD: Preload Data
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
@@ -128,7 +127,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LDAEXB: Load-Acquire Exclusive Byte
 - LDAEXH: Load-Acquire Exclusive Halfword
 - LDAH: Load-Acquire Halfword
-- LDRSHT: Load Register Signed Halfword Unprivileged
 - LSLS: Logical Shift Left, Setting flags
 - LSRS: Logical Shift Right, Setting flags
 - PLD: Preload Data

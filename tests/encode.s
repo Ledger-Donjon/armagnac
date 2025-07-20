@@ -769,6 +769,14 @@ ldrsh.w r7, [r1, r10, lsl #1]
 ldrsh.w r10, [r8, r9, lsl #3]
 ldrsh.w r14, [r14, r14]
 
+// LDRSHT
+// T1
+ldrsht  r0, [r1]
+ldrsht  r2, [r2, #1]
+ldrsht  r9, [r12, #255]
+ldrsht  r14, [r4]
+ldrsht  r7, [r3, #170]
+
 // LDRT
 // T1
 ldrt    r0, [r1, #0]
