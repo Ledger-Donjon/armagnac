@@ -1412,6 +1412,14 @@ strb.w  r7, [r0, r0, lsl #3]
 strb.w  r5, [r2, r7]
 strb.w  r14, [r14, r2, lsl #2]
 
+// STRBT
+// T1
+strbt   r0, [r1]
+strbt   r2, [r2, #1]
+strbt   r9, [r12, #255]
+strbt   r14, [r4]
+strbt   r7, [r3, #170]
+
 // STRD
 // T1
 strd    r0, r1, [r2]
