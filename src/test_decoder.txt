@@ -661,6 +661,7 @@ c4bc     pop      {r2, r6, r7}
 bde80300 pop.w    {r0, r1}
 bde88a04 pop.w    {r1, r3, r7, r10}
 bde80346 pop.w    {r0, r1, r9, r10, lr}
+bff3448f pssbb
 82fa81f0 qadd     r0, r1, r2
 83fa82f1 qadd     r1, r2, r3
 8cfa8bfa qadd     r10, r11, r12

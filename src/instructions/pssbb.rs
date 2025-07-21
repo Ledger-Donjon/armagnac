@@ -1,4 +1,4 @@
-//! Implements SSBB (Speculative Store Bypass Barrier) instruction.
+//! Implements PSSBB (Physical Speculative Store Bypass Barrier) instruction.
 
 use crate::{
     core::{
@@ -12,17 +12,17 @@ use crate::{
     },
 };
 
-/// SSBB instruction.
+/// PSSBB instruction.
 ///
-/// Speculative Store Bypass Barrier.
-pub struct Ssbb {}
+/// Physical Speculative Store Bypass Barrier.
+pub struct Pssbb {}
 
-impl Instruction for Ssbb {
+impl Instruction for Pssbb {
     fn patterns() -> &'static [super::Pattern] {
         &[Pattern {
             encoding: T1,
             versions: &[V7M, V7EM, V8M],
-            expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)01000000",
+            expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)01000100",
         }]
     }
 
@@ -36,7 +36,7 @@ impl Instruction for Ssbb {
     }
 
     fn name(&self) -> String {
-        "ssbb".into()
+        "pssbb".into()
     }
 
     fn args(&self, _pc: u32) -> String {

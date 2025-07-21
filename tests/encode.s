@@ -1080,6 +1080,10 @@ pop.w   {r0, r1, r9, r10, r14}
 //pop.w   {r4}
 //pop.w   {r14}
 
+// PSSBB
+// T1
+pssbb
+
 // QADD
 // T1
 qadd    r0, r1, r2

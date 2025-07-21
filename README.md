@@ -46,7 +46,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - DBG: Debug Hint
 - PLD: Preload Data
 - PLI: Preload Instruction
-- PSSBB: Physical Speculative Store Bypass Barrier
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -130,7 +129,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LSRS: Logical Shift Right, Setting flags
 - PLD: Preload Data
 - PLI: Preload Instruction
-- PSSBB: Physical Speculative Store Bypass Barrier
 - SG: Secure Gateway
 - SSAT16: Signed Saturate 16
 - STL: Store-Release Word
