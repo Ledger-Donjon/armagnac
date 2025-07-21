@@ -186,6 +186,10 @@ bceb9e2f cmp.w    r12, lr, lsr #10
 71b6     cpsid    f
 73b6     cpsid    if
 aff31480 csdb
+aff3f080 dbg      #0
+aff3f580 dbg      #5
+aff3fa80 dbg      #10
+aff3ff80 dbg      #15
 bff35f8f dmb      sy
 bff3508f dmb      #0x0
 bff3558f dmb      #0x5

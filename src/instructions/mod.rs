@@ -35,6 +35,7 @@ pub mod cmn;
 pub mod cmp;
 pub mod cps;
 pub mod csdb;
+pub mod dbg;
 pub mod dmb;
 pub mod dsb;
 pub mod eor;

@@ -362,6 +362,13 @@ cpsid   fi
 // T1
 csdb
 
+// DBG
+// T1
+dbg     #0
+dbg     #5
+dbg     #10
+dbg     #15
+
 // DMB
 // T1
 dmb

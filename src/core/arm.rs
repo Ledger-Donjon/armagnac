@@ -81,6 +81,7 @@ pub enum Event {
     /// CPU reset.
     Reset,
     Break(u8),
+    DebugHint(u8),
 }
 
 struct MemoryMappings(Vec<MemoryMap>);
@@ -935,6 +936,7 @@ impl Processor {
                     Effect::None => {}
                     Effect::Branch => {}
                     Effect::Break(i) => self.events.push(Event::Break(i)),
+                    Effect::DebugHint(i) => self.events.push(Event::DebugHint(i)),
                     Effect::WaitForEvent => self.state = State::WaitingForEvent,
                     Effect::WaitForInterrupt => self.state = State::WaitingForInterrupt,
                 }
@@ -1340,9 +1342,10 @@ pub trait Emulator {
             }
             let event = self.next_event()?;
             match event {
-                Event::Hook { address: _ } | Event::Reset | Event::Break(_) => {
-                    return Ok(Some(event.clone()))
-                }
+                Event::Hook { address: _ }
+                | Event::Reset
+                | Event::Break(_)
+                | Event::DebugHint(_) => return Ok(Some(event.clone())),
                 Event::Instruction { ins: _ } => ins_count += 1,
             }
         }
@@ -1387,6 +1390,8 @@ pub enum Effect {
     Branch,
     /// Returned by the BKPT instruction.
     Break(u8),
+    /// Returned by DBG instruction.
+    DebugHint(u8),
     /// Instruction requests the halt of the processor execution until an event occurs.
     WaitForEvent,
     /// Instruction requests the halt of the processor execution until an interrupt occurs.
