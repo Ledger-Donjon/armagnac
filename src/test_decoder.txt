@@ -665,6 +665,26 @@ aff30080 nop.w
 4aeace77 orr.w    r7, r10, lr, lsl #31
 40ead713 orr.w    r3, r0, r7, lsr #7
 50eac703 orrs.w   r3, r0, r7, lsl #3
+90f800f0 pld      [r0]
+93f8aaf0 pld      [r3, #170]
+97f8ffff pld      [r7, #4095]
+9cf828f0 pld      [r12, #40]
+9ef8c4f9 pld      [lr, #2500]
+10f800fc pld      [r0, #-0]
+13f8aafc pld      [r3, #-170]
+17f8fffc pld      [r7, #-255]
+1cf828fc pld      [r12, #-40]
+1ef811fc pld      [lr, #-17]
+9ff800f0 pld      [pc, #0]
+1ff8ffff pld      [pc, #-4095]
+9ff8ffff pld      [pc, #4095]
+9ff8e3f9 pld      [pc, #2531]
+1ff8f1f6 pld      [pc, #-1777]
+10f801f0 pld      [r0, r1]
+13f837f0 pld      [r3, r7, lsl #3]
+1ef81cf0 pld      [lr, r12, lsl #1]
+17f80ef0 pld      [r7, lr]
+12f809f0 pld      [r2, r9]
 01bc     pop      {r0}
 03bc     pop      {r0, r1}
 3abc     pop      {r1, r3, r4, r5}

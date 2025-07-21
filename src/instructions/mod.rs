@@ -75,6 +75,7 @@ pub mod mvn;
 pub mod nop;
 pub mod orn;
 pub mod orr;
+pub mod pld;
 pub mod pop;
 pub mod pssbb;
 pub mod push;

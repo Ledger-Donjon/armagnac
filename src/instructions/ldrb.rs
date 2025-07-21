@@ -166,6 +166,7 @@ impl Instruction for LdrbReg {
                 let rm = ins.reg4(0);
                 let rt = ins.reg4(12);
                 let rn = ins.reg4(16);
+                other(rt.is_pc())?; // PLD
                 other(rn.is_pc())?; // LDR (literal)
                 unpredictable(rm.is_sp_or_pc())?;
                 unpredictable(rt.is_pc() && state.in_it_block_not_last())?;

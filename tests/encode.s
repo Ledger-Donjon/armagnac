@@ -1073,6 +1073,35 @@ orr.w  r7, r10, r14, lsl #31
 orr.w  r3, r0, r7, lsr #7
 orrs.w  r3, r0, r7, asl #3
 
+// PLD (immediate)
+// T1
+pld     [r0, #0]
+pld     [r3, #170]
+pld     [r7, #4095]
+pld     [r12, #40]
+pld     [r14, #2500]
+// T2
+pld     [r0, #-0]
+pld     [r3, #-170]
+pld     [r7, #-255]
+pld     [r12, #-40]
+pld     [r14, #-17]
+
+// PLD (literal)
+// T1
+pld     [pc]
+pld     [pc, #-4095]
+pld     [pc, #4095]
+pld     [pc, #2531]
+pld     [pc, #-1777]
+
+// PLD (register)
+pld     [r0, r1]
+pld     [r3, r7, lsl #3]
+pld     [r14, r12, lsl #1]
+pld     [r7, r14]
+pld     [r2, r9]
+
 // POP
 // T1
 pop.n   {r0}
