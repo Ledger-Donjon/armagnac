@@ -7,6 +7,7 @@ use crate::{
     },
     decoder::DecodeError,
     instructions::{
+        unpredictable,
         Encoding::{self, T1},
         Instruction, Pattern,
     },
@@ -26,8 +27,9 @@ impl Instruction for Ssbb {
         }]
     }
 
-    fn try_decode(encoding: Encoding, _ins: u32, _state: ItState) -> Result<Self, DecodeError> {
+    fn try_decode(encoding: Encoding, _ins: u32, state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(encoding, T1);
+        unpredictable(state.in_it_block())?;
         Ok(Self {})
     }
 
