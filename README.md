@@ -5,7 +5,7 @@
 
 Armagnac is a simple ARM Thumb emulation library written in Rust which can be used to emulate simple embedded systems. The library gives high control on the processor execution, allowing to run instruction by instruction, create hooks, inspect or modify the system state on the fly. Integration of custom peripherals in the memory space is made easy, allowing custom platforms emulation. This library has little dependencies.
 
-The library is in development and is highly experimental. It is not complete as not all instructions have been implemented yet for ArmV7-M and ArmV8-M (see below for more details). Implementation has been mostly tested against ArmV7-M firmwares, a bit less against ArmV8-M, and ArmV6-M has not been tested. Expect bugs, rage and frustration.
+The library is in development and is highly experimental. All instructions for ArmV6-M and ArmV7-M are implemented. Instruction set implementation for ArmV7E-M and ArmV8-M is not complete yet (see below for more details). Implementation has been mostly tested against ArmV7-M firmwares, a bit less against ArmV8-M, and ArmV6-M has not been tested. Expect bugs, rage and frustration.
 
 Currently, emulation speed is typically 8 million instructions per second. There is no virtualization or translation to native code whatsoever. Also, there is no "unsafe" code.
 
@@ -37,13 +37,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 - All exceptions are considered WFI wakeup events.
 - No global monitor is implemented, synchronization and semaphores accross multiple
   processors cannot be emulated.
-
-### Unimplemented instructions for ArmV7-M
-
-Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. Unimplemented instructions will raise an error during execution.
-
-- PLD: Preload Data
-- PLI: Preload Instruction
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -123,8 +116,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - LDAH: Load-Acquire Halfword
 - LSLS: Logical Shift Left, Setting flags
 - LSRS: Logical Shift Right, Setting flags
-- PLD: Preload Data
-- PLI: Preload Instruction
 - SG: Secure Gateway
 - SSAT16: Signed Saturate 16
 - STL: Store-Release Word

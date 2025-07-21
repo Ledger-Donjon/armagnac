@@ -1102,6 +1102,33 @@ pld     [r14, r12, lsl #1]
 pld     [r7, r14]
 pld     [r2, r9]
 
+// PLI (immediate, literal)
+// T1
+pli     [r0, #0]
+pli     [r3, #170]
+pli     [r7, #4095]
+pli     [r12, #40]
+pli     [r14, #2500]
+// T2
+pli     [r0, #-0]
+pli     [r3, #-170]
+pli     [r7, #-255]
+pli     [r12, #-40]
+pli     [r14, #-17]
+// T3
+pli     [pc]
+pli     [pc, #-4095]
+pli     [pc, #4095]
+pli     [pc, #2531]
+pli     [pc, #-1777]
+
+// PLI (register)
+pli     [r0, r1]
+pli     [r3, r7, lsl #3]
+pli     [r14, r12, lsl #1]
+pli     [r7, r14]
+pli     [r2, r9]
+
 // POP
 // T1
 pop.n   {r0}

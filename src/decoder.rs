@@ -376,6 +376,8 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::pld::PldImm>(version);
         dec.insert::<instructions::pld::PldLit>(version);
         dec.insert::<instructions::pld::PldReg>(version);
+        dec.insert::<instructions::pli::PliImmLit>(version);
+        dec.insert::<instructions::pli::PliReg>(version);
         dec.insert::<instructions::push::Push>(version);
         dec.insert::<instructions::pssbb::Pssbb>(version);
         dec.insert::<instructions::qadd16::Qadd16>(version);
