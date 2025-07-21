@@ -366,7 +366,7 @@ dmb     #0x5
 
 // DSB
 // T1
-// dsb #0 is ssbb
+// dsb #0 is SSBB
 dsb
 dsb     #0x1
 dsb     #0x5
@@ -1589,6 +1589,10 @@ sub     r7, sp, r2, lsl #1
 subs    r10, sp, r9, lsr #31
 sub     r2, sp, r3, asr #5
 subs    r14, sp, r7, asl #12
+
+// SSBB
+// T1
+ssbb
 
 // SVC
 svc     #0

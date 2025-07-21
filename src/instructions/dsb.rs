@@ -6,6 +6,7 @@ use super::{
     ArmVersion::{V6M, V7EM, V7M, V8M},
     Pattern,
 };
+use crate::instructions::other;
 use crate::{
     core::ItState,
     core::{Effect, Processor, RunError},
@@ -28,9 +29,13 @@ impl Instruction for Dsb {
 
     fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(encoding, T1);
-        Ok(Self {
-            option: (ins & 0xf) as u8,
-        })
+        let option = (ins & 0xf) as u8;
+        // For Arm v6-M, only 0b1111 is specified for the option value. All other encodings are
+        // said as reserved.
+        // Some encodings matches others instructions like SSBB since Arm v7-M, so we mark those
+        // values as 'others'.
+        other((option == 0) || (option == 4))?; // SSBB or PSSBB
+        Ok(Self { option })
     }
 
     fn execute(&self, _proc: &mut Processor) -> Result<Effect, RunError> {

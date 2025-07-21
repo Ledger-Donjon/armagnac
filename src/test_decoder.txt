@@ -999,6 +999,7 @@ adeb4207 sub.w    r7, sp, r2, lsl #1
 bdebd97a subs.w   r10, sp, r9, lsr #31
 adeb6312 sub.w    r2, sp, r3, asr #5
 bdeb073e subs.w   lr, sp, r7, lsl #12
+bff3408f ssbb
 00df     svc      #0
 0adf     svc      #10
 3edf     svc      #62

@@ -47,7 +47,6 @@ Here is a list of instructions that are not implemented yet for ArmV7-M archiect
 - PLD: Preload Data
 - PLI: Preload Instruction
 - PSSBB: Physical Speculative Store Bypass Barrier
-- SSBB: Speculative Store Bypass Barrier
 
 ### Unimplemented instructions for ArmV7E-M
 
@@ -134,7 +133,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - PSSBB: Physical Speculative Store Bypass Barrier
 - SG: Secure Gateway
 - SSAT16: Signed Saturate 16
-- SSBB: Speculative Store Bypass Barrier
 - STL: Store-Release Word
 - STLB: Store-Release Byte
 - STLEX: Store-Release Exclusive Word

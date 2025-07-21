@@ -420,6 +420,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::sub::SubReg>(version);
         dec.insert::<instructions::sub::SubSpMinusImm>(version);
         dec.insert::<instructions::sub::SubSpMinusReg>(version);
+        dec.insert::<instructions::ssbb::Ssbb>(version);
         dec.insert::<instructions::svc::Svc>(version);
         dec.insert::<instructions::sxtb::Sxtb>(version);
         dec.insert::<instructions::sxth::Sxth>(version);
