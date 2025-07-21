@@ -19,7 +19,7 @@ use crate::{
 pub struct Ssbb {}
 
 impl Instruction for Ssbb {
-    fn patterns() -> &'static [super::Pattern] {
+    fn patterns() -> &'static [Pattern] {
         &[Pattern {
             encoding: T1,
             versions: &[V7M, V7EM, V8M],

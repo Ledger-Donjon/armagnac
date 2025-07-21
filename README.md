@@ -42,7 +42,6 @@ Here is a non-exhaustive list of what is not implemented/supported yet:
 
 Here is a list of instructions that are not implemented yet for ArmV7-M archiecture version. Unimplemented instructions will raise an error during execution.
 
-- CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
 - PLD: Preload Data
 - PLI: Preload Instruction
@@ -117,7 +116,6 @@ Here is the list of instructions that are not implemented yet for ArmV8-M archit
 - ADD (immediate, to PC): Add to PC
 - ASRS: Arithmetic Shift Right, Setting flags
 - BXAUT: Branch Exchange after Authentication
-- CSDB: Consumption of Speculative Data Barrier
 - DBG: Debug Hint
 - LDA: Load-Acquire Word
 - LDAB: Load-Acquire Byte

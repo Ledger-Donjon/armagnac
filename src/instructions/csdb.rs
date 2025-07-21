@@ -1,4 +1,9 @@
-//! Implements PSSBB (Physical Speculative Store Bypass Barrier) instruction.
+//! Implements CSDB (Consumption of Speculative Data Barrier) instruction.
+
+/// CSDB instruction.
+///
+/// Consumption of Speculative Data Barrier.
+pub struct Csdb {}
 
 use crate::{
     core::{
@@ -13,17 +18,12 @@ use crate::{
     },
 };
 
-/// PSSBB instruction.
-///
-/// Physical Speculative Store Bypass Barrier.
-pub struct Pssbb {}
-
-impl Instruction for Pssbb {
+impl Instruction for Csdb {
     fn patterns() -> &'static [Pattern] {
         &[Pattern {
             encoding: T1,
             versions: &[V7M, V7EM, V8M],
-            expression: "111100111011(1)(1)(1)(1)10(0)0(1)(1)(1)(1)01000100",
+            expression: "111100111010(1)(1)(1)(1)10(0)0(0)00000010100",
         }]
     }
 
@@ -38,7 +38,7 @@ impl Instruction for Pssbb {
     }
 
     fn name(&self) -> String {
-        "pssbb".into()
+        "csdb".into()
     }
 
     fn args(&self, _pc: u32) -> String {

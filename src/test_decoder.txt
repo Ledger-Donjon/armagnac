@@ -185,6 +185,7 @@ bceb9e2f cmp.w    r12, lr, lsr #10
 72b6     cpsid    i
 71b6     cpsid    f
 73b6     cpsid    if
+aff31480 csdb
 bff35f8f dmb      sy
 bff3508f dmb      #0x0
 bff3558f dmb      #0x5
@@ -308,6 +309,12 @@ def8aaea ldr.w    lr, [lr, #2730]
 54f81f39 ldr      r3, [r4], #-31
 55f8ff4d ldr      r4, [r5, #-255]!
 5ef8ffff ldr      pc, [lr, #255]!
+00bf     nop
+00bf     nop
+00bf     nop
+00bf     nop
+00bf     nop
+00bf     nop
 00bf     nop
 0148     ldr      r0, [pc, #4]
 0149     ldr      r1, [pc, #4]

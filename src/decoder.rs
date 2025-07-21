@@ -310,6 +310,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::cmp::CmpImm>(version);
         dec.insert::<instructions::cmp::CmpReg>(version);
         dec.insert::<instructions::cps::Cps>(version);
+        dec.insert::<instructions::csdb::Csdb>(version);
         dec.insert::<instructions::dmb::Dmb>(version);
         dec.insert::<instructions::dsb::Dsb>(version);
         dec.insert::<instructions::eor::EorImm>(version);

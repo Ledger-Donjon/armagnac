@@ -358,6 +358,10 @@ cpsid   i
 cpsid   f
 cpsid   fi
 
+// CSDB
+// T1
+csdb
+
 // DMB
 // T1
 dmb
@@ -933,6 +937,9 @@ mrc2    p7, #0, r7, c15, c6, #1
 mrc2    p1, #3, r2, c7, c3, #4
 mrc2    p6, #2, apsr_nzcv, c1, c2, #3
 
+.org 0x1830
+label_far_s12:
+
 // MRRC
 // T1
 mrrc    p0, #1, r4, r9, c2
@@ -962,9 +969,6 @@ mrs     r5, primask
 //mrs     r3, basepri_max
 //mrs     r2, faultmask
 mrs     r1, control
-
-.org 0x1830
-label_far_s12:
 
 // MSR
 // T1
