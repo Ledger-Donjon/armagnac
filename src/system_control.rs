@@ -292,6 +292,7 @@ pub struct SystemControl {
     stcsr: Stcsr,
     strvr: MaskedRegister,
     stcvr: u32,
+    pub cpuid: CpuId,
     pub vtor: Vtor,
     pub aircr: Aircr,
     pub ccr: Ccr,
@@ -316,6 +317,7 @@ impl Default for SystemControl {
             stcsr: Default::default(),
             strvr: MaskedRegister::new(0).reserved(0xff000000),
             stcvr: Default::default(),
+            cpuid: Default::default(),
             vtor: Default::default(),
             aircr: Default::default(),
             ccr: Default::default(),
@@ -340,7 +342,7 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Strvr => self.strvr.value,
             SystemControlRegister::Stcvr => self.stcvr,
             SystemControlRegister::Stcr => todo!(),
-            SystemControlRegister::Cpuid => todo!(),
+            SystemControlRegister::Cpuid => self.cpuid.0,
             SystemControlRegister::Icsr => todo!(),
             SystemControlRegister::Vtor => todo!(),
             SystemControlRegister::Aircr => self.aircr.0,
@@ -377,7 +379,8 @@ impl RegistersMemoryInterface for SystemControl {
             SystemControlRegister::Strvr => self.strvr.write(value)?,
             SystemControlRegister::Stcvr => self.stcvr = 0,
             SystemControlRegister::Stcr => todo!(),
-            SystemControlRegister::Cpuid => todo!(),
+            // CPUID is read only
+            SystemControlRegister::Cpuid => {}
             SystemControlRegister::Icsr => todo!(),
             SystemControlRegister::Vtor => self.vtor.write(value)?,
             SystemControlRegister::Aircr => self.aircr.write(value, env)?,
@@ -418,6 +421,68 @@ impl RegistersMemoryInterface for SystemControl {
                 }
             }
         }
+    }
+}
+
+/// CPUID Base Register.
+///
+/// Provides identification information for the processor. Default value is `0x410f0000` but this
+/// can be changed depending on the processor that is being emulated.
+pub struct CpuId(pub u32);
+
+impl CpuId {
+    /// Returns the revision number.
+    pub fn revision(&self) -> u32 {
+        self.0 & 0xf
+    }
+
+    /// Sets the revision number.
+    /// `value` must be in range [0, 15].
+    pub fn set_revision(&mut self, value: u32) {
+        assert!(value < 16);
+        self.0 = (self.0 & 0xfffffff0) | value;
+    }
+
+    /// Returns part number.
+    pub fn part_no(&self) -> u32 {
+        (self.0 >> 4) & 0xfff
+    }
+
+    /// Sets the part number.
+    /// `value` must be in range [0, 0xfff].
+    pub fn set_part_no(&mut self, value: u32) {
+        assert!(value <= 0xfff);
+        self.0 = (self.0 & 0xffff000f) | (value << 4);
+    }
+
+    /// Returns the variant number.
+    pub fn variant(&self) -> u32 {
+        (self.0 >> 20) & 0xf
+    }
+
+    /// Sets the variant number.
+    /// `value` must be in range [0, 15].
+    pub fn set_variant(&mut self, value: u32) {
+        assert!(value <= 0xf);
+        self.0 = (self.0 & 0xff0fffff) | (value << 20);
+    }
+
+    /// Returns the implementer code assigned by Arm.
+    pub fn implementer(&self) -> u32 {
+        self.0 >> 24
+    }
+
+    /// Sets the implementer code.
+    /// `value` must be in range [0, 0xff].
+    pub fn set_implementer(&mut self, value: u32) {
+        assert!(value <= 0xff);
+        self.0 = (self.0 & 0x00ffffff) | (value << 24);
+    }
+}
+
+impl Default for CpuId {
+    fn default() -> Self {
+        Self(0x410f0000)
     }
 }
 
@@ -629,7 +694,7 @@ impl Cfsr {
 
 #[cfg(test)]
 mod tests {
-    use crate::memory::MemoryAccessError;
+    use crate::{memory::MemoryAccessError, system_control::CpuId};
 
     use super::Vtor;
 
@@ -641,5 +706,15 @@ mod tests {
         assert_eq!(reg.write(0xffffffff), Err(MemoryAccessError::InvalidValue));
         assert_eq!(reg.write(0), Ok(()));
         assert_eq!(reg.0, 0);
+    }
+
+    #[test]
+    fn test_cpuid_register() {
+        let mut reg = CpuId::default();
+        reg.set_revision(5);
+        reg.set_part_no(0x1f2);
+        reg.set_variant(8);
+        reg.set_implementer(0xaa);
+        assert_eq!(reg.0, 0xaa8f1f25);
     }
 }
