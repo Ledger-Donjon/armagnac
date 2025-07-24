@@ -15,6 +15,9 @@ use crate::{
 };
 
 /// MSR (register) instruction.
+///
+/// Move to Special Register. Moves the value of a general purpose register to the specified
+/// special purpose register.
 pub struct Msr {
     /// Destination special register.
     sysm: RegisterIndex,
@@ -24,18 +27,30 @@ pub struct Msr {
 
 impl Instruction for Msr {
     fn patterns() -> &'static [Pattern] {
-        // TODO: For ArmV8-M encoding can accept a mask. This is not implemented yet.
-        &[Pattern {
-            encoding: T1,
-            versions: &[V6M, V7M, V7EM, V8M],
-            expression: "11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx",
-        }]
+        &[
+            Pattern {
+                encoding: T1,
+                versions: &[V6M],
+                expression: "11110011100(0)xxxx10(0)0(1)(0)(0)(0)xxxxxxxx",
+            },
+            // TODO: mask can be different from 2 only when having main extension. We don't test
+            // extensions yet.
+            Pattern {
+                encoding: T1,
+                versions: &[V7M, V7EM, V8M],
+                expression: "11110011100(0)xxxx10(0)0xx(0)(0)xxxxxxxx",
+            },
+        ]
     }
 
     fn try_decode(encoding: Encoding, ins: u32, _state: ItState) -> Result<Self, DecodeError> {
         debug_assert_eq!(encoding, T1);
         let rn = ins.reg4(16);
         let sysm = ins.imm8(0);
+        // For ArmV6-M mask is always 2.
+        // For ArmV7-M and following, mask can be different.
+        let mask = ins.imm2(10);
+        unpredictable((mask == 0) || ((mask != 2) && !matches!(sysm, 0..=3)))?;
         let good_sysm = matches!(sysm, 0..=3 | 5..=9 | 16..=20);
         unpredictable(rn.is_sp_or_pc() || !good_sysm)?;
         Ok(Self {
@@ -64,7 +79,11 @@ impl Instruction for Msr {
                     proc.registers.psp = val
                 }
             }
-            RegisterIndex::Primask => todo!(),
+            RegisterIndex::Primask => {
+                if proc.is_privileged() {
+                    proc.registers.primask.set_pm(val.bit(0));
+                }
+            },
             RegisterIndex::Basepri => todo!(),
             RegisterIndex::BasepriMax => todo!(),
             RegisterIndex::FaultMask => todo!(),
