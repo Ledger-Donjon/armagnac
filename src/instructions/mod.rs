@@ -326,7 +326,7 @@ pub fn other(cond: bool) -> Result<(), DecodeError> {
 }
 
 /// Possible instruction sizes for ARM Thumb.
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Eq, Hash)]
 pub enum InstructionSize {
     /// 16-bit instruction.
     Ins16 = 2,

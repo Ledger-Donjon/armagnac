@@ -10,13 +10,15 @@
 //! The instruction decoder implementation can be selected by changing
 //! [crate::arm::Processor::instruction_decoder].
 
+use lru::LruCache;
+
 use crate::{
     arith::ArithError,
     core::ArmVersion,
     core::ItState,
     instructions::{self, Encoding, Instruction, InstructionSize},
 };
-use std::{fmt::Display, rc::Rc};
+use std::{cell::RefCell, fmt::Display, num::NonZeroUsize, rc::Rc};
 
 /// Any struct which implement this trait can be used by the emulator to decode instructions.
 ///
@@ -681,10 +683,62 @@ impl InstructionDecode for Lut16AndGrouped32InstructionDecoder {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct DecodeCacheKey {
+    ins: u32,
+    size: InstructionSize,
+    state: ItState,
+}
+
+/// A decoder caching decode with an LRU cache of it's inner decoder.
+pub struct LruCachedInstuctionDecoder<D: InstructionDecode> {
+    decoder: D,
+    decode_cache:
+        RefCell<LruCache<DecodeCacheKey, Result<Rc<dyn Instruction>, InstructionDecodeError>>>,
+}
+
+impl<D> LruCachedInstuctionDecoder<D>
+where
+    D: InstructionDecode,
+{
+    pub fn new(decoder: D, decode_cache_capacity: NonZeroUsize) -> Self {
+        Self {
+            decoder,
+            decode_cache: RefCell::new(LruCache::new(decode_cache_capacity)),
+        }
+    }
+}
+
+impl<D> InstructionDecode for LruCachedInstuctionDecoder<D>
+where
+    D: InstructionDecode,
+{
+    fn try_decode(
+        &self,
+        ins: u32,
+        size: InstructionSize,
+        state: ItState,
+    ) -> Result<Rc<dyn Instruction>, InstructionDecodeError> {
+        let mut decode_cache = self.decode_cache.borrow_mut();
+        let decode_cache_key = DecodeCacheKey { ins, size, state };
+
+        if let Some(decode_result) = decode_cache.get(&decode_cache_key) {
+            decode_result.clone()
+        } else {
+            let decode_result = self.decoder.try_decode(ins, size, state);
+
+            decode_cache.put(decode_cache_key, decode_result.clone());
+
+            decode_result
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        BasicInstructionDecoder, Lut16AndGrouped32InstructionDecoder, Lut16InstructionDecoder,
+        BasicInstructionDecoder, LruCachedInstuctionDecoder, Lut16AndGrouped32InstructionDecoder,
+        Lut16InstructionDecoder,
     };
     use crate::{
         core::ItState,
@@ -697,6 +751,7 @@ mod tests {
         any::Any,
         fs::File,
         io::{BufRead, BufReader},
+        num::NonZeroUsize,
     };
 
     #[test]
@@ -788,11 +843,26 @@ mod tests {
         let dec_a = BasicInstructionDecoder::new(V7EM);
         let dec_b = Lut16InstructionDecoder::new(V7EM);
         let dec_c = Lut16AndGrouped32InstructionDecoder::new(V7EM);
+        let dec_a_cached = LruCachedInstuctionDecoder::new(
+            BasicInstructionDecoder::new(V7EM),
+            NonZeroUsize::new(1000).unwrap(),
+        );
+        let dec_b_cached = LruCachedInstuctionDecoder::new(
+            Lut16InstructionDecoder::new(V7EM),
+            NonZeroUsize::new(1000).unwrap(),
+        );
+        let dec_c_cached = LruCachedInstuctionDecoder::new(
+            Lut16AndGrouped32InstructionDecoder::new(V7EM),
+            NonZeroUsize::new(1000).unwrap(),
+        );
         let it = ItState::new();
 
         for i in 0..=u16::MAX {
             test_decoder(&dec_a, &dec_b, i as u32, InstructionSize::Ins16, it);
             test_decoder(&dec_a, &dec_c, i as u32, InstructionSize::Ins16, it);
+            test_decoder(&dec_a, &dec_a_cached, i as u32, InstructionSize::Ins16, it);
+            test_decoder(&dec_a, &dec_b_cached, i as u32, InstructionSize::Ins16, it);
+            test_decoder(&dec_a, &dec_c_cached, i as u32, InstructionSize::Ins16, it);
         }
 
         // For 32 bit encodings we cannot test the whole space, so pick a high number of random
@@ -802,6 +872,9 @@ mod tests {
             let ins = rng.random();
             test_decoder(&dec_a, &dec_b, ins, InstructionSize::Ins32, it);
             test_decoder(&dec_a, &dec_c, ins, InstructionSize::Ins32, it);
+            test_decoder(&dec_a, &dec_a_cached, ins, InstructionSize::Ins32, it);
+            test_decoder(&dec_a, &dec_b_cached, ins, InstructionSize::Ins32, it);
+            test_decoder(&dec_a, &dec_c_cached, ins, InstructionSize::Ins32, it);
         }
     }
 }

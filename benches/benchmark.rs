@@ -1,8 +1,12 @@
 use armagnac::{
-    core::ArmVersion::V7M, decoder::Lut16AndGrouped32InstructionDecoder, harness::ElfHarness,
+    core::ArmVersion::V7M,
+    decoder::{
+        BasicInstructionDecoder, LruCachedInstuctionDecoder, Lut16AndGrouped32InstructionDecoder,
+    },
+    harness::ElfHarness,
 };
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use std::time::Duration;
+use std::{num::NonZeroUsize, time::Duration};
 
 pub fn benchmark(c: &mut Criterion) {
     let elf = include_bytes!("benchmark.elf");
@@ -21,6 +25,26 @@ pub fn benchmark(c: &mut Criterion) {
     harness.proc.instruction_decoder = Box::new(Lut16AndGrouped32InstructionDecoder::new(V7M));
 
     g.bench_function("math_lut16grouped32_decoder", |b| {
+        b.iter(|| black_box(harness.call1("bench_math", 5.0f32.to_bits())))
+    });
+
+    // Test with basic instruction decoder cached
+    harness.proc.instruction_decoder = Box::new(LruCachedInstuctionDecoder::new(
+        BasicInstructionDecoder::new(harness.proc.version),
+        NonZeroUsize::new(20000).unwrap(),
+    ));
+
+    g.bench_function("math_default_decoder_cached", |b| {
+        b.iter(|| black_box(harness.call1("bench_math", 5.0f32.to_bits())))
+    });
+
+    // Test with faster instruction decoder cached
+    harness.proc.instruction_decoder = Box::new(LruCachedInstuctionDecoder::new(
+        Lut16AndGrouped32InstructionDecoder::new(V7M),
+        NonZeroUsize::new(20000).unwrap(),
+    ));
+
+    g.bench_function("math_lut16grouped32_decoder_cached", |b| {
         b.iter(|| black_box(harness.call1("bench_math", 5.0f32.to_bits())))
     });
 }

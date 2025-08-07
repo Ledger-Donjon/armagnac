@@ -784,12 +784,15 @@ impl Processor {
                 .borrow_mut()
                 .write_u32le(address - mapping.address, value, &mut env);
         self.memory_op_actions.extend(env.actions);
-        write.map_err(|e| RunError::MemWrite {
-            address,
-            size: 4,
-            value,
-            cause: e,
-        })
+        match write {
+            Ok(()) => Ok(()),
+            Err(e) => Err(RunError::MemWrite {
+                address,
+                size: 4,
+                value,
+                cause: e,
+            }),
+        }
     }
 
     /// Corresponds to `ValidateAddress()` in the Arm Architecture Reference Manual.
