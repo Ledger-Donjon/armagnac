@@ -133,7 +133,7 @@ impl Instruction for LdrImm {
         }
         if self.rt.is_pc() {
             if addr & 3 == 0 {
-                todo!();
+                proc.load_write_pc(data)?;
             } else {
                 return Err(RunError::InstructionUnpredictable);
             }
@@ -216,7 +216,7 @@ impl Instruction for LdrLit {
         let data = proc.read_u32_unaligned(addr)?;
         if self.rt.is_pc() {
             if addr & 3 == 0 {
-                todo!();
+                proc.load_write_pc(data)?;
             } else {
                 return Err(RunError::InstructionUnpredictable);
             }

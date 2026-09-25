@@ -54,11 +54,17 @@ pub fn unsigned_sat_q(i: i64, n: u8) -> (i64, bool) {
 
 /// Returns the arithmetic shift right of `value` and the carry output.
 pub fn asr_c(value: u32, shift: u32) -> (u32, bool) {
-    assert!((shift > 0) && (shift < 32));
-    (
-        ((value as i32) >> shift) as u32,
-        value & (1 << (shift - 1)) != 0,
-    )
+    assert!(shift > 0);
+    if shift >= 32 {
+        // All bits become the sign bit; carry out is the sign bit.
+        let sign = value & 0x80000000 != 0;
+        (if sign { 0xFFFFFFFF } else { 0 }, sign)
+    } else {
+        (
+            ((value as i32) >> shift) as u32,
+            value & (1 << (shift - 1)) != 0,
+        )
+    }
 }
 
 /// Returns left shifted value and carry out.
@@ -426,6 +432,14 @@ mod tests {
         assert_eq!(asr_c(0x80000000, 8), (0xff800000, false));
         assert_eq!(asr_c(0x80000000, 31), (0xffffffff, false));
         assert_eq!(asr_c(0xc0000000, 31), (0xffffffff, true));
+        // shift=32: result is all sign bits, carry is the sign bit
+        assert_eq!(asr_c(0x80000000, 32), (0xffffffff, true));
+        assert_eq!(asr_c(0x7fffffff, 32), (0x00000000, false));
+        assert_eq!(asr_c(0xffffffff, 32), (0xffffffff, true));
+        assert_eq!(asr_c(0x00000000, 32), (0x00000000, false));
+        // shift>32: same behavior as shift=32
+        assert_eq!(asr_c(0x80000000, 33), (0xffffffff, true));
+        assert_eq!(asr_c(0x7fffffff, 64), (0x00000000, false));
     }
 
     #[test]
@@ -514,5 +528,28 @@ mod tests {
                 lsr_c(value, i)
             );
         }
+        // ASR with shift=32 through shift_c (this is how Thumb encoding triggers it)
+        assert_eq!(
+            shift_c(
+                0x80000000,
+                Shift {
+                    t: ShiftType::Asr,
+                    n: 32
+                },
+                false
+            ),
+            (0xffffffff, true)
+        );
+        assert_eq!(
+            shift_c(
+                0x7fffffff,
+                Shift {
+                    t: ShiftType::Asr,
+                    n: 32
+                },
+                false
+            ),
+            (0x00000000, false)
+        );
     }
 }

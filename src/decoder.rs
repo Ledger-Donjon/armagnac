@@ -408,6 +408,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::sdiv::Sdiv>(version);
         dec.insert::<instructions::sev::Sev>(version);
         dec.insert::<instructions::smlal::Smlal>(version);
+        dec.insert::<instructions::smulbb::Smulxy>(version);
         dec.insert::<instructions::smull::Smull>(version);
         dec.insert::<instructions::ssat::Ssat>(version);
         dec.insert::<instructions::stc::Stc>(version);
@@ -432,6 +433,7 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::sub::SubSpMinusReg>(version);
         dec.insert::<instructions::ssbb::Ssbb>(version);
         dec.insert::<instructions::svc::Svc>(version);
+        dec.insert::<instructions::sxtah::Sxtah>(version);
         dec.insert::<instructions::sxtb::Sxtb>(version);
         dec.insert::<instructions::sxth::Sxth>(version);
         dec.insert::<instructions::tbb::Tbb>(version);
@@ -446,6 +448,8 @@ impl BasicInstructionDecoder {
         dec.insert::<instructions::umull::Umull>(version);
         dec.insert::<instructions::usat16::Usat16>(version);
         dec.insert::<instructions::usat::Usat>(version);
+        dec.insert::<instructions::uqadd8::Uqadd8>(version);
+        dec.insert::<instructions::uxtab::Uxtab>(version);
         dec.insert::<instructions::uxtb::Uxtb>(version);
         dec.insert::<instructions::uxth::Uxth>(version);
         dec.insert::<instructions::wfe::Wfe>(version);
