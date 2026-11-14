@@ -83,7 +83,7 @@ impl Instruction for Msr {
                 if proc.is_privileged() {
                     proc.registers.primask.set_pm(val.bit(0));
                 }
-            },
+            }
             RegisterIndex::Basepri => todo!(),
             RegisterIndex::BasepriMax => todo!(),
             RegisterIndex::FaultMask => todo!(),
